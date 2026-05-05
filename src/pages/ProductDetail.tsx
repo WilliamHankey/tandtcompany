@@ -2,10 +2,11 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { getProduct, formatZAR } from "@/data/products";
+import { getProduct, formatZAR, products } from "@/data/products";
+import ProductCard from "@/components/ProductCard";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
-import { Minus, Plus } from "lucide-react";
+import { Minus, Plus, Truck, RotateCcw, ShieldCheck, Star } from "lucide-react";
 
 const ProductDetail = () => {
   const { slug } = useParams();
