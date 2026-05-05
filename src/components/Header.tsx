@@ -27,7 +27,7 @@ const Header = () => {
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-500 text-cream",
+        "fixed top-9 left-0 right-0 z-50 transition-all duration-500 text-cream",
         scrolled ? "bg-navy-deep/95 backdrop-blur-md shadow-soft" : "bg-navy-deep/80 backdrop-blur-sm"
       )}
     >
