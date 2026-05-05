@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Layout from "@/components/Layout";
-import { formatZAR } from "@/data/products";
-import { ArrowRight } from "lucide-react";
+import ProductCard from "@/components/ProductCard";
+import { products } from "@/data/products";
 
 import rackHero from "@/assets/shop-hero-rack.jpg";
 import teeFolded from "@/assets/product-tee-folded.jpg";
@@ -25,28 +25,50 @@ const heroSlides = [
   { src: journalImg, alt: "Gilded journal" },
 ];
 
-type Item = {
+type Category = "All" | "Apparel" | "Accessories" | "Lifestyle";
+
+type DisplayItem = {
   slug: string;
   name: string;
   tagline: string;
   price: number;
   image: string;
+  category: Category;
   badge?: string;
+  full?: typeof products[number];
 };
 
-const collection: Item[] = [
-  { slug: "essential-tee-navy", name: "The Purpose Tee", tagline: "Crafted for a meaningful journey.", price: 1299, image: mugImg, badge: "LIMITED" },
-  { slug: "atelier-hoodie-cream", name: "Refined Hoodie", tagline: "Weighted with intention and warmth.", price: 2599, image: crewFaith },
-  { slug: "essential-tee-navy", name: "Legacy Bands", tagline: "An outer shell for inner strength.", price: 399, image: bandImg },
-  { slug: "emblem-cap", name: "Cross Keychain Set", tagline: "Tailored for the steady path.", price: 449, image: keychainImg },
-  { slug: "emblem-cap", name: "Foundation Bucket", tagline: "A staple built for lasting faith.", price: 699, image: bucketFaith, badge: "BEST SELLER" },
-  { slug: "emblem-cap", name: "Hope Bucket", tagline: "Soft cotton, heavy meaning.", price: 699, image: bucketHope },
-  { slug: "essential-tee-navy", name: "Faith Crew", tagline: "Soft cotton, heavy meaning.", price: 1499, image: teeFolded },
-  { slug: "gilded-journal", name: "Pray Wait Trust Box", tagline: "Soft silk, heavy meaning.", price: 899, image: giftbox },
+const baseProductBySlug = (slug: string) => products.find((p) => p.slug === slug);
+
+const collection: DisplayItem[] = [
+  { slug: "essential-tee-navy", name: "The Essential Tee", tagline: "Cut for stillness. Made for movement.", price: 549, image: teeFolded, category: "Apparel", badge: "BEST SELLER", full: baseProductBySlug("essential-tee-navy") },
+  { slug: "atelier-hoodie-cream", name: "Atelier Hoodie", tagline: "Warmth with weight.", price: 1299, image: hoodieImg, category: "Apparel", full: baseProductBySlug("atelier-hoodie-cream") },
+  { slug: "emblem-cap", name: "Emblem Cap", tagline: "A small mark. A steady centre.", price: 399, image: capImg, category: "Accessories", full: baseProductBySlug("emblem-cap") },
+  { slug: "gilded-journal", name: "The Gilded Journal", tagline: "Pages for what matters.", price: 449, image: journalImg, category: "Lifestyle", badge: "NEW", full: baseProductBySlug("gilded-journal") },
+  { slug: "essential-tee-navy", name: "Faith Crew", tagline: "Soft cotton, heavy meaning.", price: 1499, image: crewFaith, category: "Apparel" },
+  { slug: "emblem-cap", name: "Foundation Bucket", tagline: "A staple built for lasting faith.", price: 699, image: bucketFaith, category: "Accessories" },
+  { slug: "emblem-cap", name: "Hope Bucket", tagline: "Soft cotton, heavy meaning.", price: 699, image: bucketHope, category: "Accessories" },
+  { slug: "gilded-journal", name: "Pray Wait Trust Box", tagline: "Curated for the steady journey.", price: 899, image: giftbox, category: "Lifestyle", badge: "LIMITED" },
+  { slug: "essential-tee-navy", name: "Purpose Mug", tagline: "Mornings made meaningful.", price: 249, image: mugImg, category: "Lifestyle" },
+  { slug: "emblem-cap", name: "Legacy Bands", tagline: "An outer shell for inner strength.", price: 399, image: bandImg, category: "Accessories" },
+  { slug: "emblem-cap", name: "Cross Keychain Set", tagline: "Tailored for the steady path.", price: 449, image: keychainImg, category: "Accessories" },
 ];
+
+const categories: Category[] = ["All", "Apparel", "Accessories", "Lifestyle"];
+type Sort = "Featured" | "Price: Low to High" | "Price: High to Low";
+const sortOptions: Sort[] = ["Featured", "Price: Low to High", "Price: High to Low"];
 
 const Shop = () => {
   const [active, setActive] = useState(0);
+  const [cat, setCat] = useState<Category>("All");
+  const [sort, setSort] = useState<Sort>("Featured");
+
+  const filtered = useMemo(() => {
+    let list = cat === "All" ? collection : collection.filter((p) => p.category === cat);
+    if (sort === "Price: Low to High") list = [...list].sort((a, b) => a.price - b.price);
+    if (sort === "Price: High to Low") list = [...list].sort((a, b) => b.price - a.price);
+    return list;
+  }, [cat, sort]);
 
   return (
     <Layout>
@@ -63,12 +85,23 @@ const Shop = () => {
               }`}
             />
           ))}
-          {/* Vignette so elements work together with surrounding navy */}
-          <div className="absolute inset-0 bg-gradient-to-b from-navy-deep/70 via-transparent to-navy-deep/90" />
+          <div className="absolute inset-0 bg-gradient-to-b from-navy-deep/70 via-transparent to-navy-deep/95" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_45%,hsl(var(--navy-deep))_100%)]" />
+
+          {/* Hero copy overlay */}
+          <div className="absolute inset-0 flex items-center">
+            <div className="container-prose text-cream">
+              <p className="eyebrow !text-gold">The Collection</p>
+              <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl mt-4 leading-[1.05] max-w-2xl text-balance">
+                Crafted for a meaningful journey.
+              </h1>
+              <p className="mt-5 text-cream/75 max-w-md leading-relaxed">
+                Premium pieces, ready to ship across South Africa. Quiet design. Quality you can feel.
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Thumbnail strip overlapping */}
         <div className="container-prose -mt-24 md:-mt-28 relative z-10 pb-16">
           <div className="grid grid-cols-3 md:grid-cols-5 gap-3 md:gap-5">
             {heroSlides.map((s, i) => (
@@ -94,63 +127,63 @@ const Shop = () => {
         </div>
       </section>
 
-      {/* COLLECTION INTRO */}
-      <section className="container-prose pt-20 md:pt-28 pb-12 text-center">
-        <p className="eyebrow">The Collection</p>
-        <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl mt-5">
-          Crafted for a Meaningful Journey
-        </h1>
-        <div className="hairline mt-6 mx-auto" />
-        <p className="mt-8 max-w-2xl mx-auto text-muted-foreground leading-relaxed">
-          T AND T COMPANY was founded on the principle that what we wear should reflect the depth of
-          our walk. Each piece in this collection is designed with intentionality — a quiet
-          testament to faith and purpose. We move away from the noise of trend, choosing instead the
-          refined silence of premium materials and subtle messaging that resonates with the soul.
-        </p>
+      {/* FILTER BAR */}
+      <section className="container-prose pt-12 pb-8 border-b border-border flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {categories.map((c) => (
+            <button
+              key={c}
+              onClick={() => setCat(c)}
+              className={`px-4 py-2 text-[0.7rem] uppercase tracking-[0.22em] transition-colors border ${
+                cat === c
+                  ? "bg-navy-deep text-cream border-navy-deep"
+                  : "bg-transparent text-foreground/70 border-border hover:border-navy-deep"
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-muted-foreground">{filtered.length} pieces</span>
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as Sort)}
+            className="bg-transparent border border-border px-3 py-2 text-xs uppercase tracking-[0.18em] focus:outline-none focus:border-navy-deep"
+          >
+            {sortOptions.map((s) => <option key={s}>{s}</option>)}
+          </select>
+        </div>
       </section>
 
       {/* PRODUCT GRID */}
-      <section className="container-prose pb-24">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-16 md:gap-x-10">
-          {collection.map((p, i) => (
-            <Link key={i} to={`/shop/${p.slug}`} className="group block">
-              <div className="relative aspect-square overflow-hidden bg-secondary">
-                {p.badge && (
-                  <span className="absolute top-3 right-3 z-10 bg-gold text-navy-deep text-[0.6rem] tracking-[0.2em] uppercase px-2.5 py-1 font-medium">
-                    {p.badge}
-                  </span>
-                )}
-                <img
-                  src={p.image}
-                  alt={p.name}
-                  loading="lazy"
-                  className="w-full h-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]"
-                />
-              </div>
-              <div className="mt-5">
-                <h3 className="font-serif text-xl text-navy-deep">{p.name}</h3>
-                <p className="mt-1 text-xs text-muted-foreground">{p.tagline}</p>
-                <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
-                  <span className="text-sm tabular-nums text-foreground">{formatZAR(p.price)}</span>
-                  <span className="flex items-center gap-1.5 text-[0.65rem] uppercase tracking-[0.22em] text-gold link-underline">
-                    View details <ArrowRight className="h-3 w-3" />
-                  </span>
-                </div>
-              </div>
-            </Link>
+      <section className="container-prose pt-12 pb-24">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-14 md:gap-x-10">
+          {filtered.map((p, i) => (
+            <ProductCard
+              key={`${p.slug}-${i}`}
+              product={{ slug: p.slug, name: p.name, price: p.price, image: p.image, tagline: p.tagline, badge: p.badge }}
+              full={p.full}
+            />
           ))}
         </div>
       </section>
 
       {/* QUOTE BAND */}
       <section className="bg-navy-deep text-cream">
-        <div className="container-prose py-24 md:py-32 text-center">
+        <div className="container-prose py-24 md:py-28 text-center">
           <p className="font-serif text-2xl md:text-3xl lg:text-4xl leading-relaxed max-w-3xl mx-auto text-balance">
             "Luxury is not in the excess, but in the truth of the craftsmanship and the weight of
             the message behind it."
           </p>
           <div className="hairline mt-10 mx-auto bg-gold" />
           <p className="eyebrow mt-6 !text-gold">Founder's Note</p>
+          <Link
+            to="/contact"
+            className="inline-block mt-10 text-xs uppercase tracking-[0.22em] text-cream/80 link-underline"
+          >
+            Need help choosing? Chat with us →
+          </Link>
         </div>
       </section>
     </Layout>
