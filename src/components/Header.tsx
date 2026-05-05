@@ -1,13 +1,14 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { ShoppingBag } from "lucide-react";
+import { Search, User, ShoppingBag } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { cn } from "@/lib/utils";
 
 const links = [
   { to: "/", label: "Home" },
-  { to: "/about", label: "Our Story" },
   { to: "/shop", label: "Shop" },
+  { to: "/about", label: "About" },
+  { to: "/shop", label: "Collections" },
   { to: "/contact", label: "Contact" },
 ];
 
