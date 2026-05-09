@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, MessageCircle } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 
 const schema = z.object({
@@ -14,8 +14,8 @@ const schema = z.object({
   message: z.string().trim().min(5).max(1000),
 });
 
-const WHATSAPP = "[+27 ___ ___ ____]";
-const EMAIL = "[hello@tandt.co]";
+const WHATSAPP_URL = "https://wa.me/27000000000";
+const EMAIL = "hello@tandt.co";
 
 const Contact = () => {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
@@ -33,58 +33,64 @@ const Contact = () => {
     setErrors({});
     const subject = encodeURIComponent(`Hello from ${form.name}`);
     const body = encodeURIComponent(`${form.message}\n\n— ${form.name} (${form.email})`);
-    window.location.href = `mailto:${EMAIL.replace(/[\[\]]/g, "")}?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:${EMAIL}?subject=${subject}&body=${body}`;
     toast.success("Opening your email…");
   };
 
   return (
     <Layout>
-      <section className="bg-navy-gradient text-cream pt-40 pb-24">
-        <div className="container-prose max-w-3xl">
-          <p className="eyebrow">Contact</p>
-          <div className="hairline mt-4 mb-8" />
-          <h1 className="font-serif text-5xl md:text-7xl leading-[1.05]">We'd love to hear from you.</h1>
-          <p className="mt-6 text-cream/75 max-w-xl leading-relaxed">
-            Whether it's a question about a piece, a custom request, or simply a hello — we read every message.
-          </p>
-        </div>
+      <section className="container-prose pt-32 pb-16 text-center max-w-3xl">
+        <h1 className="font-serif text-5xl md:text-6xl leading-tight text-navy">Let's Connect</h1>
+        <p className="mt-8 text-muted-foreground leading-relaxed max-w-2xl mx-auto">
+          Whether you have a question about our collections, need guidance on your journey, or simply wish to share a word of encouragement, our doors are always open. We believe in the power of meaningful conversation and human connection.
+        </p>
       </section>
 
-      <section className="container-prose py-24 grid lg:grid-cols-5 gap-16">
-        <div className="lg:col-span-2 space-y-10">
-          <div>
-            <p className="eyebrow mb-3">WhatsApp</p>
-            <a className="font-serif text-2xl link-underline inline-flex items-center gap-3" href="#">
-              <MessageCircle className="h-5 w-5 text-accent" />{WHATSAPP}
-            </a>
-            <p className="mt-2 text-sm text-muted-foreground">Quickest way to reach us.</p>
+      <section className="container-prose pb-24 grid lg:grid-cols-2 gap-12 items-start">
+        <div className="space-y-12">
+          <div className="border-l-2 border-gold pl-6">
+            <p className="eyebrow !text-gold">Direct Connection</p>
+            <h2 className="font-serif text-3xl text-navy mt-3">Reach out instantly</h2>
+            <p className="mt-5 text-muted-foreground leading-relaxed max-w-md">
+              For immediate assistance or a more personal touch, our team is available via WhatsApp. We aim to respond within a few hours during business days.
+            </p>
+            <Button asChild variant="gold" size="lg" className="mt-8">
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
+                <MessageCircle className="h-4 w-4 mr-2" /> Message on WhatsApp
+              </a>
+            </Button>
           </div>
-          <div>
-            <p className="eyebrow mb-3">Email</p>
-            <a className="font-serif text-2xl link-underline inline-flex items-center gap-3" href={`mailto:${EMAIL.replace(/[\[\]]/g, "")}`}>
-              <Mail className="h-5 w-5 text-accent" />{EMAIL}
-            </a>
-            <p className="mt-2 text-sm text-muted-foreground">For longer notes or partnerships.</p>
+
+          <div className="border-l-2 border-gold pl-6">
+            <p className="eyebrow !text-gold">Our Office</p>
+            <p className="mt-4 font-serif text-navy">
+              [TODO: Street Address]<br />
+              [TODO: City, Postcode]
+            </p>
           </div>
         </div>
 
-        <form onSubmit={submit} className="lg:col-span-3 space-y-6" noValidate>
-          <div>
-            <Label htmlFor="name">Your name</Label>
-            <Input id="name" className="mt-2" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-            {errors.name && <p className="text-destructive text-sm mt-1">{errors.name}</p>}
+        <form onSubmit={submit} className="bg-cream border border-border p-8 md:p-10 shadow-elegant space-y-6" noValidate>
+          <div className="grid sm:grid-cols-2 gap-5">
+            <div>
+              <Label htmlFor="name" className="eyebrow">Name</Label>
+              <Input id="name" placeholder="Your full name" className="mt-2" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              {errors.name && <p className="text-destructive text-xs mt-1">{errors.name}</p>}
+            </div>
+            <div>
+              <Label htmlFor="email" className="eyebrow">Email</Label>
+              <Input id="email" type="email" placeholder="email@example.com" className="mt-2" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              {errors.email && <p className="text-destructive text-xs mt-1">{errors.email}</p>}
+            </div>
           </div>
           <div>
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" className="mt-2" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-            {errors.email && <p className="text-destructive text-sm mt-1">{errors.email}</p>}
+            <Label htmlFor="message" className="eyebrow">Message</Label>
+            <Textarea id="message" rows={6} placeholder="How can we help you today?" className="mt-2" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
+            {errors.message && <p className="text-destructive text-xs mt-1">{errors.message}</p>}
           </div>
-          <div>
-            <Label htmlFor="message">Message</Label>
-            <Textarea id="message" rows={6} className="mt-2" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
-            {errors.message && <p className="text-destructive text-sm mt-1">{errors.message}</p>}
-          </div>
-          <Button type="submit" variant="navy" size="lg" className="w-full">Send message</Button>
+          <Button type="submit" variant="outlineNavy" size="lg" className="w-full !text-gold !border-gold hover:!bg-gold hover:!text-cream">
+            Send Message
+          </Button>
         </form>
       </section>
     </Layout>
