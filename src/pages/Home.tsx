@@ -92,6 +92,101 @@ const Home = () => (
       </div>
     </section>
 
+    {/* MORE THAN CLOTHING */}
+    <section className="container-prose py-24 md:py-32 grid md:grid-cols-12 gap-12">
+      <div className="md:col-span-5">
+        <p className="eyebrow !text-gold">Our Foundation</p>
+        <h3 className="font-serif text-4xl md:text-5xl mt-4 leading-tight">More Than Clothing</h3>
+        <div className="hairline mt-8" />
+      </div>
+      <div className="md:col-span-7 space-y-6 text-foreground/85 leading-relaxed">
+        <p className="font-serif text-xl text-navy italic">
+          "We believe that what you wear should reflect the depth of your soul and the clarity of your calling."
+        </p>
+        <p>
+          At T AND T COMPANY, we don't just design garments; we architect vessels of intentionality. Our brand is rooted in the belief that modern life deserves a spiritual anchor. Every fabric we use, every stitch we make, and every piece we craft is for those who walk through the world with grace and lead with unwavering purpose.
+        </p>
+        <div className="grid sm:grid-cols-2 gap-8 pt-6 border-t border-border">
+          <div>
+            <p className="eyebrow !text-gold mb-2">Ethos</p>
+            <p className="text-sm text-muted-foreground">Quiet conviction expressed in every prayer and stitch in excellence.</p>
+          </div>
+          <div>
+            <p className="eyebrow !text-gold mb-2">Intention</p>
+            <p className="text-sm text-muted-foreground">Every thread, cut, and label serves a higher narrative.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* QUALITY AS WORSHIP */}
+    <section className="bg-secondary/40 py-24 md:py-32">
+      <div className="container-prose">
+        <div className="text-center mb-16">
+          <p className="eyebrow !text-gold">The Architecture of Craft</p>
+          <h3 className="font-serif text-4xl md:text-5xl mt-4">Quality as Worship</h3>
+        </div>
+        <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
+          <ul className="space-y-8">
+            {[
+              { n: "01", t: "Sourcing with Integrity", d: "We hand-select materials that offer longevity and superior tactile experience. Every fabric must meet our rigorous standards for sustainability and ethical production." },
+              { n: "02", t: "Meticulous Craftsmanship", d: "Our silhouettes are engineered for timelessness. We avoid fleeting trends, focusing instead on structural integrity and refined finishes that honor the wearer." },
+              { n: "03", t: "Considered Detail", d: "From subtle emblems to gilded thread, every detail is a deliberate statement of reverence — quiet luxury that whispers rather than shouts." },
+            ].map((it) => (
+              <li key={it.n} className="flex gap-5">
+                <span className="font-serif text-gold border border-gold/40 w-12 h-12 grid place-items-center shrink-0">{it.n}</span>
+                <div>
+                  <p className="font-serif text-xl text-navy">{it.t}</p>
+                  <p className="mt-2 text-sm text-foreground/75 leading-relaxed">{it.d}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <div className="aspect-square bg-navy-deep grid place-items-center shadow-elegant">
+            <div className="font-serif text-cream text-center">
+              <span className="text-[10rem] md:text-[12rem] leading-none tracking-[-0.05em] text-gold">
+                T<span className="text-gold-soft">T</span>
+              </span>
+              <span className="block text-gold text-3xl mt-2">✦</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* KINGDOM COMMUNITY */}
+    <section className="bg-cream py-24 md:py-28">
+      <div className="container-prose text-center max-w-3xl">
+        <h3 className="font-serif text-4xl md:text-5xl text-navy">A Kingdom Community</h3>
+        <p className="mt-6 text-foreground/75 leading-relaxed">
+          T AND T COMPANY is an open invitation. We serve a diverse, global community united by a desire to live out their faith with excellence. Our inclusivity is born from our conviction that every person is crafted with divine intention.
+        </p>
+        <div className="mt-14 grid sm:grid-cols-3 gap-10">
+          {[
+            { i: "✦", t: "Excellence" },
+            { i: "♡", t: "Communion" },
+            { i: "✧", t: "Unity" },
+          ].map((p) => (
+            <div key={p.t} className="flex flex-col items-center">
+              <span className="text-gold text-2xl">{p.i}</span>
+              <p className="eyebrow mt-4">{p.t}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    {/* DISCOVER THE COLLECTION CTA */}
+    <section className="container-prose py-20">
+      <div className="max-w-xl mx-auto border border-gold/40 p-10 md:p-14 text-center">
+        <p className="eyebrow !text-gold">Curated for Purpose</p>
+        <h3 className="font-serif text-3xl md:text-4xl text-navy mt-4">Discover the Collection</h3>
+        <Button asChild variant="outlineNavy" size="lg" className="mt-8 !border-gold !text-gold hover:!bg-gold hover:!text-cream">
+          <Link to="/shop">View All Products</Link>
+        </Button>
+      </div>
+    </section>
+
     {/* TESTIMONIALS */}
     <section className="container-prose py-24 md:py-32">
       <div className="text-center max-w-2xl mx-auto mb-14">
