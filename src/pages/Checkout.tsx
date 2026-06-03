@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCart } from "@/context/CartContext";
-import { formatZAR } from "@/data/products";
+import { formatZAR } from "@/types/product";
+import { useSiteSettings } from "@/hooks/useSanityContent";
+import { payWithPaystack } from "@/lib/paystack";
 import { toast } from "sonner";
 import { ShieldCheck, Truck, RotateCcw, Lock } from "lucide-react";
 
@@ -20,12 +22,13 @@ const schema = z.object({
   postcode: z.string().trim().min(3).max(20),
 });
 
-type DeliveryOpt = "pickup" | "pudo" | "courier";
-const deliveryOptions: { id: DeliveryOpt; name: string; price: number; sub: string }[] = [
-  { id: "pickup", name: "Pick-up", price: 0, sub: "Collect from our primary location." },
-  { id: "pudo", name: "Pudo", price: 80, sub: "Secure locker-to-locker delivery." },
-  { id: "courier", name: "Courier Guy", price: 100, sub: "Door-to-door delivery across the region." },
+const defaultDelivery = [
+  { id: "pickup" as const, name: "Pick-up", price: 0, sub: "Collect from our primary location." },
+  { id: "pudo" as const, name: "Pudo", price: 80, sub: "Secure locker-to-locker delivery." },
+  { id: "courier" as const, name: "Courier Guy", price: 100, sub: "Door-to-door delivery across the region." },
 ];
+
+type DeliveryOpt = "pickup" | "pudo" | "courier";
 
 const SectionHeader = ({ n, title }: { n: string; title: string }) => (
   <div className="flex items-baseline gap-3 mb-6">
@@ -36,47 +39,111 @@ const SectionHeader = ({ n, title }: { n: string; title: string }) => (
 
 const Checkout = () => {
   const { items, subtotal, clear } = useCart();
+  const { data: settings } = useSiteSettings();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ fullName: "", email: "", phone: "", country: "", address: "", city: "", postcode: "" });
+  const [form, setForm] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    country: "South Africa",
+    address: "",
+    city: "",
+    postcode: "",
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [delivery, setDelivery] = useState<DeliveryOpt>("pickup");
   const [submitting, setSubmitting] = useState(false);
+
+  const deliveryOptions =
+    settings?.shippingOptions?.length
+      ? settings.shippingOptions.map((d: { id: string; name: string; price: number; description?: string }) => ({
+          id: d.id as DeliveryOpt,
+          name: d.name,
+          price: d.price,
+          sub: d.description || "",
+        }))
+      : defaultDelivery;
 
   if (items.length === 0) {
     return (
       <Layout>
         <div className="container-prose pt-40 pb-32 text-center">
           <h1 className="font-serif text-3xl">Your bag is empty</h1>
-          <Button asChild variant="navy" className="mt-8"><Link to="/shop">Visit the shop</Link></Button>
+          <Button asChild variant="navy" className="mt-8">
+            <Link to="/shop">Visit the shop</Link>
+          </Button>
         </div>
       </Layout>
     );
   }
 
-  const shippingCost = deliveryOptions.find((d) => d.id === delivery)!.price;
-  const tax = Math.round(subtotal * 0.08);
+  const shippingCost = deliveryOptions.find((d) => d.id === delivery)?.price ?? 0;
+  const taxRate = settings?.taxRate ?? 0.08;
+  const tax = Math.round(subtotal * taxRate);
   const total = subtotal + shippingCost + tax;
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm({ ...form, [k]: e.target.value });
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const r = schema.safeParse(form);
     if (!r.success) {
       const errs: Record<string, string> = {};
-      r.error.issues.forEach((i) => { errs[i.path[0] as string] = i.message; });
+      r.error.issues.forEach((i) => {
+        errs[i.path[0] as string] = i.message;
+      });
       setErrors(errs);
       return;
     }
     setErrors({});
     setSubmitting(true);
+
     const ref = "TT-" + Math.random().toString(36).slice(2, 8).toUpperCase();
-    setTimeout(() => {
+    const paystackKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
+
+    const completeOrder = (paymentRef: string) => {
       clear();
-      toast.success("Order received", { description: "Reference " + ref });
-      navigate("/confirmation", { state: { ref, email: form.email } });
-    }, 800);
+      toast.success("Payment received", { description: `Reference ${paymentRef}` });
+      navigate("/confirmation", {
+        state: { ref: paymentRef, email: form.email },
+      });
+    };
+
+    if (!paystackKey) {
+      setTimeout(() => {
+        completeOrder(ref);
+        setSubmitting(false);
+      }, 800);
+      return;
+    }
+
+    try {
+      await payWithPaystack({
+        email: form.email,
+        amountZar: total,
+        reference: ref,
+        metadata: {
+          fullName: form.fullName,
+          phone: form.phone,
+          delivery,
+          items: items.map((i) => ({ id: i.product.id, qty: i.qty })),
+        },
+        onSuccess: (paymentRef) => {
+          completeOrder(paymentRef);
+          setSubmitting(false);
+        },
+        onCancel: () => {
+          setSubmitting(false);
+          toast.info("Payment cancelled");
+        },
+      });
+    } catch (err) {
+      setSubmitting(false);
+      toast.error("Payment failed", {
+        description: err instanceof Error ? err.message : "Please try again",
+      });
+    }
   };
 
   return (
@@ -89,7 +156,6 @@ const Checkout = () => {
 
         <form onSubmit={submit} className="grid lg:grid-cols-3 gap-12" noValidate>
           <div className="lg:col-span-2 space-y-14">
-            {/* Delivery details */}
             <div>
               <SectionHeader n="01" title="Delivery Details" />
               <div className="grid sm:grid-cols-2 gap-6">
@@ -131,7 +197,6 @@ const Checkout = () => {
               </div>
             </div>
 
-            {/* Delivery option */}
             <div>
               <SectionHeader n="02" title="Delivery Option" />
               <div className="grid sm:grid-cols-3 gap-4">
@@ -157,36 +222,20 @@ const Checkout = () => {
               </div>
             </div>
 
-            {/* Payment method */}
             <div>
               <SectionHeader n="03" title="Payment Method" />
               <div className="border border-border p-6 bg-cream">
                 <div className="flex items-center gap-3 pb-4 border-b border-border">
                   <ShieldCheck className="h-5 w-5 text-navy" />
-                  <p className="font-serif text-navy">Secure Transaction via PaySharp</p>
+                  <p className="font-serif text-navy">Secure payment via Paystack</p>
                 </div>
-                <div className="mt-6 grid sm:grid-cols-1 gap-5">
-                  <div>
-                    <Label className="eyebrow">Card Number</Label>
-                    <div className="relative mt-2">
-                      <Input placeholder="0000 0000 0000 0000" />
-                      <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    </div>
-                  </div>
-                  <div className="grid sm:grid-cols-2 gap-5">
-                    <div>
-                      <Label className="eyebrow">Expiry Date</Label>
-                      <Input placeholder="MM / YY" className="mt-2" />
-                    </div>
-                    <div>
-                      <Label className="eyebrow">CVV</Label>
-                      <Input placeholder="123" className="mt-2" />
-                    </div>
-                  </div>
-                </div>
-                <p className="mt-5 text-xs text-muted-foreground leading-relaxed">
-                  After placing your order, we'll be in touch via WhatsApp or email with the secure PaySharp payment link and fulfilment details.
+                <p className="mt-6 text-sm text-muted-foreground leading-relaxed">
+                  When you click Complete Purchase, a secure Paystack window opens to pay by card, bank transfer, or mobile money. Your order is confirmed once payment succeeds.
                 </p>
+                <div className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
+                  <Lock className="h-4 w-4" />
+                  <span>256-bit encrypted · PCI DSS compliant</span>
+                </div>
               </div>
             </div>
           </div>
@@ -219,7 +268,7 @@ const Checkout = () => {
               <span className="font-serif text-2xl text-gold tabular-nums">{formatZAR(total)}</span>
             </div>
             <Button type="submit" variant="gold" size="lg" disabled={submitting} className="w-full mt-8">
-              {submitting ? "Placing order…" : "Complete Purchase"}
+              {submitting ? "Opening payment…" : "Complete Purchase"}
             </Button>
             <div className="mt-6 flex items-center justify-center gap-5 text-muted-foreground">
               <ShieldCheck className="h-4 w-4" />

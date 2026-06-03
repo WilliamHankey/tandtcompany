@@ -2,18 +2,28 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { getProduct, formatZAR, products } from "@/data/products";
+import { formatZAR } from "@/types/product";
 import ProductCard from "@/components/ProductCard";
 import { useCart } from "@/context/CartContext";
+import { useProduct, useResolvedProducts } from "@/hooks/useSanityContent";
 import { toast } from "sonner";
 import { Minus, Plus, Truck, RotateCcw, ShieldCheck, Star } from "lucide-react";
 
 const ProductDetail = () => {
   const { slug } = useParams();
-  const product = slug ? getProduct(slug) : undefined;
+  const { data: product, isLoading } = useProduct(slug || "");
+  const { products: allProducts } = useResolvedProducts();
   const [qty, setQty] = useState(1);
   const { add } = useCart();
   const navigate = useNavigate();
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="container-prose pt-40 pb-32 text-center text-muted-foreground">Loading…</div>
+      </Layout>
+    );
+  }
 
   if (!product) {
     return (
@@ -89,7 +99,6 @@ const ProductDetail = () => {
             Buy it now
           </Button>
 
-          {/* Trust badges */}
           <div className="mt-8 grid grid-cols-3 gap-3 text-center border-y border-border py-5">
             <div className="flex flex-col items-center gap-1.5">
               <Truck className="h-4 w-4 text-gold" />
@@ -116,20 +125,18 @@ const ProductDetail = () => {
         </div>
       </section>
 
-      {/* You may also like */}
       <section className="container-prose pb-32">
         <div className="mb-10">
           <p className="eyebrow">You may also like</p>
           <h2 className="font-serif text-3xl md:text-4xl mt-3">Pieces in the same spirit</h2>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-10">
-          {products.filter((p) => p.slug !== product.slug).slice(0, 4).map((p) => (
+          {allProducts.filter((p) => p.slug !== product.slug).slice(0, 4).map((p) => (
             <ProductCard key={p.id} product={p} full={p} />
           ))}
         </div>
       </section>
 
-      {/* Sticky mobile buy bar */}
       <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-cream border-t border-border p-3 flex items-center gap-3 shadow-elegant">
         <div className="flex-1">
           <p className="font-serif text-sm leading-tight">{product.name}</p>

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MessageCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useContactPage, useSiteSettings } from "@/hooks/useSanityContent";
 
 const schema = z.object({
   name: z.string().trim().min(2).max(100),
@@ -14,59 +15,66 @@ const schema = z.object({
   message: z.string().trim().min(5).max(1000),
 });
 
-const WHATSAPP_URL = "https://wa.me/27000000000";
-const EMAIL = "hello@tandt.co";
-
 const Contact = () => {
+  const { data: page } = useContactPage();
+  const { data: settings } = useSiteSettings();
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const whatsappUrl = settings?.whatsappUrl || "https://wa.me/27000000000";
+  const email = settings?.email || "hello@tandt.co";
+  const address = settings?.address || "[Address — edit in Sanity Site Settings]";
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const r = schema.safeParse(form);
     if (!r.success) {
       const errs: Record<string, string> = {};
-      r.error.issues.forEach((i) => { errs[i.path[0] as string] = i.message; });
+      r.error.issues.forEach((i) => {
+        errs[i.path[0] as string] = i.message;
+      });
       setErrors(errs);
       return;
     }
     setErrors({});
     const subject = encodeURIComponent(`Hello from ${form.name}`);
     const body = encodeURIComponent(`${form.message}\n\n— ${form.name} (${form.email})`);
-    window.location.href = `mailto:${EMAIL}?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
     toast.success("Opening your email…");
   };
 
   return (
     <Layout>
       <section className="container-prose pt-32 pb-16 text-center max-w-3xl">
-        <h1 className="font-serif text-5xl md:text-6xl leading-tight text-navy">Let's Connect</h1>
+        <h1 className="font-serif text-5xl md:text-6xl leading-tight text-navy">
+          {page?.heroHeadline || "Let's Connect"}
+        </h1>
         <p className="mt-8 text-muted-foreground leading-relaxed max-w-2xl mx-auto">
-          Whether you have a question about our collections, need guidance on your journey, or simply wish to share a word of encouragement, our doors are always open. We believe in the power of meaningful conversation and human connection.
+          {page?.heroSubtext ||
+            "Whether you have a question about our collections, need guidance on your journey, or simply wish to share a word of encouragement, our doors are always open."}
         </p>
       </section>
 
       <section className="container-prose pb-24 grid lg:grid-cols-2 gap-12 items-start">
         <div className="space-y-12">
           <div className="border-l-2 border-gold pl-6">
-            <p className="eyebrow !text-gold">Direct Connection</p>
+            <p className="eyebrow !text-gold">{page?.heroEyebrow || "Direct Connection"}</p>
             <h2 className="font-serif text-3xl text-navy mt-3">Reach out instantly</h2>
             <p className="mt-5 text-muted-foreground leading-relaxed max-w-md">
-              For immediate assistance or a more personal touch, our team is available via WhatsApp. We aim to respond within a few hours during business days.
+              {page?.formIntro ||
+                "For immediate assistance or a more personal touch, our team is available via WhatsApp."}
             </p>
             <Button asChild variant="gold" size="lg" className="mt-8">
-              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="h-4 w-4 mr-2" /> Message on WhatsApp
+              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                <MessageCircle className="h-4 w-4 mr-2" />{" "}
+                {page?.whatsappLabel || "Message on WhatsApp"}
               </a>
             </Button>
           </div>
 
           <div className="border-l-2 border-gold pl-6">
             <p className="eyebrow !text-gold">Our Office</p>
-            <p className="mt-4 font-serif text-navy">
-              [TODO: Street Address]<br />
-              [TODO: City, Postcode]
-            </p>
+            <p className="mt-4 font-serif text-navy whitespace-pre-line">{address}</p>
           </div>
         </div>
 

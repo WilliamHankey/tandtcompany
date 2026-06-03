@@ -1,0 +1,27 @@
+{
+  "name": "tandtcompany-studio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "sanity dev",
+    "build": "sanity build",
+    "deploy": "sanity deploy",
+    "start": "sanity start",
+    "seed": "node --env-file=../.env scripts/seed.mjs",
+    "setup:cors": "node --env-file=../.env scripts/setup-cors.mjs"
+  },
+  "keywords": ["sanity"],
+  "dependencies": {
+    "@sanity/client": "^7.0.0",
+    "@sanity/vision": "^3.68.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sanity": "^3.68.0",
+    "styled-components": "^6.1.15"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "typescript": "^5.8.3"
+  }
+}
