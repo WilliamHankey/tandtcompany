@@ -11,7 +11,7 @@ import {
 } from "@/hooks/useSanityContent";
 import { imageUrl } from "@/lib/sanity";
 import heroFallback from "@/assets/hero.png";
-import foundersFallback from "/assets/founders.png";
+import foundersFallback from "https://tandtcompany.vercel.app/assets/founders.png";
 import { Star, Quote } from "lucide-react";
 
 const defaultTestimonials = [
