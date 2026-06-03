@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAboutPage } from "@/hooks/useSanityContent";
 import { imageUrl } from "@/lib/sanity";
-import foundersFallback from "@/assets/founders.jpg";
+import foundersFallback from "https://tandtcompany.vercel.app/assets/founders.png";
 
 const defaultSections = [
   {
@@ -22,7 +22,9 @@ const defaultSections = [
 
 const About = () => {
   const { data: page } = useAboutPage();
-  const foundersImg = page?.foundersImage ? imageUrl(page.foundersImage, 900) : foundersFallback;
+  const foundersImg = page?.foundersImage
+    ? imageUrl(page.foundersImage, 900)
+    : foundersFallback;
   const sections = page?.sections?.length ? page.sections : defaultSections;
 
   return (
@@ -44,7 +46,12 @@ const About = () => {
       <section className="container-prose py-24 md:py-32 grid md:grid-cols-12 gap-12">
         <div className="md:col-span-5">
           <div className="aspect-[4/5] overflow-hidden">
-            <img src={foundersImg} alt="Tersha and Tyrone" loading="lazy" className="w-full h-full object-cover" />
+            <img
+              src={foundersImg}
+              alt="Tersha and Tyrone"
+              loading="lazy"
+              className="w-full h-full object-cover"
+            />
           </div>
         </div>
         <div className="md:col-span-7 md:pt-12 space-y-10 text-lg leading-relaxed text-foreground/85">
