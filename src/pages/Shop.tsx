@@ -9,13 +9,34 @@ import rackHero from "@/assets/shop-hero-rack.png";
 type Category = "All" | "Apparel" | "Accessories" | "Lifestyle";
 type Sort = "Featured" | "Price: Low to High" | "Price: High to Low";
 
+type ShopHeroSlide = {
+  image?: unknown;
+  alt?: string;
+};
+
+type ShopPage = {
+  heroSlides?: ShopHeroSlide[];
+  heroEyebrow?: string;
+  heroHeadline?: string;
+  heroSubtext?: string;
+  founderQuote?: {
+    quote?: string;
+    attribution?: string;
+  };
+};
+
 const categories: Category[] = ["All", "Apparel", "Accessories", "Lifestyle"];
-const sortOptions: Sort[] = ["Featured", "Price: Low to High", "Price: High to Low"];
+const sortOptions: Sort[] = [
+  "Featured",
+  "Price: Low to High",
+  "Price: High to Low",
+];
 
 const defaultSlides = [{ src: rackHero, alt: "T AND T collection on rack" }];
 
 const Shop = () => {
-  const { data: page } = useShopPage();
+  const { data } = useShopPage();
+  const page = data as ShopPage | undefined;
   const { products, isLoading } = useResolvedProducts();
   const [active, setActive] = useState(0);
   const [cat, setCat] = useState<Category>("All");
@@ -36,8 +57,10 @@ const Shop = () => {
       cat === "All"
         ? products
         : products.filter((p) => (p.category || "Apparel") === cat);
-    if (sort === "Price: Low to High") list = [...list].sort((a, b) => a.price - b.price);
-    if (sort === "Price: High to Low") list = [...list].sort((a, b) => b.price - a.price);
+    if (sort === "Price: Low to High")
+      list = [...list].sort((a, b) => a.price - b.price);
+    if (sort === "Price: High to Low")
+      list = [...list].sort((a, b) => b.price - a.price);
     return list;
   }, [products, cat, sort]);
 
@@ -59,7 +82,9 @@ const Shop = () => {
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_45%,hsl(var(--navy-deep))_100%)]" />
           <div className="absolute inset-0 flex items-center">
             <div className="container-prose text-cream">
-              <p className="eyebrow !text-gold">{page?.heroEyebrow || "The Collection"}</p>
+              <p className="eyebrow !text-gold">
+                {page?.heroEyebrow || "The Collection"}
+              </p>
               <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl mt-4 leading-[1.05] max-w-2xl text-balance">
                 {page?.heroHeadline || "Crafted for a meaningful journey."}
               </h1>
@@ -84,7 +109,12 @@ const Shop = () => {
                     : "border-cream/15 opacity-70 hover:opacity-100"
                 }`}
               >
-                <img src={s.src} alt="" loading="lazy" className="w-full h-full object-cover transition-transform duration-[1200ms] group-hover:scale-105" />
+                <img
+                  src={s.src}
+                  alt=""
+                  loading="lazy"
+                  className="w-full h-full object-cover transition-transform duration-[1200ms] group-hover:scale-105"
+                />
               </button>
             ))}
           </div>
@@ -108,7 +138,9 @@ const Shop = () => {
           ))}
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-muted-foreground">{filtered.length} pieces</span>
+          <span className="text-xs text-muted-foreground">
+            {filtered.length} pieces
+          </span>
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as Sort)}
@@ -123,7 +155,9 @@ const Shop = () => {
 
       <section className="container-prose pt-12 pb-24">
         {isLoading ? (
-          <p className="text-center text-muted-foreground py-20">Loading collection…</p>
+          <p className="text-center text-muted-foreground py-20">
+            Loading collection…
+          </p>
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-14 md:gap-x-10">
             {filtered.map((p) => (
