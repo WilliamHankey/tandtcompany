@@ -3,9 +3,24 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAboutPage } from "@/hooks/useSanityContent";
 import { imageUrl } from "@/lib/sanity";
-import foundersFallback from "https://tandtcompany.vercel.app/assets/founders.png";
 
-const defaultSections = [
+const foundersFallback = "/assets/founders.png";
+
+type AboutSection = {
+  eyebrow?: string;
+  body?: string;
+};
+
+type AboutPage = {
+  foundersImage?: unknown;
+  sections?: AboutSection[];
+  heroEyebrow?: string;
+  heroHeadline?: string;
+  heroSubtext?: string;
+  ctaText?: string;
+};
+
+const defaultSections: AboutSection[] = [
   {
     eyebrow: "Tersha & Tyrone",
     body: "We're a husband-and-wife studio. Our days are spent chasing two things: faithfulness in the small, and craft in the visible. T AND T is where those two meet.",
@@ -21,10 +36,13 @@ const defaultSections = [
 ];
 
 const About = () => {
-  const { data: page } = useAboutPage();
+  const { data } = useAboutPage();
+  const page = data as AboutPage | undefined;
+
   const foundersImg = page?.foundersImage
     ? imageUrl(page.foundersImage, 900)
     : foundersFallback;
+
   const sections = page?.sections?.length ? page.sections : defaultSections;
 
   return (
@@ -54,13 +72,15 @@ const About = () => {
             />
           </div>
         </div>
+
         <div className="md:col-span-7 md:pt-12 space-y-10 text-lg leading-relaxed text-foreground/85">
-          {sections.map((s: { eyebrow?: string; body?: string }) => (
+          {sections.map((s) => (
             <div key={s.eyebrow}>
               <p className="eyebrow mb-3">{s.eyebrow}</p>
               <p>{s.body}</p>
             </div>
           ))}
+
           <Button asChild variant="navy" size="lg">
             <Link to="/shop">{page?.ctaText || "See the collection"}</Link>
           </Button>

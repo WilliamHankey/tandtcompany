@@ -11,8 +11,32 @@ import {
 } from "@/hooks/useSanityContent";
 import { imageUrl } from "@/lib/sanity";
 import heroFallback from "@/assets/hero.png";
-import foundersFallback from "https://tandtcompany.vercel.app/assets/founders.png";
+const foundersFallback = "/assets/founders.png";
 import { Star, Quote } from "lucide-react";
+
+type HomePage = {
+  featuredProducts?: any[];
+  heroImage?: unknown;
+  heroEyebrow?: string;
+  heroHeadline?: string;
+  heroSubtext?: string;
+  heroSocialProof?: string;
+  statementEyebrow?: string;
+  statementHeadline?: string;
+  statementBody?: string;
+  collectionEyebrow?: string;
+  collectionTitle?: string;
+  collectionSubtext?: string;
+  foundersTeaser?: {
+    image?: unknown;
+  };
+};
+
+type Testimonial = {
+  name: string;
+  text: string;
+  piece: string;
+};
 
 const defaultTestimonials = [
   {
@@ -33,8 +57,11 @@ const defaultTestimonials = [
 ];
 
 const Home = () => {
-  const { data: page } = useHomePage();
-  const { data: testimonialData } = useTestimonials();
+  const { data: homePageData } = useHomePage();
+  const { data: rawTestimonials } = useTestimonials();
+
+  const page = homePageData as HomePage | undefined;
+  const testimonialData = rawTestimonials as Testimonial[] | undefined;
   const { products } = useResolvedProducts();
   const featured = page?.featuredProducts?.length
     ? page.featuredProducts
