@@ -34,11 +34,16 @@ type HomePage = {
 
 type Testimonial = {
   name: string;
-  text: string;
-  piece: string;
+  quote?: string;
+  text?: string;
+  piece?: string;
+  avatar?: unknown;
+  rating?: number;
+  testimonialType?: "text" | "tiktok" | "instagram";
+  embedUrl?: string;
 };
 
-const defaultTestimonials = [
+const defaultTestimonials: Testimonial[] = [
   {
     name: "Naledi M.",
     text: "The fabric, the cut, the meaning behind it — every detail feels considered. Worth every rand.",
@@ -55,6 +60,15 @@ const defaultTestimonials = [
     piece: "Gilded Journal",
   },
 ];
+
+const getInitials = (name: string) => {
+  return name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+};
 
 const Home = () => {
   const { data: homePageData } = useHomePage();
@@ -89,7 +103,9 @@ const Home = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-navy-deep via-navy-deep/50 to-navy-deep/30" />
         <div className="relative px-6 pb-24 align-middle md:align-top md:pb-32 pt-12 text-cream animate-fade-up self-center">
-          <div className="hairline mb-8" />
+        <div className="flex items-center gap-8 md:gap-12 text-cream">
+          <div>
+          
           <p className="eyebrow mb-6">
             {page?.heroEyebrow || "T & T Company · New Season"}
           </p>
@@ -107,13 +123,13 @@ const Home = () => {
             {page?.heroSubtext ||
               "Premium pieces, made with intention. Now shipping across South Africa — direct to your door, with care."}
           </p>
+          </div>
+          <div className="h-28 w-px bg-gold/50" />
           <div className="mt-10 flex flex-wrap gap-4">
             <Button asChild variant="hero" size="lg">
               <Link to="/shop">Shop the Collection</Link>
             </Button>
-            <Button asChild variant="outlineCream" size="lg">
-              <Link to="/about">Our Story</Link>
-            </Button>
+          </div>
           </div>
           <div className="mt-10 flex items-center gap-6 text-cream/70 text-xs uppercase tracking-[0.22em]">
             <div className="flex items-center gap-1.5">
@@ -389,17 +405,58 @@ const Home = () => {
               className="bg-secondary/40 p-8 border border-border relative"
             >
               <Quote className="h-6 w-6 text-gold/60 absolute top-6 right-6" />
-              <div className="flex gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-3.5 w-3.5 fill-gold text-gold" />
-                ))}
+
+              <div className="flex items-center gap-4 mb-6">
+                {t.avatar ? (
+                  <img
+                    src={t.avatar ? imageUrl(t.avatar, 160) : undefined}
+                    alt={t.name}
+                    className="h-12 w-12 rounded-full object-cover border border-gold/30"
+                  />
+                ) : (
+                  <div className="h-12 w-12 rounded-full bg-navy-deep text-cream grid place-items-center font-serif text-sm border border-gold/30">
+                    {getInitials(t.name)}
+                  </div>
+                )}
+
+                <div>
+                  <p className="font-serif text-lg text-navy">{t.name}</p>
+                  {t.piece && (
+                    <p className="text-xs uppercase tracking-[0.18em] text-gold">
+                      {t.piece}
+                    </p>
+                  )}
+                </div>
               </div>
-              <blockquote className="font-serif text-lg leading-relaxed text-foreground/85">
-                "{t.text}"
-              </blockquote>
-              <figcaption className="mt-6 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                {t.name} · <span className="text-gold">{t.piece}</span>
-              </figcaption>
+
+              {t.embedUrl ? (
+                <div className="aspect-[9/16] w-full overflow-hidden bg-navy-deep">
+                  <iframe
+                    src={t.embedUrl}
+                    title={`${t.name} testimonial`}
+                    className="h-full w-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                  />
+                </div>
+              ) : (
+                <>
+                  <div className="flex gap-1 mb-4">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className="h-3.5 w-3.5 fill-gold text-gold"
+                      />
+                    ))}
+                  </div>
+
+                  <blockquote className="font-serif text-lg leading-relaxed text-foreground/85">
+                    "{t.quote || t.text}"
+                  </blockquote>
+                </>
+              )}
             </figure>
           ))}
         </div>

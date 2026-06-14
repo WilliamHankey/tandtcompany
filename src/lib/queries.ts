@@ -47,4 +47,4 @@ export const termsPageQuery = `*[_type == "termsPage"][0]{
   heroEyebrow, heroHeadline, heroSubtext, heroImage, sections, contactBlock
 }`;
 
-export const testimonialsQuery = `*[_type == "testimonial"] | order(order asc) { _id, name, "text": quote, piece, rating, order }`;
+export const testimonialsQuery = `*[_type == "testimonial"] | order(order asc) { _id, name, "text": quote, piece, rating, order, "avatar": avatar.asset->url, testimonialType, embedUrl }`;

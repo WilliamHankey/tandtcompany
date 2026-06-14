@@ -34,7 +34,7 @@ const Header = () => {
     >
       <div className="width-full px-6 grid grid-cols-[auto_1fr_auto] items-center h-16 md:h-20 gap-auto">
         <Link to="/" className="flex items-center gap-3">
-          <img src="../assets/logo.png" alt="T & T Company" className="h-12" />
+          <img src="/assets/brandmark-wordmar-horizontal.svg" alt="T & T Company" className="h-12" />
         </Link>
         <nav className="hidden md:flex items-center justify-center gap-10 text-[0.7rem] uppercase tracking-[0.28em]">
           {links.map((l) => (
