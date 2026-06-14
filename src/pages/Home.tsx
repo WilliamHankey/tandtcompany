@@ -103,33 +103,33 @@ const Home = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-navy-deep via-navy-deep/50 to-navy-deep/30" />
         <div className="relative px-6 pb-24 align-middle md:align-top md:pb-32 pt-12 text-cream animate-fade-up self-center">
-        <div className="flex items-center gap-8 md:gap-12 text-cream">
-          <div>
-          
-          <p className="eyebrow mb-6">
-            {page?.heroEyebrow || "T & T Company · New Season"}
-          </p>
-          <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl leading-[0.95] text-balance max-w-3xl">
-            {page?.heroHeadline ? (
-              page.heroHeadline
-            ) : (
-              <>
-                Faith. <em className="text-gold-soft not-italic">Purpose.</em>{" "}
-                Style.
-              </>
-            )}
-          </h1>
-          <p className="mt-8 max-w-md text-cream/80 leading-relaxed">
-            {page?.heroSubtext ||
-              "Premium pieces, made with intention. Now shipping across South Africa — direct to your door, with care."}
-          </p>
-          </div>
-          <div className="h-28 w-px bg-gold/50" />
-          <div className="mt-10 flex flex-wrap gap-4">
-            <Button asChild variant="hero" size="lg">
-              <Link to="/shop">Shop the Collection</Link>
-            </Button>
-          </div>
+          <div className="flex items-center gap-8 md:gap-12 text-cream">
+            <div>
+              <p className="eyebrow mb-6">
+                {page?.heroEyebrow || "T & T Company · New Season"}
+              </p>
+              <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl leading-[0.95] text-balance max-w-3xl">
+                {page?.heroHeadline ? (
+                  page.heroHeadline
+                ) : (
+                  <>
+                    Faith.{" "}
+                    <em className="text-gold-soft not-italic">Purpose.</em>{" "}
+                    Style.
+                  </>
+                )}
+              </h1>
+              <p className="mt-8 max-w-md text-cream/80 leading-relaxed">
+                {page?.heroSubtext ||
+                  "Premium pieces, made with intention. Now shipping across South Africa — direct to your door, with care."}
+              </p>
+            </div>
+            <div className="h-28 w-px bg-gold/50" />
+            <div className="mt-10 flex flex-wrap gap-4">
+              <Button asChild variant="hero" size="lg">
+                <Link to="/shop">Shop the Collection</Link>
+              </Button>
+            </div>
           </div>
           <div className="mt-10 flex items-center gap-6 text-cream/70 text-xs uppercase tracking-[0.22em]">
             <div className="flex items-center gap-1.5">
@@ -146,7 +146,7 @@ const Home = () => {
       <TrustStrip />
 
       {/* STATEMENT */}
-      <section className="container-prose py-24 md:py-32">
+      {/* <section className="container-prose py-24 md:py-32">
         <div className="grid md:grid-cols-12 gap-12 items-start">
           <div className="md:col-span-4">
             <p className="eyebrow">{page?.statementEyebrow || "Our Why"}</p>
@@ -163,10 +163,10 @@ const Home = () => {
             </p>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* FEATURED PRODUCTS */}
-      <section className="bg-secondary/50 py-24 md:py-32">
+      <section className="py-24 md:py-32">
         <div className="container-prose">
           <div className="flex items-end justify-between mb-14 gap-6">
             <div>
@@ -202,7 +202,7 @@ const Home = () => {
       </section>
 
       {/* MORE THAN CLOTHING */}
-      <section className="container-prose py-24 md:py-32 grid md:grid-cols-12 gap-12">
+      <section className=" container-prose py-24 md:py-32 grid md:grid-cols-12 gap-12">
         <div className="md:col-span-5">
           <p className="eyebrow !text-gold">Our Foundation</p>
           <h3 className="font-serif text-4xl md:text-5xl mt-4 leading-tight">
@@ -241,54 +241,69 @@ const Home = () => {
       </section>
 
       {/* Founders Section */}
-      <section className="bg-secondary/40 py-24 md:py-32">
-        <div className="container-prose">
-          <div className="text-center mb-16">
-            <p className="eyebrow !text-gold">The Architecture of Craft</p>
-            <h3 className="font-serif text-4xl md:text-5xl mt-4">
-              Quality as Worship
-            </h3>
-          </div>
-          <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
-            <ul className="space-y-8">
-              {[
-                {
-                  n: "01",
-                  t: "Sourcing with Integrity",
-                  d: "We hand-select materials that offer longevity and superior tactile experience. Every fabric must meet our rigorous standards for sustainability and ethical production.",
-                },
-                {
-                  n: "02",
-                  t: "Meticulous Craftsmanship",
-                  d: "Our silhouettes are engineered for timelessness. We avoid fleeting trends, focusing instead on structural integrity and refined finishes that honor the wearer.",
-                },
-                {
-                  n: "03",
-                  t: "Considered Detail",
-                  d: "From subtle emblems to gilded thread, every detail is a deliberate statement of reverence — quiet luxury that whispers rather than shouts.",
-                },
-              ].map((it) => (
-                <li key={it.n} className="flex gap-5">
-                  <span className="font-serif text-gold border border-gold/40 w-12 h-12 grid place-items-center shrink-0">
-                    {it.n}
-                  </span>
-                  <div>
-                    <p className="font-serif text-xl text-navy">{it.t}</p>
-                    <p className="mt-2 text-sm text-foreground/75 leading-relaxed">
-                      {it.d}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-            <div className="aspect-square bg-navy-deep grid place-items-center shadow-elegant">
+      <section className="bg-cream py-24 md:py-32">
+        <div className="max-w-[1440px] mx-auto px-6 md:px-10">
+          <div className="grid lg:grid-cols-[1.65fr_0.8fr] gap-8 lg:gap-12 items-stretch">
+            {/* Image Card */}
+            <div className="relative min-h-[520px] overflow-hidden shadow-elegant">
               <img
                 src={foundersImg}
-                alt="The founders, Tersha and Tyrone"
-                className="w-full h-full object-cover"
+                alt="Tersha and Tyrone, the founders of T AND T COMPANY"
+                className="absolute inset-0 h-full w-full object-cover"
               />
+
+              <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-cream/95 via-cream/70 to-transparent" />
+
+              <div className="absolute left-8 bottom-8">
+                <h3 className="font-serif text-2xl md:text-3xl text-navy">
+                  Tersha & Tyrone
+                </h3>
+                <p className="eyebrow !text-gold mt-2">The Visionaries</p>
+              </div>
+            </div>
+
+            {/* Text Card */}
+            <div className="bg-secondary/60 px-8 py-14 md:px-12 lg:px-16 flex items-center">
+              <div className="max-w-md">
+                <p className="eyebrow !text-gold mb-6">Our Journey</p>
+
+                <h3 className="font-serif text-3xl md:text-4xl leading-tight text-navy">
+                  Rooted in Shared <br />
+                  Purpose
+                </h3>
+
+                <p className="mt-8 text-foreground/75 leading-relaxed">
+                  The journey of T AND T COMPANY began with a simple
+                  conversation at the kitchen table about the lack of premium
+                  apparel that represented our values without compromising on
+                  modern aesthetic.
+                </p>
+
+                <blockquote className="mt-8 border-l-2 border-gold/40 pl-6 italic text-foreground/75 leading-relaxed">
+                  "We wanted to build something that wouldn't just sit in a
+                  closet, but would accompany a life well-lived in Christ."
+                </blockquote>
+              </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* DISCOVER THE COLLECTION CTA */}
+      <section className="py-20 bg-navy-deep">
+        <div className="max-w-xl mx-auto border border-gold/40 p-10 md:p-14 text-center">
+          <p className=" text-cream">Curated for Purpose</p>
+          <h3 className="font-serif text-3xl md:text-4xl text-cream/70 mt-4">
+            Discover the Collection
+          </h3>
+          <Button
+            asChild
+            variant="outlineNavy"
+            size="lg"
+            className="mt-8 !border-gold !text-gold hover:!bg-gold hover:!text-cream"
+          >
+            <Link to="/shop">View All Products</Link>
+          </Button>
         </div>
       </section>
 
@@ -334,12 +349,11 @@ const Home = () => {
               ))}
             </ul>
             <div className="aspect-square bg-navy-deep grid place-items-center shadow-elegant">
-              <div className="font-serif text-cream text-center">
-                <span className="text-[10rem] md:text-[12rem] leading-none tracking-[-0.05em] text-gold">
-                  T<span className="text-gold-soft">T</span>
-                </span>
-                <span className="block text-gold text-3xl mt-2">✦</span>
-              </div>
+              <img
+                src="/assets/brandmark.svg"
+                alt="T AND T Company"
+                className="w-full h-full object-contain"
+              />
             </div>
           </div>
         </div>
@@ -369,24 +383,6 @@ const Home = () => {
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* DISCOVER THE COLLECTION CTA */}
-      <section className="container-prose py-20">
-        <div className="max-w-xl mx-auto border border-gold/40 p-10 md:p-14 text-center">
-          <p className="eyebrow !text-gold">Curated for Purpose</p>
-          <h3 className="font-serif text-3xl md:text-4xl text-navy mt-4">
-            Discover the Collection
-          </h3>
-          <Button
-            asChild
-            variant="outlineNavy"
-            size="lg"
-            className="mt-8 !border-gold !text-gold hover:!bg-gold hover:!text-cream"
-          >
-            <Link to="/shop">View All Products</Link>
-          </Button>
         </div>
       </section>
 
@@ -462,34 +458,8 @@ const Home = () => {
         </div>
       </section>
 
-      {/* FOUNDERS TEASE */}
-      <section className="container-prose pb-24 md:pb-32 grid md:grid-cols-2 gap-16 items-center">
-        <div className="aspect-[4/5] overflow-hidden">
-          <img
-            src={foundersImg}
-            alt="The founders, Tersha and Tyrone"
-            loading="lazy"
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <div>
-          <p className="eyebrow">Founders</p>
-          <h3 className="font-serif text-4xl md:text-5xl mt-4 leading-tight">
-            Tersha &amp; Tyrone
-          </h3>
-          <p className="mt-6 text-muted-foreground leading-relaxed">
-            A husband-and-wife studio building a brand around the things they
-            couldn't find — pieces that feel honest, that age beautifully, that
-            mean something.
-          </p>
-          <Button asChild variant="outlineNavy" size="lg" className="mt-10">
-            <Link to="/about">Read our story</Link>
-          </Button>
-        </div>
-      </section>
-
       {/* NEWSLETTER CTA */}
-      <section className="bg-navy-deep text-cream">
+      {/* <section className="bg-navy-deep text-cream">
         <div className="container-prose py-20 md:py-28 grid md:grid-cols-2 gap-10 items-center">
           <div>
             <p className="eyebrow !text-gold">The Inner Circle</p>
@@ -508,7 +478,7 @@ const Home = () => {
             </p>
           </div>
         </div>
-      </section>
+      </section> */}
     </Layout>
   );
 };

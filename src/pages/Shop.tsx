@@ -166,25 +166,6 @@ const Shop = () => {
           </div>
         )}
       </section>
-
-      <section className="bg-navy-deep text-cream">
-        <div className="container-prose py-24 md:py-28 text-center">
-          <p className="font-serif text-2xl md:text-3xl lg:text-4xl leading-relaxed max-w-3xl mx-auto text-balance">
-            {page?.founderQuote?.quote ||
-              '"Luxury is not in the excess, but in the truth of the craftsmanship and the weight of the message behind it."'}
-          </p>
-          <div className="hairline mt-10 mx-auto bg-gold" />
-          <p className="eyebrow mt-6 !text-gold">
-            {page?.founderQuote?.attribution || "Founder's Note"}
-          </p>
-          <Link
-            to="/contact"
-            className="inline-block mt-10 text-xs uppercase tracking-[0.22em] text-cream/80 link-underline"
-          >
-            Need help choosing? Chat with us →
-          </Link>
-        </div>
-      </section>
     </Layout>
   );
 };

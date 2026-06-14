@@ -19,21 +19,27 @@ const defaultBrandLinks = [
 
 const Footer = () => {
   const { data: s } = useSiteSettings();
-  const shopLinks = s?.footerShopLinks?.length ? s.footerShopLinks : defaultShopLinks;
-  const brandLinks = s?.footerBrandLinks?.length ? s.footerBrandLinks : defaultBrandLinks;
+  const shopLinks = s?.footerShopLinks?.length
+    ? s.footerShopLinks
+    : defaultShopLinks;
+  const brandLinks = s?.footerBrandLinks?.length
+    ? s.footerBrandLinks
+    : defaultBrandLinks;
   const email = s?.email || "hello@tandt.co";
   const phone = s?.phone || "+27 ___ ___ ____";
-  const paymentText = s?.paymentMethodsText || "VISA · MASTERCARD · EFT · PAYSTACK";
+  const paymentText =
+    s?.paymentMethodsText || "VISA · MASTERCARD · EFT · PAYSTACK";
 
   return (
-    <footer className="bg-navy-gradient text-cream mt-24">
+    <footer className="bg-navy-deep text-cream mt-24">
       <div className="container-prose pt-20 pb-12 grid gap-14 md:grid-cols-12">
         <div className="md:col-span-5">
           <div className="font-serif text-2xl tracking-[0.25em]">
             T <span className="text-accent">&amp;</span> T
           </div>
           <p className="mt-4 max-w-sm text-cream/70 leading-relaxed">
-            {s?.tagline || "Faith. Purpose. Style. A quiet brand for those building something that lasts."}
+            {s?.tagline ||
+              "Faith. Purpose. Style. A quiet brand for those building something that lasts."}
           </p>
           <div className="mt-8">
             <p className="eyebrow !text-cream/60 mb-3">
@@ -108,10 +114,16 @@ const Footer = () => {
       </div>
       <div className="border-t border-cream/10">
         <div className="container-prose py-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-cream/50">
-          <span>© {new Date().getFullYear()} T AND T COMPANY · All rights reserved</span>
+          <span>
+            © {new Date().getFullYear()} T AND T COMPANY · All rights reserved
+          </span>
           <div className="flex items-center gap-4">
-            <span className="tracking-[0.2em] uppercase text-cream/40">We accept</span>
-            <span className="text-cream/70 text-[0.7rem] tracking-wider">{paymentText}</span>
+            <span className="tracking-[0.2em] uppercase text-cream/40">
+              We accept
+            </span>
+            <span className="text-cream/70 text-[0.7rem] tracking-wider">
+              {paymentText}
+            </span>
           </div>
         </div>
       </div>
