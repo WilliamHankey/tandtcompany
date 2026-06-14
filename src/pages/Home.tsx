@@ -95,52 +95,62 @@ const Home = () => {
   return (
     <Layout>
       {/* HERO */}
-      <section className="relative min-h-screen flex items-end overflow-hidden bg-navy-deep">
-        <img
-          src={heroImg}
-          alt="A figure in deep navy, lit by warm window light"
-          className="absolute inset-0 h-full w-full object-cover opacity-90"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-navy-deep via-navy-deep/50 to-navy-deep/30" />
-        <div className="relative px-6 pb-24 align-middle md:align-top md:pb-32 pt-12 text-cream animate-fade-up self-center">
-          <div className="flex items-center gap-8 md:gap-12 text-cream">
-            <div>
-              <p className="eyebrow mb-6">
-                {page?.heroEyebrow || "T & T Company · New Season"}
-              </p>
-              <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl leading-[0.95] text-balance max-w-3xl">
-                {page?.heroHeadline ? (
-                  page.heroHeadline
-                ) : (
-                  <>
-                    Faith.{" "}
-                    <em className="text-gold-soft not-italic">Purpose.</em>{" "}
-                    Style.
-                  </>
-                )}
-              </h1>
-              <p className="mt-8 max-w-md text-cream/80 leading-relaxed">
-                {page?.heroSubtext ||
-                  "Premium pieces, made with intention. Now shipping across South Africa — direct to your door, with care."}
-              </p>
-            </div>
-            <div className="h-28 w-px bg-gold/50" />
-            <div className="mt-10 flex flex-wrap gap-4">
-              <Button asChild variant="hero" size="lg">
-                <Link to="/shop">Shop the Collection</Link>
-              </Button>
-            </div>
-          </div>
-          <div className="mt-10 flex items-center gap-6 text-cream/70 text-xs uppercase tracking-[0.22em]">
-            <div className="flex items-center gap-1.5">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-3.5 w-3.5 fill-gold text-gold" />
-              ))}
-            </div>
-            <span>{page?.heroSocialProof || "Loved by 1 200+ customers"}</span>
-          </div>
+      <section className="relative min-h-[100svh] flex items-center overflow-hidden bg-navy-deep">
+  <img
+    src={heroImg}
+    alt="A figure in deep navy, lit by warm window light"
+    className="absolute inset-0 h-full w-full object-cover object-center opacity-90"
+  />
+
+  <div className="absolute inset-0 bg-gradient-to-t from-navy-deep via-navy-deep/65 to-navy-deep/30" />
+
+  <div className="relative w-full px-6 sm:px-8 lg:px-12 pt-32 pb-20 md:pt-40 md:pb-28 text-cream animate-fade-up">
+    <div className="max-w-5xl">
+      <div className="flex flex-col md:flex-row md:items-center gap-8 md:gap-12">
+        <div className="max-w-3xl">
+          <p className="eyebrow mb-5 md:mb-6">
+            {page?.heroEyebrow || "T & T Company · New Season"}
+          </p>
+
+          <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-[0.95] text-balance">
+            {page?.heroHeadline ? (
+              page.heroHeadline
+            ) : (
+              <>
+                Faith.{" "}
+                <em className="text-gold-soft not-italic">Purpose.</em>{" "}
+                Style.
+              </>
+            )}
+          </h1>
+
+          <p className="mt-6 md:mt-8 max-w-md text-sm sm:text-base text-cream/80 leading-relaxed">
+            {page?.heroSubtext ||
+              "Premium pieces, made with intention. Now shipping across South Africa — direct to your door, with care."}
+          </p>
         </div>
-      </section>
+
+        <div className="hidden md:block h-28 w-px bg-gold/50" />
+
+        <div className="flex md:block">
+          <Button asChild variant="hero" size="lg" className="w-full sm:w-auto">
+            <Link to="/shop">Shop the Collection</Link>
+          </Button>
+        </div>
+      </div>
+
+      <div className="mt-8 md:mt-10 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 text-cream/70 text-xs uppercase tracking-[0.18em] sm:tracking-[0.22em]">
+        <div className="flex items-center gap-1.5">
+          {[...Array(5)].map((_, i) => (
+            <Star key={i} className="h-3.5 w-3.5 fill-gold text-gold" />
+          ))}
+        </div>
+
+        <span>{page?.heroSocialProof || "Loved by 1 200+ customers"}</span>
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* TRUST STRIP */}
       <TrustStrip />

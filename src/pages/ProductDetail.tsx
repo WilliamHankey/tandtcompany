@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -13,14 +13,28 @@ const ProductDetail = () => {
   const { slug } = useParams();
   const { data: product, isLoading } = useProduct(slug || "");
   const { products: allProducts } = useResolvedProducts();
+
   const [qty, setQty] = useState(1);
+  const [selectedImage, setSelectedImage] = useState("");
+
   const { add } = useCart();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (product?.image) {
+      setSelectedImage(product.image);
+    }
+  }, [product?.image]);
+
+  const galleryImages = useMemo(() => {
+    if (!product?.gallery) return [];
+    return product.gallery.filter(Boolean);
+  }, [product?.gallery]);
 
   if (isLoading) {
     return (
       <Layout>
-        <div className="container-prose pt-40 pb-32 text-center text-muted-foreground">Loading…</div>
+        <div className="container-prose pt-40 pb-32 text-center">Loading…</div>
       </Layout>
     );
   }
@@ -30,127 +44,203 @@ const ProductDetail = () => {
       <Layout>
         <div className="container-prose pt-40 pb-32 text-center">
           <h1 className="font-serif text-3xl">Piece not found</h1>
-          <Button asChild variant="navy" className="mt-8"><Link to="/shop">Back to shop</Link></Button>
+          <Button asChild variant="navy" className="mt-8">
+            <Link to="/shop">Back to shop</Link>
+          </Button>
         </div>
       </Layout>
     );
   }
 
+  const mainImage = selectedImage || product.image;
+
   return (
     <Layout>
-      <section className="container-prose pt-32 pb-24 grid md:grid-cols-2 gap-12 lg:gap-20">
-        <div className="aspect-[4/5] bg-muted overflow-hidden">
-          <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+      <section className="container-prose pt-28 md:pt-36 pb-24 grid lg:grid-cols-2 gap-10 lg:gap-20">
+        <div className="space-y-4">
+          <div className="relative overflow-hidden bg-secondary aspect-square">
+            <span className="absolute left-4 top-4 z-10 bg-gold px-3 py-1 text-[10px] tracking-[0.2em] uppercase text-navy-deep">
+              Limited Release
+            </span>
+
+            <img
+              src={mainImage}
+              alt={product.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+
+          {galleryImages.length > 0 && (
+            <div
+              className={
+                galleryImages.length === 1
+                  ? "grid grid-cols-1 gap-3"
+                  : galleryImages.length === 2
+                    ? "grid grid-cols-2 gap-3"
+                    : "grid grid-cols-3 gap-3"
+              }
+            >
+              {galleryImages.slice(0, 3).map((image: string, index: number) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => setSelectedImage(image)}
+                  className={`aspect-square overflow-hidden border transition ${
+                    mainImage === image ? "border-gold" : "border-transparent"
+                  }`}
+                >
+                  <img
+                    src={image}
+                    alt={`${product.name} view ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
-        <div className="md:pt-8">
-          <Link to="/shop" className="text-xs uppercase tracking-[0.22em] text-muted-foreground link-underline">
-            ← The collection
+
+        <div>
+          <Link
+            to="/shop"
+            className="text-xs uppercase tracking-[0.2em] text-muted-foreground"
+          >
+            ← The Collection
           </Link>
-          <h1 className="font-serif text-4xl md:text-5xl mt-6 leading-tight">{product.name}</h1>
+
+          <h1 className="mt-5 font-serif text-4xl md:text-5xl">
+            {product.name}
+          </h1>
+
           <p className="mt-3 italic text-muted-foreground">{product.tagline}</p>
-          <div className="mt-4 flex items-center gap-3">
-            <div className="flex gap-0.5">
-              {[...Array(5)].map((_, i) => <Star key={i} className="h-3.5 w-3.5 fill-gold text-gold" />)}
+
+          <div className="mt-5 flex items-center gap-3">
+            <div className="flex">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="h-4 w-4 fill-gold text-gold" />
+              ))}
             </div>
-            <span className="text-xs text-muted-foreground">128 reviews</span>
-          </div>
-          <p className="mt-6 text-2xl font-serif tabular-nums">{formatZAR(product.price)}</p>
-          <p className="mt-1 text-xs text-muted-foreground">Tax included. Shipping calculated at checkout.</p>
-
-          <p className="mt-8 leading-relaxed text-foreground/85">{product.description}</p>
-
-          <div className="mt-8 border-l-2 border-accent/60 pl-5">
-            <p className="eyebrow mb-2">The meaning</p>
-            <p className="font-serif text-lg italic text-foreground/80">{product.meaning}</p>
+            <span className="text-sm text-muted-foreground">128 reviews</span>
           </div>
 
-          <div className="mt-10 flex items-center gap-4">
-            <div className="flex items-center border border-border">
+          <p className="mt-7 font-serif text-3xl">{formatZAR(product.price)}</p>
+
+          <p className="text-sm text-muted-foreground mt-1">
+            Tax included. Shipping calculated at checkout.
+          </p>
+
+          <p className="mt-8 leading-relaxed text-foreground/80">
+            {product.description}
+          </p>
+
+          <div className="mt-10 border-l-2 border-gold pl-5">
+            <p className="eyebrow mb-3">The Meaning</p>
+            <p className="italic font-serif text-lg">{product.meaning}</p>
+          </div>
+
+          <div className="mt-10 flex flex-col sm:flex-row gap-4">
+            <div className="flex border border-border h-14">
               <button
-                aria-label="Decrease quantity"
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
-                className="h-12 w-12 grid place-items-center hover:bg-secondary"
-              ><Minus className="h-4 w-4" /></button>
-              <span className="w-10 text-center tabular-nums">{qty}</span>
+                className="w-14 grid place-items-center"
+              >
+                <Minus size={16} />
+              </button>
+
+              <div className="w-14 grid place-items-center">{qty}</div>
+
               <button
-                aria-label="Increase quantity"
                 onClick={() => setQty((q) => q + 1)}
-                className="h-12 w-12 grid place-items-center hover:bg-secondary"
-              ><Plus className="h-4 w-4" /></button>
+                className="w-14 grid place-items-center"
+              >
+                <Plus size={16} />
+              </button>
             </div>
+
             <Button
               variant="navy"
               size="lg"
-              className="flex-1"
+              className="w-full"
               onClick={() => {
                 add(product, qty);
                 toast.success("Added to bag", { description: product.name });
               }}
             >
-              Add to bag · {formatZAR(product.price * qty)}
+              Add to Bag · {formatZAR(product.price * qty)}
             </Button>
           </div>
+
           <Button
             variant="gold"
             size="lg"
             className="mt-3 w-full"
-            onClick={() => { add(product, qty); navigate("/checkout"); }}
+            onClick={() => {
+              add(product, qty);
+              navigate("/checkout");
+            }}
           >
-            Buy it now
+            Buy It Now
           </Button>
 
-          <div className="mt-8 grid grid-cols-3 gap-3 text-center border-y border-border py-5">
-            <div className="flex flex-col items-center gap-1.5">
-              <Truck className="h-4 w-4 text-gold" />
-              <span className="text-[0.65rem] uppercase tracking-[0.18em] text-muted-foreground">Free over R1 000</span>
+          <div className="mt-10 grid grid-cols-3 gap-5 py-8 border-y">
+            <div className="text-center">
+              <Truck className="mx-auto h-5 w-5 text-gold mb-2" />
+              <p className="text-[10px] uppercase">Free Over R1000</p>
             </div>
-            <div className="flex flex-col items-center gap-1.5">
-              <RotateCcw className="h-4 w-4 text-gold" />
-              <span className="text-[0.65rem] uppercase tracking-[0.18em] text-muted-foreground">14-day returns</span>
+
+            <div className="text-center">
+              <RotateCcw className="mx-auto h-5 w-5 text-gold mb-2" />
+              <p className="text-[10px] uppercase">14 Day Returns</p>
             </div>
-            <div className="flex flex-col items-center gap-1.5">
-              <ShieldCheck className="h-4 w-4 text-gold" />
-              <span className="text-[0.65rem] uppercase tracking-[0.18em] text-muted-foreground">Secure checkout</span>
+
+            <div className="text-center">
+              <ShieldCheck className="mx-auto h-5 w-5 text-gold mb-2" />
+              <p className="text-[10px] uppercase">Secure Checkout</p>
             </div>
           </div>
 
           <div className="mt-10">
             <p className="eyebrow mb-4">Details</p>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              {product.details.map((d) => (
-                <li key={d} className="flex gap-3"><span className="text-accent">—</span>{d}</li>
+
+            <ul className="space-y-3">
+              {product.details?.map((d: string) => (
+                <li key={d} className="flex gap-3 text-muted-foreground">
+                  <span>—</span>
+                  {d}
+                </li>
               ))}
             </ul>
           </div>
         </div>
       </section>
 
-      <section className="container-prose pb-32">
-        <div className="mb-10">
-          <p className="eyebrow">You may also like</p>
-          <h2 className="font-serif text-3xl md:text-4xl mt-3">Pieces in the same spirit</h2>
-        </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-10">
-          {allProducts.filter((p) => p.slug !== product.slug).slice(0, 4).map((p) => (
-            <ProductCard key={p.id} product={p} full={p} />
-          ))}
+      <section className="container-prose pb-40">
+        <p className="eyebrow">You may also like</p>
+
+        <h2 className="font-serif text-3xl mt-3 mb-10">
+          Pieces in the same spirit
+        </h2>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          {allProducts
+            .filter((p) => p.slug !== product.slug)
+            .slice(0, 4)
+            .map((p) => (
+              <ProductCard key={p.id} product={p} full={p} />
+            ))}
         </div>
       </section>
 
-      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-cream border-t border-border p-3 flex items-center gap-3 shadow-elegant">
-        <div className="flex-1">
-          <p className="font-serif text-sm leading-tight">{product.name}</p>
-          <p className="text-xs tabular-nums text-muted-foreground">{formatZAR(product.price)}</p>
-        </div>
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-cream border-t p-3">
         <Button
           variant="navy"
-          size="default"
+          className="w-full"
           onClick={() => {
             add(product, qty);
-            toast.success("Added to bag", { description: product.name });
+            toast.success("Added to bag");
           }}
         >
-          Add to bag
+          Add To Bag · {formatZAR(product.price * qty)}
         </Button>
       </div>
     </Layout>
