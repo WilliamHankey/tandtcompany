@@ -108,27 +108,40 @@ export async function onRequestPost({ request, env }: FunctionContext) {
     const skus = cleanItems.map((item) => item.id);
 
     const products = await sanityFetch<
-      {
-        _id: string;
-        sku: string;
-        title: string;
-        price: number;
-        inStock?: boolean;
-      }[]
-    >(
-      env,
-      `*[_type == "product" && sku in $skus]{
-        _id,
-        sku,
-        title,
-        price,
-        inStock
-      }`,
-      { skus }
-    );
+  {
+    _id: string;
+    sku: string;
+    title: string;
+    price: number;
+    inStock?: boolean;
+  }[]
+>(
+  env,
+  `*[_type == "product" && sku in $skus]{
+    _id,
+    sku,
+    title,
+    price,
+    inStock
+  }`,
+  { skus }
+);
 
     if (products.length !== cleanItems.length) {
-      return json({ error: "One or more products could not be found" }, 400);
+      return json(
+        {
+          error: "One or more products could not be found",
+          sentSkus: skus,
+          foundProducts: products.map((p) => ({
+            _id: p._id,
+            sku: p.sku,
+            title: p.title,
+          })),
+          sanityProjectId: env.VITE_SANITY_PROJECT_ID,
+          sanityDataset: env.VITE_SANITY_DATASET,
+        },
+        400
+      );
     }
 
     const orderItems = products.map((product) => {
