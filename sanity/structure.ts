@@ -36,7 +36,9 @@ export const structure: StructureResolver = (S) =>
         ),
       S.divider(),
       S.documentTypeListItem("product").title("Products"),
+      S.documentTypeListItem("productSize").title("Product Sizes"),
       S.documentTypeListItem("productCategory").title("Categories"),
       S.documentTypeListItem("testimonial").title("Testimonials"),
       S.documentTypeListItem("shippingOption").title("Shipping Options"),
+      S.documentTypeListItem("order").title("Orders"),
     ]);

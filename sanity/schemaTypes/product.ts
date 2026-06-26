@@ -15,6 +15,53 @@ export const product = defineType({
     }),
     defineField({ name: "sku", title: "SKU / ID", type: "string", validation: (r) => r.required() }),
     defineField({ name: "price", title: "Price (ZAR)", type: "number", validation: (r) => r.required().min(0) }),
+    defineField({
+      name: "sizes",
+      title: "Sizes & Stock",
+      type: "array",
+      description: "Select available sizes and set stock quantity for each size.",
+      of: [
+        {
+          type: "object",
+          fields: [
+            defineField({
+              name: "size",
+              title: "Size",
+              type: "reference",
+              to: [{ type: "productSize" }],
+              validation: (r) => r.required(),
+            }),
+            defineField({
+              name: "customSize",
+              title: "Custom Size Override",
+              type: "string",
+              description:
+                "Optional. Use only if this product needs a one-off size label.",
+            }),
+            defineField({
+              name: "stock",
+              title: "Stock Quantity",
+              type: "number",
+              initialValue: 0,
+              validation: (r) => r.required().integer().min(0),
+            }),
+          ],
+          preview: {
+            select: {
+              size: "size.label",
+              customSize: "customSize",
+              stock: "stock",
+            },
+            prepare({ size, customSize, stock }) {
+              return {
+                title: customSize || size || "Size",
+                subtitle: `${stock ?? 0} in stock`,
+              };
+            },
+          },
+        },
+      ],
+    }),
     defineField({ name: "tagline", title: "Tagline", type: "string" }),
     defineField({ name: "description", title: "Description", type: "text", rows: 4 }),
     defineField({ name: "meaning", title: "Meaning / Story", type: "text", rows: 3 }),

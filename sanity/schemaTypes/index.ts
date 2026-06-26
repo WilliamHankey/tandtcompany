@@ -9,6 +9,8 @@ import { shopPage } from "./shopPage";
 import { contactPage } from "./contactPage";
 import { termsPage } from "./termsPage";
 import { blockContent } from "./blockContent";
+import { order } from "./order";
+import { productSize } from "./productSize";
 
 export const schemaTypes = [
   blockContent,
@@ -22,4 +24,6 @@ export const schemaTypes = [
   shopPage,
   contactPage,
   termsPage,
+  order,
+  productSize
 ];
