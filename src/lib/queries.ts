@@ -70,10 +70,21 @@ export const homePageQuery = `*[_type == "homePage"][0]{
 export const aboutPageQuery = `*[_type == "aboutPage"][0]{
   heroEyebrow,
   heroHeadline,
-  heroSubtext,
+  founderStoryParagraphs,
+  founderQuote,
   foundersImage,
-  sections,
-  ctaText
+  imageOverlayTitle,
+  imageOverlayText,
+  philosophyEyebrow,
+  philosophyHeadline,
+  philosophyCards,
+  visionEyebrow,
+  visionHeadline,
+  visionBody,
+  ctaText,
+  valuesEyebrow,
+  valuesHeadline,
+  values
 }`;
 
 export const shopPageQuery = `*[_type == "shopPage"][0]{
