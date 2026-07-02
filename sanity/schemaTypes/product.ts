@@ -16,6 +16,36 @@ export const product = defineType({
     defineField({ name: "sku", title: "SKU / ID", type: "string", validation: (r) => r.required() }),
     defineField({ name: "price", title: "Price (ZAR)", type: "number", validation: (r) => r.required().min(0) }),
     defineField({
+      name: "sale",
+      title: "Sale / Discount",
+      type: "object",
+      fields: [
+        defineField({
+          name: "enabled",
+          title: "Enable Sale",
+          type: "boolean",
+          initialValue: false,
+        }),
+        defineField({
+          name: "discountPercent",
+          title: "Discount Percentage",
+          type: "number",
+          description: "Example: 20 means 20% off the normal price.",
+          validation: (r) => r.min(0).max(100),
+        }),
+        defineField({
+          name: "startsAt",
+          title: "Sale Starts At",
+          type: "datetime",
+        }),
+        defineField({
+          name: "endsAt",
+          title: "Sale Ends At",
+          type: "datetime",
+        }),
+      ],
+    }),
+    defineField({
       name: "sizes",
       title: "Sizes & Stock",
       type: "array",

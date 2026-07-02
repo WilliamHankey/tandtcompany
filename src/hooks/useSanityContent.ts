@@ -13,11 +13,16 @@ import {
 } from "@/lib/queries";
 import { mapSanityProduct } from "@/lib/mapProduct";
 import type { Product } from "@/types/product";
-import { products as fallbackProducts } from "@/data/fallback";
+import { productCategoriesQuery } from "@/lib/queries";
 
-async function fetch<T>(query: string, params?: Record<string, unknown>): Promise<T> {
-  if (!isSanityConfigured) return null as T;
-  return sanityClient.fetch<T>(query, params ?? {});
+async function fetch<T>(
+  query: string,
+  params?: Record<string, unknown>
+): Promise<T> {
+  if (!isSanityConfigured) return [] as T;
+
+  const data = await sanityClient.fetch<T>(query, params ?? {});
+  return data;
 }
 
 export function useSiteSettings() {
@@ -32,11 +37,20 @@ export function useProducts() {
   return useQuery({
     queryKey: ["products"],
     queryFn: async () => {
-      const raw = await fetch<Parameters<typeof mapSanityProduct>[0][]>(productsQuery);
-      if (!raw?.length) return fallbackProducts;
-      return raw.map(mapSanityProduct);
+      const raw = await fetch<Parameters<typeof mapSanityProduct>[0][]>(
+        productsQuery
+      );
+
+      if (!Array.isArray(raw)) return [];
+
+      const mapped = raw.map(mapSanityProduct);
+
+      console.log("Mapped products:", mapped);
+
+      return mapped;
     },
-    staleTime: 60_000,
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 }
 
@@ -48,12 +62,20 @@ export function useProduct(slug: string) {
         productBySlugQuery,
         { slug }
       );
-      if (!raw) {
-        return fallbackProducts.find((p) => p.slug === slug) ?? null;
-      }
-      return mapSanityProduct(raw);
+      return raw ? mapSanityProduct(raw) : null;
     },
     enabled: Boolean(slug),
+    staleTime: 60_000,
+  });
+}
+
+export function useProductCategories() {
+  return useQuery({
+    queryKey: ["productCategories"],
+    queryFn: () =>
+      fetch<{ _id: string; title: string; sortOrder?: number }[]>(
+        productCategoriesQuery
+      ),
     staleTime: 60_000,
   });
 }
@@ -98,7 +120,14 @@ export function useTestimonials() {
   });
 }
 
-export function useResolvedProducts(): { products: Product[]; isLoading: boolean } {
+export function useResolvedProducts(): {
+  products: Product[];
+  isLoading: boolean;
+} {
   const { data, isLoading } = useProducts();
-  return { products: data ?? fallbackProducts, isLoading: isSanityConfigured && isLoading };
+
+  return {
+    products: data ?? [],
+    isLoading,
+  };
 }

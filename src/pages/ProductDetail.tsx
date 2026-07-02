@@ -123,7 +123,23 @@ const ProductDetail = () => {
             <span className="text-sm text-muted-foreground">128 reviews</span>
           </div>
 
-          <p className="mt-7 font-serif text-3xl">{formatZAR(product.price)}</p>
+          <div className="mt-7 flex items-baseline gap-3">
+            <p className="font-serif text-3xl text-gold">
+              {formatZAR(product.price)}
+            </p>
+
+            {product.isOnSale && product.originalPrice && (
+              <p className="text-lg text-muted-foreground line-through">
+                {formatZAR(product.originalPrice)}
+              </p>
+            )}
+
+            {product.isOnSale && (
+              <span className="bg-gold text-navy-deep px-3 py-1 text-[10px] uppercase tracking-[0.2em]">
+                Sale
+              </span>
+            )}
+          </div>
 
           <p className="text-sm text-muted-foreground mt-1">
             Tax included. Shipping calculated at checkout.

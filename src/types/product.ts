@@ -3,6 +3,15 @@ export type Product = {
   slug: string;
   name: string;
   price: number;
+  originalPrice?: number;
+  salePrice?: number;
+  isOnSale?: boolean;
+  sale?: {
+    enabled?: boolean;
+    discountPercent?: number;
+    startsAt?: string;
+    endsAt?: string;
+  };
   image: string;
   gallery?: string[];
   tagline: string;

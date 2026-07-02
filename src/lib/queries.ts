@@ -4,6 +4,7 @@ const productFragment = `{
   "slug": slug.current,
   "name": title,
   price,
+  sale,
   tagline,
   description,
   meaning,
@@ -42,6 +43,12 @@ export const siteSettingsQuery = `*[_type == "siteSettings"][0]{
 }`;
 
 export const productsQuery = `*[_type == "product"] | order(sortOrder asc) ${productFragment}`;
+
+export const productCategoriesQuery = `*[_type == "productCategory"] | order(sortOrder asc) {
+  _id,
+  title,
+  sortOrder
+}`;
 
 export const productBySlugQuery = `*[_type == "product" && slug.current == $slug][0] ${productFragment}`;
 

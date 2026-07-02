@@ -2,11 +2,15 @@ import { Link } from "react-router-dom";
 import { useState, useMemo } from "react";
 import Layout from "@/components/Layout";
 import ProductCard from "@/components/ProductCard";
-import { useShopPage, useResolvedProducts } from "@/hooks/useSanityContent";
+import {
+  useShopPage,
+  useResolvedProducts,
+  useProductCategories,
+} from "@/hooks/useSanityContent";
 import { imageUrl } from "@/lib/sanity";
 import rackHero from "@/assets/shop-hero-rack.png";
 
-type Category = "All" | "Apparel" | "Accessories" | "Lifestyle";
+type Category = string;
 type Sort = "Featured" | "Price: Low to High" | "Price: High to Low";
 
 type ShopHeroSlide = {
@@ -25,7 +29,6 @@ type ShopPage = {
   };
 };
 
-const categories: Category[] = ["All", "Apparel", "Accessories", "Lifestyle"];
 const sortOptions: Sort[] = [
   "Featured",
   "Price: Low to High",
@@ -38,9 +41,16 @@ const Shop = () => {
   const { data } = useShopPage();
   const page = data as ShopPage | undefined;
   const { products, isLoading } = useResolvedProducts();
+  console.log("Shop products:", products);
   const [active, setActive] = useState(0);
   const [cat, setCat] = useState<Category>("All");
   const [sort, setSort] = useState<Sort>("Featured");
+  const { data: sanityCategories } = useProductCategories();
+
+  const categories: Category[] = useMemo(() => {
+    const names = sanityCategories?.map((c) => c.title).filter(Boolean) || [];
+    return ["All", ...names];
+  }, [sanityCategories]);
 
   const heroSlides = useMemo(() => {
     if (page?.heroSlides?.length) {
@@ -56,11 +66,16 @@ const Shop = () => {
     let list =
       cat === "All"
         ? products
-        : products.filter((p) => (p.category || "Apparel") === cat);
+        : products.filter(
+            (p) => (p.category || "").toLowerCase() === cat.toLowerCase(),
+          );
+
     if (sort === "Price: Low to High")
       list = [...list].sort((a, b) => a.price - b.price);
+
     if (sort === "Price: High to Low")
       list = [...list].sort((a, b) => b.price - a.price);
+
     return list;
   }, [products, cat, sort]);
 
