@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
 import TrustStrip from "@/components/TrustStrip";
 import ProductCard from "@/components/ProductCard";
-import Newsletter from "@/components/Newsletter";
 import {
   useHomePage,
   useTestimonials,
@@ -146,7 +145,7 @@ const Home = () => {
           ))}
         </div>
 
-        <span>{page?.heroSocialProof || "Loved by 1 200+ customers"}</span>
+        <span>{page?.heroSocialProof || "Proudly South African"}</span>
       </div>
     </div>
   </div>

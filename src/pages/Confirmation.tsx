@@ -1,5 +1,6 @@
 import { Link, useLocation, Navigate } from "react-router-dom";
 import Layout from "@/components/Layout";
+import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Ticket, MailCheck, Truck, Clock, MessageCircle, ShieldCheck } from "lucide-react";
 
@@ -9,6 +10,7 @@ const Confirmation = () => {
 
   return (
     <Layout>
+      <SEO title="Order Confirmation" description="Your order has been confirmed. Thank you for shopping with T AND T COMPANY." noindex />
       <section className="container-prose pt-32 pb-24 max-w-3xl">
         <div className="text-center">
           <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">

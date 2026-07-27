@@ -8,6 +8,7 @@ type Env = {
 type CartItem = {
   id: string;
   qty: number;
+  size?: string;
 };
 
 type OrderRequestBody = {
@@ -99,6 +100,7 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       .map((item) => ({
         id: item.id,
         qty: Math.min(item.qty, 20),
+        size: item.size,
       }));
 
     if (!cleanItems.length) {
@@ -161,6 +163,7 @@ export async function onRequestPost({ request, env }: FunctionContext) {
         name: product.title,
         price: product.price,
         qty: cart.qty,
+        size: cart.size || "",
         lineTotal: product.price * cart.qty,
       };
     });
@@ -170,8 +173,7 @@ export async function onRequestPost({ request, env }: FunctionContext) {
     const shippingCost =
       shipping.delivery === "pickup" ? 0 : shipping.delivery === "pudo" ? 80 : 100;
 
-    const tax = Math.round(subtotal * 0.08);
-    const total = subtotal + shippingCost + tax;
+    const total = subtotal + shippingCost;
 
     const reference = `TT-${Date.now().toString(36).toUpperCase()}`;
 
@@ -186,7 +188,6 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       },
       items: orderItems,
       subtotal,
-      tax,
       total,
       currency: "ZAR",
       createdAt: new Date().toISOString(),

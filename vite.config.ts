@@ -2,6 +2,7 @@ import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import sitemap from "vite-plugin-sitemap";
 
 function readBody(req: import("http").IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -30,8 +31,6 @@ function createSanityHelpers(env: Record<string, string>) {
     const token = env.SANITY_API_TOKEN;
 
     const url = `https://${projectId}.api.sanity.io/v${apiVersion}/data/query/${dataset}`;
-    console.log("[sanityFetch] env vars", { projectId, dataset, apiVersion, hasToken: !!token, tokenPrefix: token?.slice(0, 10) });
-    console.log("[sanityFetch] POST", url, { query, params });
     const res = await fetch(url, {
       method: "POST",
       headers: {
@@ -40,9 +39,7 @@ function createSanityHelpers(env: Record<string, string>) {
       },
       body: JSON.stringify({ query, params }),
     });
-    console.log("[sanityFetch] response status", res.status, res.statusText);
     const data = await parseJson<{ result: T; error?: { description?: string } }>(res);
-    console.log("[sanityFetch] response body", JSON.stringify(data));
     if (!res.ok) throw new Error(data?.error?.description || "Sanity query failed");
     return data.result as T;
   };
@@ -54,7 +51,6 @@ function createSanityHelpers(env: Record<string, string>) {
     const token = env.SANITY_API_TOKEN;
 
     const url = `https://${projectId}.api.sanity.io/v${apiVersion}/data/mutate/${dataset}`;
-    console.log("[sanityCreate] POST", url);
     const res = await fetch(url, {
       method: "POST",
       headers: {
@@ -63,9 +59,7 @@ function createSanityHelpers(env: Record<string, string>) {
       },
       body: JSON.stringify({ mutations: [{ create: document }] }),
     });
-    console.log("[sanityCreate] response status", res.status, res.statusText);
     const data = await parseJson<{ results?: { document: { _id: string } }[]; error?: { description?: string } }>(res);
-    console.log("[sanityCreate] response body", JSON.stringify(data));
     if (!res.ok) throw new Error(data?.error?.description || "Sanity create failed");
     return data.results?.[0]?.document;
   };
@@ -152,36 +146,28 @@ function ordersCreateApi(env: Record<string, string>): Plugin {
           const body = JSON.parse(await readBody(req)) as {
             customer: { email: string; fullName: string; phone: string };
             shipping: { delivery: string; country: string; address: string; city: string; postcode: string };
-            items: { id: string; qty: number }[];
+            items: { id: string; qty: number; size?: string }[];
           };
-          console.log("[/api/orders/create] parsed body", JSON.stringify(body));
           const { customer, shipping, items } = body;
 
           if (!customer?.email || !items?.length) {
-            console.log("[/api/orders/create] invalid: missing email or items");
             return sendJson(res, { error: "Invalid order" }, 400);
           }
 
           const cleanItems = items
             .filter((i) => i.id && Number.isInteger(i.qty) && i.qty > 0)
-            .map((i) => ({ id: i.id, qty: Math.min(i.qty, 20) }));
-          console.log("[/api/orders/create] cleanItems", cleanItems);
-
+            .map((i) => ({ id: i.id, qty: Math.min(i.qty, 20), size: i.size }));
           if (!cleanItems.length) {
-            console.log("[/api/orders/create] no valid items after cleaning");
             return sendJson(res, { error: "Invalid cart items" }, 400);
           }
 
           const skus = cleanItems.map((i) => i.id);
-          console.log("[/api/orders/create] querying Sanity for skus", skus);
           const products = await sanityFetch<{ _id: string; sku: string; title: string; price: number; inStock?: boolean }[]>(
             `*[_type == "product" && sku in $skus]{ _id, sku, title, price, inStock }`,
             { skus }
           );
-          console.log("[/api/orders/create] sanityFetch returned", products?.length, "products", JSON.stringify(products));
 
           if (products.length !== cleanItems.length) {
-            console.log("[/api/orders/create] mismatch: cleanItems", cleanItems, "products", products);
             return sendJson(res, { error: "One or more products could not be found" }, 400);
           }
 
@@ -195,19 +181,16 @@ function ordersCreateApi(env: Record<string, string>): Plugin {
               name: product.title,
               price: product.price,
               qty: cart.qty,
+              size: cart.size || "",
               lineTotal: product.price * cart.qty,
             };
           });
-          console.log("[/api/orders/create] orderItems", orderItems);
 
           const subtotal = orderItems.reduce((sum, item) => sum + item.lineTotal, 0);
           const shippingCost = shipping.delivery === "pickup" ? 0 : shipping.delivery === "pudo" ? 80 : 100;
-          const tax = Math.round(subtotal * 0.08);
-          const total = subtotal + shippingCost + tax;
+          const total = subtotal + shippingCost;
           const reference = `TT-${Date.now().toString(36).toUpperCase()}`;
-          console.log("[/api/orders/create] totals", { subtotal, shippingCost, tax, total, reference });
 
-          console.log("[/api/orders/create] creating Sanity order doc");
           const order = await sanityCreate({
             _type: "order",
             reference,
@@ -216,16 +199,13 @@ function ordersCreateApi(env: Record<string, string>): Plugin {
             shipping: { ...shipping, shippingCost },
             items: orderItems,
             subtotal,
-            tax,
             total,
             currency: "ZAR",
             createdAt: new Date().toISOString(),
           });
-          console.log("[/api/orders/create] sanityCreate returned", order);
 
           sendJson(res, { orderId: order?._id, reference, total });
         } catch (err) {
-          console.log("[/api/orders/create] caught error", err);
           sendJson(res, { error: err instanceof Error ? err.message : "Failed to create order" }, 500);
         }
       });
@@ -298,7 +278,30 @@ export default defineConfig(({ mode }) => {
       hmr: { overlay: false },
       watch: { ignored: ["**/.env"] },
     },
-    plugins: [react(), paystackDevApi(env), ordersCreateApi(env), emailsDevApi(env), mode === "development" && componentTagger()].filter(Boolean),
+    plugins: [
+      react(),
+      paystackDevApi(env),
+      ordersCreateApi(env),
+      emailsDevApi(env),
+      sitemap({
+        hostname: "https://tandtcompany.vercel.app",
+        dynamicRoutes: [
+          "/",
+          "/about",
+          "/shop",
+          "/cart",
+          "/contact",
+          "/faq",
+          "/terms",
+          "/privacy-policy",
+          "/shipping-policy",
+          "/returns-policy",
+          "/refund-policy",
+          "/cookie-policy",
+        ],
+      }),
+      mode === "development" && componentTagger(),
+    ].filter(Boolean),
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),

@@ -1,20 +1,22 @@
 import { createContext, useContext, useEffect, useMemo, useState, ReactNode } from "react";
 import type { Product } from "@/types/product";
 
-export type CartItem = { product: Product; qty: number };
+export type CartItem = { product: Product; qty: number; size?: string };
+
+const itemKey = (id: string, size?: string) => `${id}:${size || "default"}`;
 
 type CartCtx = {
   items: CartItem[];
-  add: (p: Product, qty?: number) => void;
-  remove: (id: string) => void;
-  setQty: (id: string, qty: number) => void;
+  add: (p: Product, qty?: number, size?: string) => void;
+  remove: (id: string, size?: string) => void;
+  setQty: (id: string, qty: number, size?: string) => void;
   clear: () => void;
   count: number;
   subtotal: number;
 };
 
 const Ctx = createContext<CartCtx | null>(null);
-const KEY = "tandt_cart_v1";
+const KEY = "tandt_cart_v2";
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -29,15 +31,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem(KEY, JSON.stringify(items));
   }, [items]);
 
-  const add = (p: Product, qty = 1) =>
+  const add = (p: Product, qty = 1, size?: string) =>
     setItems((cur) => {
-      const ex = cur.find((i) => i.product.id === p.id);
-      if (ex) return cur.map((i) => (i.product.id === p.id ? { ...i, qty: i.qty + qty } : i));
-      return [...cur, { product: p, qty }];
+      const key = itemKey(p.id, size);
+      const ex = cur.find((i) => itemKey(i.product.id, i.size) === key);
+      if (ex) return cur.map((i) => (itemKey(i.product.id, i.size) === key ? { ...i, qty: i.qty + qty } : i));
+      return [...cur, { product: p, qty, size }];
     });
-  const remove = (id: string) => setItems((cur) => cur.filter((i) => i.product.id !== id));
-  const setQty = (id: string, qty: number) =>
-    setItems((cur) => cur.map((i) => (i.product.id === id ? { ...i, qty: Math.max(1, qty) } : i)));
+  const remove = (id: string, size?: string) =>
+    setItems((cur) => cur.filter((i) => itemKey(i.product.id, i.size) !== itemKey(id, size)));
+  const setQty = (id: string, qty: number, size?: string) =>
+    setItems((cur) => cur.map((i) => (itemKey(i.product.id, i.size) === itemKey(id, size) ? { ...i, qty: Math.max(1, qty) } : i)));
   const clear = () => setItems([]);
 
   const value = useMemo<CartCtx>(() => {

@@ -126,18 +126,17 @@ const About = () => {
                 A Kingdom Legacy
               </h2>
               <p className="mt-6 text-cream/70 leading-relaxed">
-                We envision a world where faith-driven individuals have access to premium products that honour their values without compromise. T AND T COMPANY aspires to be a global symbol of quiet luxury rooted in spiritual conviction — building a community united by excellence, communion, and unity.
+                We envision a world where faith-driven individuals have access
+                to premium products that honour their values without compromise.
+                T AND T COMPANY aspires to be a global symbol of quiet luxury
+                rooted in spiritual conviction — building a community united by
+                excellence, communion, and unity.
               </p>
             </div>
           </div>
 
           <div className="mt-16">
-            <Button
-              asChild
-              className="!text-cream"
-              variant="gold"
-              size="lg"
-            >
+            <Button asChild className="!text-cream" variant="gold" size="lg">
               <Link to="/shop">
                 {page?.ctaText || "Explore the Collection"}
               </Link>
@@ -158,16 +157,30 @@ const About = () => {
 
           <div className="max-w-3xl mx-auto space-y-8 text-foreground/85 leading-relaxed">
             <p>
-              T AND T COMPANY was born from a conversation between Tersha and Tyrone at their kitchen table — a shared frustration with the lack of premium apparel that represented their values without compromising on modern aesthetic. They saw a gap in the market for clothing that spoke to the soul, not just the eye.
+              T AND T COMPANY was born from a conversation between Tersha and
+              Tyrone at their kitchen table — a shared frustration with the lack
+              of premium apparel that represented their values without
+              compromising on modern aesthetic. They saw a gap in the market for
+              clothing that spoke to the soul, not just the eye.
             </p>
             <p>
-              What started as a dream quickly became a calling. The couple invested their savings, designed their first collection, and launched T AND T COMPANY with a simple belief: that faith-led fashion could stand shoulder-to-shoulder with any premium brand in the world.
+              What started as a dream quickly became a calling. The couple
+              invested their savings, designed their first collection, and
+              launched T AND T COMPANY with a simple belief: that faith-led
+              fashion could stand shoulder-to-shoulder with any premium brand in
+              the world.
             </p>
             <p>
-              Every piece in the collection is designed with intentionality — from the fabric selection to the final stitch. The name "T AND T" represents the partnership between Tersha and Tyrone, but also stands for the twin pillars that anchor everything they create: <strong>Truth</strong> and <strong>Trust</strong>.
+              Every piece in the collection is designed with intentionality —
+              from the fabric selection to the final stitch. The name "T AND T"
+              represents the partnership between Tersha and Tyrone, but also
+              stands for the twin pillars that anchor everything they create:{" "}
+              <strong>Truth</strong> and <strong>Trust</strong>.
             </p>
             <p>
-              Today, T AND T COMPANY serves a growing community of purpose-driven individuals across South Africa who believe that what you wear can carry meaning without saying a word.
+              Today, T AND T COMPANY serves a growing community of
+              purpose-driven individuals across South Africa who believe that
+              what you wear can carry meaning without saying a word.
             </p>
           </div>
 
@@ -178,11 +191,15 @@ const About = () => {
             </div>
             <div className="text-center">
               <p className="font-serif text-4xl text-gold">🇿🇦</p>
-              <p className="text-sm text-muted-foreground mt-2">Proudly South African</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Proudly South African
+              </p>
             </div>
             <div className="text-center">
-              <p className="font-serif text-4xl text-gold">1 200+</p>
-              <p className="text-sm text-muted-foreground mt-2">Happy Customers</p>
+              <p className="font-serif text-4xl text-gold">✝️</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Faith-Led Apparel
+              </p>
             </div>
           </div>
         </div>
@@ -200,11 +217,22 @@ const About = () => {
           </h2>
 
           <div className="grid md:grid-cols-3 gap-12 text-left mt-16">
-            {(page?.philosophyCards || [
-              { title: "Intentionality", body: "Every design decision is deliberate. From fabric weight to stitch density, nothing is accidental." },
-              { title: "Excellence", body: "We pursue the highest standard in everything we create — not for perfection, but as an act of devotion." },
-              { title: "Community", body: "T AND T COMPANY is more than a brand. It is an invitation to live out faith with grace and lead with purpose." },
-            ]).map((item, index) => (
+            {(
+              page?.philosophyCards || [
+                {
+                  title: "Intentionality",
+                  body: "Every design decision is deliberate. From fabric weight to stitch density, nothing is accidental.",
+                },
+                {
+                  title: "Excellence",
+                  body: "We pursue the highest standard in everything we create — not for perfection, but as an act of devotion.",
+                },
+                {
+                  title: "Community",
+                  body: "T AND T COMPANY is more than a brand. It is an invitation to live out faith with grace and lead with purpose.",
+                },
+              ]
+            ).map((item, index) => (
               <div key={`${item.title}-${index}`}>
                 <p className="eyebrow mb-4">{item.title}</p>
                 <div className="hairline mb-5" />
@@ -213,6 +241,34 @@ const About = () => {
                 </p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="bg-navy-deep text-cream py-24 md:py-28">
+        <div className="container-prose text-center max-w-3xl">
+          <h2 className="font-serif text-4xl md:text-5xl">Join the Journey</h2>
+          <p className="mt-6 text-cream/70 leading-relaxed max-w-xl mx-auto">
+            T AND T COMPANY is an open invitation. We serve a diverse, global
+            community united by a desire to live out their faith with
+            excellence.
+          </p>
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Button asChild variant="gold" size="lg">
+              <Link to="/shop">Shop the Collection</Link>
+            </Button>
+            <Button
+              asChild
+              variant="outlineNavy"
+              size="lg"
+              className="!border-gold !text-gold hover:!bg-gold hover:!text-cream"
+            >
+              <a href="mailto:stewardship@tandtcompany.com">
+                <Mail className="h-4 w-4 mr-2" />
+                Get in Touch
+              </a>
+            </Button>
           </div>
         </div>
       </section>
@@ -232,12 +288,30 @@ const About = () => {
           </div>
 
           <div className="grid md:grid-cols-4 gap-5 mt-14">
-            {(page?.values || [
-              { number: "01", title: "Faith", body: "Rooted in Christian conviction. Every thread and label serves a higher narrative." },
-              { number: "02", title: "Integrity", body: "Transparent in our business practices, honest in our marketing, and ethical in our sourcing." },
-              { number: "03", title: "Excellence", body: "Premium fabrics, considered construction, and attention to every detail — no compromises." },
-              { number: "04", title: "Community", body: "Building a kingdom community united by purpose, not just product. Everyone is welcome." },
-            ]).map((value, index) => (
+            {(
+              page?.values || [
+                {
+                  number: "01",
+                  title: "Faith",
+                  body: "Rooted in Christian conviction. Every thread and label serves a higher narrative.",
+                },
+                {
+                  number: "02",
+                  title: "Integrity",
+                  body: "Transparent in our business practices, honest in our marketing, and ethical in our sourcing.",
+                },
+                {
+                  number: "03",
+                  title: "Excellence",
+                  body: "Premium fabrics, considered construction, and attention to every detail — no compromises.",
+                },
+                {
+                  number: "04",
+                  title: "Community",
+                  body: "Building a kingdom community united by purpose, not just product. Everyone is welcome.",
+                },
+              ]
+            ).map((value, index) => (
               <div
                 key={`${value.number}-${value.title}-${index}`}
                 className="border border-gold/70 p-8 min-h-[260px]"
@@ -265,52 +339,34 @@ const About = () => {
             Tersha & Tyrone
           </h2>
           <p className="mt-6 text-foreground/75 leading-relaxed">
-            We are husband and wife, co-founders, and the creative force behind T AND T COMPANY.
-            Our partnership is built on shared faith, mutual respect, and a relentless drive to create
-            something meaningful. Every product that leaves our hands carries a piece of our story — and
-            we hope it becomes part of yours.
+            We are husband and wife, co-founders, and the creative force behind
+            T AND T COMPANY. Our partnership is built on shared faith, mutual
+            respect, and a relentless drive to create something meaningful.
+            Every product that leaves our hands carries a piece of our story —
+            and we hope it becomes part of yours.
           </p>
 
           <div className="mt-12 grid sm:grid-cols-2 gap-8 text-left max-w-xl mx-auto">
             <div className="bg-cream border border-border p-6 shadow-soft">
               <p className="eyebrow !text-gold mb-2">Tersha</p>
-              <p className="font-serif text-xl text-navy">Co-Founder & Creative Director</p>
+              <p className="font-serif text-xl text-navy">
+                Co-Founder & Creative Director
+              </p>
               <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-                The visionary behind our design aesthetic. Tersha brings warmth, elegance, and intentionality to every collection.
+                The visionary behind our design aesthetic. Tersha brings warmth,
+                elegance, and intentionality to every collection.
               </p>
             </div>
             <div className="bg-cream border border-border p-6 shadow-soft">
               <p className="eyebrow !text-gold mb-2">Tyrone</p>
-              <p className="font-serif text-xl text-navy">Co-Founder & Operations Lead</p>
+              <p className="font-serif text-xl text-navy">
+                Co-Founder & Operations Lead
+              </p>
               <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-                The structural mind behind our operations. Tyrone ensures every order is fulfilled with care and precision.
+                The structural mind behind our operations. Tyrone ensures every
+                order is fulfilled with care and precision.
               </p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="bg-navy-deep text-cream py-24 md:py-28">
-        <div className="container-prose text-center max-w-3xl">
-          <h2 className="font-serif text-4xl md:text-5xl">
-            Join the Journey
-          </h2>
-          <p className="mt-6 text-cream/70 leading-relaxed max-w-xl mx-auto">
-            T AND T COMPANY is an open invitation. We serve a diverse, global
-            community united by a desire to live out their faith with
-            excellence.
-          </p>
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild variant="gold" size="lg">
-              <Link to="/shop">Shop the Collection</Link>
-            </Button>
-            <Button asChild variant="outlineNavy" size="lg" className="!border-gold !text-gold hover:!bg-gold hover:!text-cream">
-              <a href="mailto:stewardship@tandtcompany.com">
-                <Mail className="h-4 w-4 mr-2" />
-                Get in Touch
-              </a>
-            </Button>
           </div>
         </div>
       </section>

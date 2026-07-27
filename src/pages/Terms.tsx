@@ -120,7 +120,7 @@ const Terms = () => {
             <h2 className="font-serif text-3xl text-navy">Pricing & Taxes</h2>
             <div className="hairline mt-4 mb-6 bg-border" />
             <div className="space-y-3 text-foreground/85 leading-relaxed text-sm">
-              <p>All prices displayed on the Website are in <strong>South African Rand (ZAR)</strong> and include South African Value-Added Tax (VAT) at the applicable rate (currently 15%).</p>
+              <p>All prices displayed on the Website are in <strong>South African Rand (ZAR)</strong>. Any applicable taxes will be calculated at checkout.</p>
               <p>We reserve the right to change prices at any time without prior notice. However, price changes will not affect Orders that have already been confirmed.</p>
               <p>In the event of a pricing error, we reserve the right to cancel the Order and issue a full refund.</p>
             </div>

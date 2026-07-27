@@ -33,7 +33,7 @@ export const siteSettingsQuery = `*[_type == "siteSettings"][0]{
   siteName, tagline, email, stewardshipEmail, phone, whatsappUrl, address,
   instagramUrl, facebookUrl, announcements, trustItems,
   footerShopLinks, footerBrandLinks, footerNewsletterTitle, footerNewsletterSubtext,
-  paymentMethodsText, taxRate, enableAnalytics,
+  paymentMethodsText, taxRate, enableAnalytics, businessHours,
   "shippingOptions": shippingOptions[]-> | order(sortOrder asc) {
     _id,
     id,

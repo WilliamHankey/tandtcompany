@@ -59,6 +59,7 @@ export const siteSettings = defineType({
     defineField({ name: "footerNewsletterTitle", title: "Footer Newsletter Title", type: "string" }),
     defineField({ name: "footerNewsletterSubtext", title: "Footer Newsletter Subtext", type: "string" }),
     defineField({ name: "paymentMethodsText", title: "Payment Methods Text", type: "string" }),
+    defineField({ name: "businessHours", title: "Business Hours", type: "string", initialValue: "Mon–Fri, 08:00–17:00 SAST" }),
     defineField({ name: "taxRate", title: "Tax Rate (decimal, e.g. 0.08)", type: "number", initialValue: 0.08 }),
     defineField({
       name: "enableAnalytics",

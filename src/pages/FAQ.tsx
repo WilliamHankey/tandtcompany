@@ -1,5 +1,7 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
+import SEO from "@/components/SEO";
+import { FAQPageSchema } from "@/components/JsonLd";
 import { Link } from "react-router-dom";
 import { ChevronDown, MessageCircle, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -53,7 +55,7 @@ const faqData: FAQItem[] = [
   },
   {
     question: "Do your prices include tax?",
-    answer: "Yes, all displayed prices include South African VAT (15%). The tax amount is shown in your order summary at checkout and on your receipt.",
+    answer: "All prices are displayed in South African rand. Any applicable taxes will be calculated and shown at checkout.",
   },
   {
     question: "Can I cancel my order?",
@@ -105,8 +107,11 @@ const FAQItem = ({ item }: { item: FAQItem }) => {
   );
 };
 
+const faqStructured = faqData.map(({ question, answer }) => ({ question, answer }));
+
 const FAQ = () => (
   <Layout>
+    <FAQPageSchema items={faqStructured} />
     <section className="relative bg-navy-deep text-cream pt-32 pb-20 overflow-hidden">
       <div className="relative container-prose text-center">
         <p className="eyebrow !text-gold mb-4">Got Questions?</p>

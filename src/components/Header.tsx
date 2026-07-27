@@ -88,20 +88,6 @@ const Header = () => {
           </nav>
 
           <div className="flex justify-end items-center gap-5 text-cream">
-            <button
-              aria-label="Search"
-              className="opacity-80 hover:opacity-100 transition-opacity"
-            >
-              <Search className="h-4 w-4" />
-            </button>
-
-            <button
-              aria-label="Account"
-              className="opacity-80 hover:opacity-100 transition-opacity hidden sm:inline-flex"
-            >
-              <User className="h-4 w-4" />
-            </button>
-
             <Link
               to="/cart"
               aria-label="Bag"
@@ -166,9 +152,7 @@ const Header = () => {
 
         <div className="absolute bottom-10 left-6 right-6 border-t border-cream/15 pt-6">
           <p className="eyebrow !text-gold">T AND T COMPANY</p>
-          <p className="mt-3 text-sm text-cream/60">
-            Faith. Purpose. Style.
-          </p>
+          <p className="mt-3 text-sm text-cream/60">Faith. Purpose. Style.</p>
         </div>
       </div>
     </>

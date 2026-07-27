@@ -1,13 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Layout from "@/components/Layout";
+import SEO from "@/components/SEO";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import { ProductSchema } from "@/components/JsonLd";
 import { Button } from "@/components/ui/button";
 import { formatZAR } from "@/types/product";
 import ProductCard from "@/components/ProductCard";
 import { useCart } from "@/context/CartContext";
 import { useProduct, useResolvedProducts } from "@/hooks/useSanityContent";
 import { toast } from "sonner";
-import { Minus, Plus, Truck, RotateCcw, ShieldCheck, Star, Package, Shirt } from "lucide-react";
+import { Minus, Plus, Truck, RotateCcw, ShieldCheck, Package, Shirt } from "lucide-react";
+import { SITE_URL } from "@/lib/seo";
 
 const ProductDetail = () => {
   const { slug } = useParams();
@@ -62,10 +66,35 @@ const ProductDetail = () => {
 
   const mainImage = selectedImage || product.image;
   const hasSizes = product.sizes && product.sizes.length > 0;
+  const productUrl = `${SITE_URL}/shop/${product.slug}`;
+  const inStock = product.inStock !== false;
 
   return (
     <Layout>
-      <section className="container-prose pt-28 md:pt-36 pb-24 grid lg:grid-cols-2 gap-10 lg:gap-20">
+      <SEO
+        title={product.name}
+        description={product.tagline || product.description?.slice(0, 160)}
+        canonical={productUrl}
+        ogImage={product.image}
+        ogType="product"
+      />
+      <ProductSchema
+        name={product.name}
+        description={product.description || product.tagline || ""}
+        image={product.image}
+        sku={product.sku || product._id}
+        price={product.price}
+        url={productUrl}
+        availability={inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"}
+      />
+      <Breadcrumbs
+        items={[
+          { name: "Home", url: "/" },
+          { name: "Shop", url: "/shop" },
+          { name: product.name, url: `/shop/${product.slug}` },
+        ]}
+      />
+      <section className="container-prose pb-24 grid lg:grid-cols-2 gap-10 lg:gap-20">
         <div className="space-y-4">
           <div className="relative overflow-hidden bg-secondary aspect-square">
             {product.badge && (
@@ -125,16 +154,7 @@ const ProductDetail = () => {
 
           <p className="mt-3 italic text-muted-foreground">{product.tagline}</p>
 
-          <div className="mt-5 flex items-center gap-3">
-            <div className="flex">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-4 w-4 fill-gold text-gold" />
-              ))}
-            </div>
-            <span className="text-sm text-muted-foreground">Trusted by 1 200+ customers</span>
-          </div>
-
-          <div className="mt-7 flex items-baseline gap-3">
+          <div className="mt-5 flex items-baseline gap-3">
             <p className="font-serif text-3xl text-gold">
               {formatZAR(product.price)}
             </p>
@@ -153,7 +173,7 @@ const ProductDetail = () => {
           </div>
 
           <p className="text-sm text-muted-foreground mt-1">
-            Tax included (VAT 15%). Shipping calculated at checkout.
+            Prices in South African rand. Delivery calculated at checkout.
           </p>
 
           <p className="mt-8 leading-relaxed text-foreground/80">
@@ -216,7 +236,7 @@ const ProductDetail = () => {
               className="w-full"
               disabled={product.inStock === false}
               onClick={() => {
-                add(product, qty);
+                add(product, qty, selectedSize || undefined);
                 toast.success("Added to bag", { description: product.name });
               }}
             >
@@ -230,29 +250,27 @@ const ProductDetail = () => {
             className="mt-3 w-full"
             disabled={product.inStock === false}
             onClick={() => {
-              add(product, qty);
+              add(product, qty, selectedSize || undefined);
               navigate("/checkout");
             }}
           >
             Buy It Now
           </Button>
 
-          {/* Trust badges */}
-          <div className="mt-10 grid grid-cols-3 gap-5 py-8 border-y">
-            <div className="text-center">
-              <Truck className="mx-auto h-5 w-5 text-gold mb-2" />
-              <p className="text-[10px] uppercase">Nationwide Delivery</p>
-            </div>
-
-            <div className="text-center">
-              <RotateCcw className="mx-auto h-5 w-5 text-gold mb-2" />
-              <p className="text-[10px] uppercase">30-Day Returns</p>
-            </div>
-
-            <div className="text-center">
-              <ShieldCheck className="mx-auto h-5 w-5 text-gold mb-2" />
-              <p className="text-[10px] uppercase">Secure Checkout</p>
-            </div>
+          {/* Fulfilment info */}
+          <div className="mt-8 bg-cream border border-border p-4 space-y-2 text-sm text-foreground/80">
+            <p className="flex items-center gap-2">
+              <Package className="h-4 w-4 text-gold shrink-0" />
+              <span>In stock and fulfilled from Cape Town.</span>
+            </p>
+            <p className="flex items-center gap-2">
+              <Truck className="h-4 w-4 text-gold shrink-0" />
+              <span>Orders processed within 2–4 business days. Nationwide delivery 2–5 business days after dispatch.</span>
+            </p>
+            <p className="flex items-center gap-2">
+              <RotateCcw className="h-4 w-4 text-gold shrink-0" />
+              <span>30-day returns. Exchanges available for sizing — see our <Link to="/returns-policy" className="text-gold link-underline">Returns Policy</Link>.</span>
+            </p>
           </div>
 
           {/* Product Details */}
@@ -329,7 +347,7 @@ const ProductDetail = () => {
           className="w-full"
           disabled={product.inStock === false}
           onClick={() => {
-            add(product, qty);
+            add(product, qty, selectedSize || undefined);
             toast.success("Added to bag");
           }}
         >

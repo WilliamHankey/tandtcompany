@@ -8,27 +8,19 @@ const iconMap: Record<string, LucideIcon> = {
   message: MessageCircle,
 };
 
-const defaultMessages = [
-  { icon: "truck" as const, text: "Complimentary shipping on orders over R1 000" },
-  { icon: "shield" as const, text: "Secure checkout · 14-day easy returns" },
-  { icon: "message" as const, text: "Need help? Chat with us on WhatsApp" },
-];
-
 const AnnouncementBar = () => {
   const { data: settings } = useSiteSettings();
-  const messages =
-    settings?.announcements?.length
-      ? settings.announcements.map((m: { icon?: string; text?: string }) => ({
-          icon: (m.icon || "truck") as keyof typeof iconMap,
-          text: m.text || "",
-        }))
-      : defaultMessages;
+  const raw = (settings as { announcements?: { icon?: string; text?: string }[] } | undefined);
+  const messages = raw?.announcements?.filter((m) => m.text) || [];
 
   const [i, setI] = useState(0);
   useEffect(() => {
+    if (messages.length < 2) return;
     const t = setInterval(() => setI((p) => (p + 1) % messages.length), 4500);
     return () => clearInterval(t);
   }, [messages.length]);
+
+  if (messages.length === 0) return null;
 
   const key = messages[i]?.icon || "truck";
   const Active = iconMap[key] || Truck;

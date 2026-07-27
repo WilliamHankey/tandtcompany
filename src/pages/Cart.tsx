@@ -1,21 +1,18 @@
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
+import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { formatZAR } from "@/data/products";
-import { useSiteSettings } from "@/hooks/useSanityContent";
 import { Minus, Plus, X, ShieldCheck, Truck, RotateCcw, Lock } from "lucide-react";
 
 const Cart = () => {
   const { items, setQty, remove, subtotal } = useCart();
-  const { data: rawSettings } = useSiteSettings();
-  const settings = rawSettings as { taxRate?: number } | undefined;
-  const taxRate = settings?.taxRate ?? 0.08;
-  const tax = Math.round(subtotal * taxRate);
-  const total = subtotal + tax;
+  const total = subtotal;
 
   return (
     <Layout>
+      <SEO title="Your Bag" noindex />
       <section className="container-prose pt-32 pb-24">
         {items.length === 0 ? (
           <div className="py-24 border-t border-b border-border text-center">
@@ -30,8 +27,8 @@ const Cart = () => {
                 <h1 className="font-serif text-4xl md:text-5xl text-navy">Review Your Selection</h1>
               </div>
               <ul className="divide-y divide-border border-y border-border">
-                {items.map(({ product, qty }) => (
-                  <li key={product.id} className="py-8 flex items-center gap-6">
+                {items.map(({ product, qty, size }) => (
+                  <li key={`${product.id}:${size || "default"}`} className="py-8 flex items-center gap-6">
                     <Link to={`/shop/${product.slug}`} className="block w-24 h-24 bg-muted overflow-hidden flex-shrink-0">
                       <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                     </Link>
@@ -40,19 +37,19 @@ const Cart = () => {
                       <p className="mt-1 text-[0.65rem] uppercase tracking-[0.22em] text-muted-foreground">
                         {product.tagline}
                       </p>
-                      {product.sizes && (
+                      {size && (
                         <p className="mt-1 text-xs text-muted-foreground">
-                          Size: {product.sizes.find((s) => s.inStock)?.label || "One Size"}
+                          Size: {size}
                         </p>
                       )}
                     </div>
                     <div className="flex items-center border border-border">
-                      <button onClick={() => setQty(product.id, qty - 1)} className="h-9 w-9 grid place-items-center hover:bg-secondary"><Minus className="h-3 w-3" /></button>
+                      <button onClick={() => setQty(product.id, qty - 1, size)} className="h-9 w-9 grid place-items-center hover:bg-secondary"><Minus className="h-3 w-3" /></button>
                       <span className="w-8 text-center text-sm tabular-nums">{qty}</span>
-                      <button onClick={() => setQty(product.id, qty + 1)} className="h-9 w-9 grid place-items-center hover:bg-secondary"><Plus className="h-3 w-3" /></button>
+                      <button onClick={() => setQty(product.id, qty + 1, size)} className="h-9 w-9 grid place-items-center hover:bg-secondary"><Plus className="h-3 w-3" /></button>
                     </div>
                     <p className="font-serif text-lg text-gold tabular-nums w-28 text-right">{formatZAR(product.price * qty)}</p>
-                    <button onClick={() => remove(product.id)} aria-label="Remove" className="text-muted-foreground hover:text-foreground">
+                    <button onClick={() => remove(product.id, size)} aria-label="Remove" className="text-muted-foreground hover:text-foreground">
                       <X className="h-4 w-4" />
                     </button>
                   </li>
@@ -65,7 +62,6 @@ const Cart = () => {
                 <p className="eyebrow !text-gold">Order Summary</p>
                 <div className="mt-6 space-y-4 text-sm">
                   <div className="flex justify-between"><span>Subtotal</span><span className="tabular-nums">{formatZAR(subtotal)}</span></div>
-                  <div className="flex justify-between text-muted-foreground"><span>VAT (15%)</span><span className="tabular-nums">{formatZAR(tax)}</span></div>
                   <div className="flex justify-between text-muted-foreground"><span>Shipping</span><span className="text-xs">Calculated at checkout</span></div>
                 </div>
                 <div className="border-t border-border my-6" />
@@ -74,7 +70,7 @@ const Cart = () => {
                   <span className="font-serif text-2xl text-gold tabular-nums">{formatZAR(total)}</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2 text-center">
-                  Incl. VAT · Shipping calculated at checkout
+                  Shipping calculated at checkout
                 </p>
                 <Button asChild variant="gold" size="lg" className="w-full mt-6"><Link to="/checkout">Proceed to Checkout</Link></Button>
 

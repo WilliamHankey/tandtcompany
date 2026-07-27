@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import Layout from "@/components/Layout";
+import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -119,7 +120,7 @@ const Checkout = () => {
 
   const shippingCost =
     deliveryOptions.find((d) => d.id === delivery)?.price ?? 0;
-  const taxRate = settings?.taxRate ?? 0.08;
+  const taxRate = settings?.taxRate ?? 0;
   const tax = Math.round(subtotal * taxRate);
   const total = subtotal + shippingCost + tax;
 
@@ -129,7 +130,6 @@ const Checkout = () => {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("[Checkout] submit fired", { form, delivery, sameAsDelivery, acceptedTerms, items });
 
     const r = schema.safeParse(form);
     if (!r.success) {
@@ -138,25 +138,20 @@ const Checkout = () => {
         errs[i.path[0] as string] = i.message;
       });
       setErrors(errs);
-      console.log("[Checkout] validation failed", errs);
       return;
     }
 
     if (!acceptedTerms) {
       setErrors({ terms: "You must accept the Terms & Conditions to proceed." });
-      console.log("[Checkout] terms not accepted");
       return;
     }
 
     setErrors({});
     setSubmitting(true);
-    console.log("[Checkout] validation passed, starting order flow");
 
     const paystackKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
-    console.log("[Checkout] PAYSTACK_KEY present?", !!paystackKey);
 
     const completeOrder = (paymentRef: string) => {
-      console.log("[Checkout] completeOrder called", paymentRef);
       clear();
       toast.success("Payment verified", {
         description: `Reference ${paymentRef}`,
@@ -200,9 +195,9 @@ const Checkout = () => {
         items: items.map((i) => ({
           id: i.product.id,
           qty: i.qty,
+          size: i.size,
         })),
       });
-      console.log("[Checkout] POST /api/orders/create body", JSON.parse(payload));
 
       const orderRes = await fetch("/api/orders/create", {
         method: "POST",
@@ -211,30 +206,25 @@ const Checkout = () => {
       });
 
       const order = await orderRes.json();
-      console.log("[Checkout] /api/orders/create response", { ok: orderRes.ok, status: orderRes.status, order });
 
       if (!orderRes.ok) {
         throw new Error(order.error || "Could not create order");
       }
 
-      console.log("[Checkout] calling payWithPaystack", { email: form.email, amountZar: order.total, reference: order.reference });
       await payWithPaystack({
         email: form.email,
         amountZar: order.total,
         reference: order.reference,
         onSuccess: async (paymentRef) => {
-          console.log("[Checkout] payWithPaystack onSuccess", paymentRef);
           completeOrder(paymentRef);
           setSubmitting(false);
         },
         onCancel: () => {
-          console.log("[Checkout] payWithPaystack onCancel");
           setSubmitting(false);
           toast.info("Payment cancelled");
         },
       });
     } catch (err) {
-      console.log("[Checkout] caught error", err);
       setSubmitting(false);
       toast.error("Payment failed", {
         description: err instanceof Error ? err.message : "Please try again",
@@ -244,6 +234,7 @@ const Checkout = () => {
 
   return (
     <Layout>
+      <SEO title="Checkout" noindex />
       <section className="container-prose pt-32 pb-24">
         <div className="text-center mb-16">
           <h1 className="font-serif text-4xl md:text-5xl text-navy">
@@ -506,8 +497,8 @@ const Checkout = () => {
           <aside className="lg:sticky lg:top-28 h-fit border-t-2 border-gold bg-cream border border-border p-8 shadow-elegant">
             <h3 className="font-serif text-2xl text-navy">Order Summary</h3>
             <ul className="mt-6 space-y-5">
-              {items.map(({ product, qty }) => (
-                <li key={product.id} className="flex gap-4">
+              {items.map(({ product, qty, size }) => (
+                <li key={`${product.id}:${size || "default"}`} className="flex gap-4">
                   <div className="w-16 h-20 bg-muted overflow-hidden flex-shrink-0">
                     <img
                       src={product.image}
@@ -519,9 +510,9 @@ const Checkout = () => {
                     <p className="font-serif text-navy leading-tight">
                       {product.name}
                     </p>
-                    {product.sizes && (
+                    {size && (
                       <p className="text-muted-foreground mt-1 text-xs">
-                        Size: {product.sizes.find((s) => s.inStock)?.label || "One Size"}
+                        Size: {size}
                       </p>
                     )}
                     <p className="text-muted-foreground mt-1 text-xs">
@@ -545,10 +536,6 @@ const Checkout = () => {
                 <span className="tabular-nums">
                   {shippingCost === 0 ? "Free" : formatZAR(shippingCost)}
                 </span>
-              </div>
-              <div className="flex justify-between">
-                <span>VAT (15%)</span>
-                <span className="tabular-nums">{formatZAR(tax)}</span>
               </div>
             </div>
             <div className="border-t border-border my-6" />
