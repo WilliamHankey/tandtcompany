@@ -30,7 +30,7 @@ const PrivacyPolicy = () => (
             T AND T COMPANY (Pty) Ltd ("we", "us", "our") is committed to protecting your privacy in accordance with the Protection of Personal Information Act 4 of 2013 (POPIA) and other applicable South African data protection laws.
           </p>
           <p>
-            This Privacy Policy describes how we collect, use, store, share, and protect your personal information when you visit our website at <strong>tandtcompany.co.za</strong> (the "Website"), make a purchase, or interact with our services.
+            This Privacy Policy describes how we collect, use, store, share, and protect your personal information when you visit our website at <strong>tandtcompany.store</strong> (the "Website"), make a purchase, or interact with our services.
           </p>
           <p>
             By using our Website, you consent to the practices described in this policy. If you do not agree, please do not use our Website.
@@ -98,7 +98,7 @@ const PrivacyPolicy = () => (
 
         <Section id="payment-processing" title="7. Payment Processing">
           <p>
-            All payments are processed securely through Paystack, a PCI DSS Level 1 certified payment gateway. We do not store your credit card details, CVV, or banking credentials on our servers.
+            All payments are processed securely through Paystack, a PCI DSS Level 1 compliant payment service provider. T AND T COMPANY does not store customers' full card details, CVV or banking credentials.
           </p>
           <p>
             Paystack collects and processes payment information in accordance with their own privacy policy. For more information, visit <a href="https://paystack.com/privacy" target="_blank" rel="noopener noreferrer" className="text-gold link-underline">https://paystack.com/privacy</a>.
@@ -106,8 +106,6 @@ const PrivacyPolicy = () => (
           <p>We accept the following payment methods:</p>
           <ul className="list-disc pl-6 space-y-2 mt-3">
             <li>Credit and debit cards (Visa, Mastercard)</li>
-            <li>Bank transfers (EFT)</li>
-            <li>Mobile money</li>
           </ul>
         </Section>
 
@@ -117,10 +115,10 @@ const PrivacyPolicy = () => (
           </p>
           <p>Specifically:</p>
             <ul className="list-disc pl-6 space-y-2 mt-3">
-              <li>Order and transaction data: Retained for 5 years as required by South African tax law</li>
-              <li>Marketing preferences: Retained until you withdraw consent</li>
-              <li>Website analytics data: Retained for 26 months in anonymised form</li>
-              <li>Contact form enquiries: Retained for 12 months</li>
+              <li>Order, invoice and transaction records: retained for at least five years, or longer where required for tax, accounting, legal, fraud-prevention or dispute-resolution purposes.</li>
+              <li>Marketing preferences: retained until consent is withdrawn or the information is no longer required.</li>
+              <li>Google Analytics user-level and event-level data: retained according to our configured Google Analytics retention setting, currently up to 14 months.</li>
+              <li>Customer enquiries: retained only for as long as reasonably necessary to respond to the enquiry, maintain support records and resolve related disputes.</li>
             </ul>
         </Section>
 
@@ -129,7 +127,7 @@ const PrivacyPolicy = () => (
           <ul className="list-disc pl-6 space-y-2 mt-3">
             <li><strong>Paystack:</strong> Payment processing</li>
             <li><strong>Sanity:</strong> Content management (order data stored as part of order fulfilment)</li>
-            <li><strong>Vercel:</strong> Website hosting</li>
+            <li><strong>Cloudflare:</strong> Website hosting</li>
             <li><strong>Google Analytics:</strong> Website analytics (anonymised data)</li>
             <li><strong>Courier services:</strong> Delivery of orders (name, address, phone number)</li>
           </ul>
@@ -197,7 +195,7 @@ const PrivacyPolicy = () => (
             </div>
             <div className="flex items-start gap-3">
               <MapPin className="h-4 w-4 text-gold shrink-0 mt-0.5" />
-              <span>T AND T COMPANY (Pty) Ltd<br />South Africa</span>
+              <span>T AND T COMPANY (Pty) Ltd</span>
             </div>
           </div>
           <p className="mt-6 text-sm text-muted-foreground">

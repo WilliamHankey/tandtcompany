@@ -18,6 +18,8 @@ type SiteSettings = {
   phone?: string;
   whatsappUrl?: string;
   address?: string;
+  companyName?: string;
+  companyRegNumber?: string;
   instagramUrl?: string;
   facebookUrl?: string;
   footerShopLinks?: { label?: string; href?: string }[];
@@ -222,7 +224,8 @@ const Footer = () => {
       <div className="border-t border-cream/10">
         <div className="container-prose py-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-cream/50">
           <span>
-            © {new Date().getFullYear()} T AND T COMPANY (Pty) Ltd · All rights
+            © {new Date().getFullYear()} {s?.companyName || "T AND T COMPANY (Pty) Ltd"}
+            {s?.companyRegNumber ? ` · Reg No: ${s.companyRegNumber}` : ""} · All rights
             reserved
           </span>
           {s?.paymentMethodsText && (

@@ -146,16 +146,18 @@ const Contact = () => {
             <div className="space-y-4 text-sm">
               <div>
                 <p className="text-muted-foreground">Company Name</p>
-                <p className="font-serif text-navy text-lg">T AND T COMPANY (Pty) Ltd</p>
+                <p className="font-serif text-navy text-lg">{settings?.companyName || "T AND T COMPANY (Pty) Ltd"}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Trading Name</p>
-                <p className="font-serif text-navy">T & T Company</p>
+                <p className="font-serif text-navy">{settings?.siteName || "T & T Company"}</p>
               </div>
-              <div>
-                <p className="text-muted-foreground">Business Type</p>
-                <p className="font-serif text-navy">Faith-Led Lifestyle & Apparel</p>
-              </div>
+              {settings?.companyRegNumber && (
+                <div>
+                  <p className="text-muted-foreground">Registration Number (CIPC)</p>
+                  <p className="font-serif text-navy">{settings.companyRegNumber}</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -168,7 +170,7 @@ const Contact = () => {
               <div>
                 <p className="eyebrow !text-gold">Our Address</p>
                 <p className="mt-3 font-serif text-xl sm:text-2xl text-navy whitespace-pre-line leading-snug">
-                  {address}
+                  {settings?.physicalAddress || address}
                 </p>
               </div>
             </div>

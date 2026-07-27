@@ -31,6 +31,7 @@ const productFragment = `{
 
 export const siteSettingsQuery = `*[_type == "siteSettings"][0]{
   siteName, tagline, email, stewardshipEmail, phone, whatsappUrl, address,
+  companyName, companyRegNumber, physicalAddress,
   instagramUrl, facebookUrl, announcements, trustItems,
   footerShopLinks, footerBrandLinks, footerNewsletterTitle, footerNewsletterSubtext,
   paymentMethodsText, taxRate, enableAnalytics, businessHours,

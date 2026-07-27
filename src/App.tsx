@@ -9,6 +9,7 @@ import { CartProvider } from "@/context/CartContext";
 import ScrollToTop from "@/components/ScrollToTop";
 import { useSiteSettings } from "@/hooks/useSanityContent";
 import { initGA, pageView } from "@/lib/analytics";
+import CookieConsentBanner, { getCookieConsent } from "@/components/CookieConsentBanner";
 import Index from "./pages/Index.tsx";
 import Home from "./pages/Home";
 import About from "./pages/About";
@@ -34,13 +35,15 @@ function Analytics() {
   const location = useLocation();
 
   useEffect(() => {
-    if (settings?.enableAnalytics) {
+    const consent = getCookieConsent();
+    if (settings?.enableAnalytics && consent === "accepted") {
       initGA();
     }
   }, [settings?.enableAnalytics]);
 
   useEffect(() => {
-    if (settings?.enableAnalytics) {
+    const consent = getCookieConsent();
+    if (settings?.enableAnalytics && consent === "accepted") {
       pageView(location.pathname + location.search);
     }
   }, [location.pathname, location.search, settings?.enableAnalytics]);
@@ -58,6 +61,7 @@ const App = () => (
           <BrowserRouter>
             <ScrollToTop />
             <Analytics />
+            <CookieConsentBanner />
             <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />

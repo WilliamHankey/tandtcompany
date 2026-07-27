@@ -76,10 +76,9 @@ const Terms = () => {
             <div className="space-y-3 text-foreground/85 leading-relaxed text-sm">
               <p><strong>Company Name:</strong> T AND T COMPANY (Pty) Ltd</p>
               <p><strong>Trading Name:</strong> T & T Company</p>
-              <p><strong>Website:</strong> tandtcompany.co.za</p>
+              <p><strong>Website:</strong> tandtcompany.store</p>
               <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-gold" /> stewardship@tandtcompany.com</div>
               <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-gold" /> +27 (0) 61 485 2498</div>
-              <div className="flex items-start gap-2"><MapPin className="h-4 w-4 text-gold mt-0.5" /> South Africa</div>
             </div>
           </article>
 
@@ -91,7 +90,7 @@ const Terms = () => {
               <p>In these Terms, the following definitions apply:</p>
               <ul className="list-disc pl-6 space-y-2 mt-3">
                 <li><strong>"Company", "we", "us", "our"</strong> refers to T AND T COMPANY (Pty) Ltd.</li>
-                <li><strong>"Website"</strong> refers to tandtcompany.co.za and all associated pages.</li>
+                <li><strong>"Website"</strong> refers to tandtcompany.store and all associated pages.</li>
                 <li><strong>"Customer", "you", "your"</strong> refers to any individual or entity placing an order through the Website.</li>
                 <li><strong>"Products"</strong> refers to any items available for purchase on the Website.</li>
                 <li><strong>"Order"</strong> refers to a request to purchase Products submitted through the Website.</li>
@@ -131,11 +130,9 @@ const Terms = () => {
             <h2 className="font-serif text-3xl text-navy">Payment</h2>
             <div className="hairline mt-4 mb-6 bg-border" />
             <div className="space-y-3 text-foreground/85 leading-relaxed text-sm">
-              <p>Payments are processed securely through <strong>Paystack</strong>, a PCI DSS Level 1 certified payment gateway. We accept the following payment methods:</p>
+              <p>Payments are processed securely through <strong>Paystack</strong>, a PCI DSS Level 1 compliant payment service provider. We accept the following payment methods:</p>
               <ul className="list-disc pl-6 space-y-2 mt-3">
                 <li>Credit and debit cards (Visa, Mastercard)</li>
-                <li>Bank transfers (EFT)</li>
-                <li>Mobile money</li>
               </ul>
               <p className="mt-4">We do not store your credit card details, CVV, or banking credentials. All payment information is handled exclusively by Paystack.</p>
               <p>Order confirmation will be sent via email once payment has been successfully processed.</p>

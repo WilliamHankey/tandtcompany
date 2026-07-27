@@ -8,6 +8,7 @@ type Env = {
 type CartItem = {
   id: string;
   qty: number;
+  price?: number;
   size?: string;
 };
 
@@ -25,6 +26,19 @@ type OrderRequestBody = {
     postcode: string;
   };
   items: CartItem[];
+};
+
+type SanityProduct = {
+  _id: string;
+  sku: string;
+  title: string;
+  price: number;
+  inStock?: boolean;
+  sizes?: {
+    stock?: number;
+    customSize?: boolean;
+    size?: { _id: string; label: string };
+  }[];
 };
 
 type FunctionContext = {
@@ -100,6 +114,7 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       .map((item) => ({
         id: item.id,
         qty: Math.min(item.qty, 20),
+        price: item.price,
         size: item.size,
       }));
 
@@ -109,38 +124,29 @@ export async function onRequestPost({ request, env }: FunctionContext) {
 
     const skus = cleanItems.map((item) => item.id);
 
-    const products = await sanityFetch<
-  {
-    _id: string;
-    sku: string;
-    title: string;
-    price: number;
-    inStock?: boolean;
-  }[]
->(
-  env,
-  `*[_type == "product" && sku in $skus]{
-    _id,
-    sku,
-    title,
-    price,
-    inStock
-  }`,
-  { skus }
-);
+    const products = await sanityFetch<SanityProduct[]>(
+      env,
+      `*[_type == "product" && sku in $skus]{
+        _id,
+        sku,
+        title,
+        price,
+        inStock,
+        sizes[]{
+          stock,
+          customSize,
+          size->{ _id, label }
+        }
+      }`,
+      { skus }
+    );
 
     if (products.length !== cleanItems.length) {
       return json(
         {
           error: "One or more products could not be found",
           sentSkus: skus,
-          foundProducts: products.map((p) => ({
-            _id: p._id,
-            sku: p.sku,
-            title: p.title,
-          })),
-          sanityProjectId: env.VITE_SANITY_PROJECT_ID,
-          sanityDataset: env.VITE_SANITY_DATASET,
+          foundProducts: products.map((p) => p.sku),
         },
         400
       );
@@ -157,13 +163,52 @@ export async function onRequestPost({ request, env }: FunctionContext) {
         throw new Error(`${product.title} is currently out of stock`);
       }
 
+      if (cart.price !== undefined && cart.price !== product.price) {
+        throw new Error(
+          `Price mismatch for ${product.title}: expected ${product.price}, received ${cart.price}`
+        );
+      }
+
+      let availableStock = Infinity;
+      const sizeLabel = cart.size || "";
+
+      if (product.sizes && product.sizes.length > 0) {
+        if (cart.size) {
+          const matched = product.sizes.find(
+            (s) => s.size?.label === cart.size
+          );
+
+          if (!matched) {
+            throw new Error(
+              `Size "${cart.size}" not found for ${product.title}`
+            );
+          }
+
+          if (matched.stock !== undefined) {
+            availableStock = matched.stock;
+          }
+        } else {
+          const totalStock = product.sizes.reduce(
+            (sum, s) => sum + (s.stock ?? 0),
+            0
+          );
+          availableStock = totalStock;
+        }
+      }
+
+      if (cart.qty > availableStock) {
+        throw new Error(
+          `Insufficient stock for ${product.title}${cart.size ? ` (size: ${cart.size})` : ""}: requested ${cart.qty}, available ${availableStock}`
+        );
+      }
+
       return {
         productId: product.sku,
         sanityProductId: product._id,
         name: product.title,
         price: product.price,
         qty: cart.qty,
-        size: cart.size || "",
+        size: sizeLabel,
         lineTotal: product.price * cart.qty,
       };
     });
