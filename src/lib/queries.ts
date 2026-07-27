@@ -9,6 +9,8 @@ const productFragment = `{
   description,
   meaning,
   details,
+  materials,
+  careInstructions,
   "image": image,
   gallery,
   badge,
@@ -31,7 +33,7 @@ export const siteSettingsQuery = `*[_type == "siteSettings"][0]{
   siteName, tagline, email, stewardshipEmail, phone, whatsappUrl, address,
   instagramUrl, facebookUrl, announcements, trustItems,
   footerShopLinks, footerBrandLinks, footerNewsletterTitle, footerNewsletterSubtext,
-  paymentMethodsText, taxRate,
+  paymentMethodsText, taxRate, enableAnalytics,
   "shippingOptions": shippingOptions[]-> | order(sortOrder asc) {
     _id,
     id,

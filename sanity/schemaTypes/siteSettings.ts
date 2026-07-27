@@ -61,6 +61,13 @@ export const siteSettings = defineType({
     defineField({ name: "paymentMethodsText", title: "Payment Methods Text", type: "string" }),
     defineField({ name: "taxRate", title: "Tax Rate (decimal, e.g. 0.08)", type: "number", initialValue: 0.08 }),
     defineField({
+      name: "enableAnalytics",
+      title: "Enable Google Analytics",
+      type: "boolean",
+      initialValue: true,
+      description: "Toggle Google Analytics tracking on or off for the site.",
+    }),
+    defineField({
       name: "shippingOptions",
       title: "Shipping Options (override documents)",
       type: "array",

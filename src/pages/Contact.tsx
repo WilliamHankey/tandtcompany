@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Mail, MapPin } from "lucide-react";
+import { MessageCircle, Mail, MapPin, Phone, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { useContactPage, useSiteSettings } from "@/hooks/useSanityContent";
 
@@ -27,12 +27,15 @@ const Contact = () => {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const whatsappUrl = settings?.whatsappUrl || "https://wa.me/27000000000";
-  const email = settings?.email || "hello@tandt.co";
+  const whatsappUrl = settings?.whatsappUrl || "https://wa.me/27614852498";
+  const email = settings?.email || "stewardship@tandtcompany.com";
+  const phone = settings?.phone || "+27 (0) 61 485 2498";
   const address =
-    settings?.address || "[Address — edit in Sanity Site Settings]";
+    settings?.address || "South Africa";
 
-  const submit = (e: React.FormEvent) => {
+  const [sending, setSending] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const r = schema.safeParse(form);
@@ -49,15 +52,32 @@ const Contact = () => {
     }
 
     setErrors({});
+    setSending(true);
 
-    const subject = encodeURIComponent(`Hello from ${form.name}`);
-    const body = encodeURIComponent(
-      `${form.message}\n\n— ${form.name} (${form.email})`,
-    );
+    try {
+      const res = await fetch("/api/emails/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
 
-    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+      const data = await res.json();
 
-    toast.success("Opening your email…");
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to send message");
+      }
+
+      toast.success("Message sent", {
+        description: "We'll get back to you within 24 business hours.",
+      });
+      setForm({ name: "", email: "", message: "" });
+    } catch (err) {
+      toast.error("Failed to send message", {
+        description: err instanceof Error ? err.message : "Please try again or email us directly.",
+      });
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -77,8 +97,84 @@ const Contact = () => {
         </p>
       </section>
 
+      {/* Business Info Cards */}
+      <section className="container-prose px-6 pb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-cream border border-border p-5 shadow-soft text-center">
+            <Clock className="h-5 w-5 text-gold mx-auto mb-3" />
+            <p className="eyebrow !text-gold mb-1">Support Hours</p>
+            <p className="text-sm text-navy font-medium">Mon – Fri</p>
+            <p className="text-sm text-muted-foreground">08:00 – 17:00 SAST</p>
+          </div>
+          <div className="bg-cream border border-border p-5 shadow-soft text-center">
+            <Mail className="h-5 w-5 text-gold mx-auto mb-3" />
+            <p className="eyebrow !text-gold mb-1">Email Us</p>
+            <a href={`mailto:${email}`} className="text-sm text-navy font-medium link-underline">
+              {email}
+            </a>
+          </div>
+          <div className="bg-cream border border-border p-5 shadow-soft text-center">
+            <Phone className="h-5 w-5 text-gold mx-auto mb-3" />
+            <p className="eyebrow !text-gold mb-1">Call Us</p>
+            <a href={`tel:${phone.replace(/\s/g, "")}`} className="text-sm text-navy font-medium link-underline">
+              {phone}
+            </a>
+          </div>
+          <div className="bg-cream border border-border p-5 shadow-soft text-center">
+            <MessageCircle className="h-5 w-5 text-gold mx-auto mb-3" />
+            <p className="eyebrow !text-gold mb-1">WhatsApp</p>
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-navy font-medium link-underline"
+            >
+              Message us
+            </a>
+          </div>
+        </div>
+        <p className="text-center text-xs text-muted-foreground mt-4">
+          We aim to respond within 24 business hours.
+        </p>
+      </section>
+
       <section className="container-prose px-6 pb-28 md:pb-32 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
         <div className="space-y-6 md:space-y-8">
+          {/* Company Information */}
+          <div className="bg-cream border border-border p-6 sm:p-8 shadow-elegant">
+            <p className="eyebrow !text-gold mb-4">Company Information</p>
+            <div className="space-y-4 text-sm">
+              <div>
+                <p className="text-muted-foreground">Company Name</p>
+                <p className="font-serif text-navy text-lg">T AND T COMPANY (Pty) Ltd</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Trading Name</p>
+                <p className="font-serif text-navy">T & T Company</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Business Type</p>
+                <p className="font-serif text-navy">Faith-Led Lifestyle & Apparel</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Physical Address */}
+          <div className="bg-cream border border-border p-6 sm:p-8 shadow-soft">
+            <div className="flex items-start gap-4">
+              <div className="h-11 w-11 rounded-full bg-gold/15 text-gold grid place-items-center shrink-0">
+                <MapPin className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="eyebrow !text-gold">Our Address</p>
+                <p className="mt-3 font-serif text-xl sm:text-2xl text-navy whitespace-pre-line leading-snug">
+                  {address}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* WhatsApp */}
           <div className="bg-cream border border-border p-6 sm:p-8 shadow-soft">
             <div className="flex flex-col sm:flex-row items-start gap-4 min-w-0">
               <div className="h-11 w-11 rounded-full bg-gold/15 text-gold grid place-items-center shrink-0">
@@ -87,7 +183,7 @@ const Contact = () => {
 
               <div className="min-w-0 w-full">
                 <p className="eyebrow !text-gold break-words">
-                  {page?.heroEyebrow || "Direct Connection"}
+                  Direct Connection
                 </p>
 
                 <h2 className="font-serif text-2xl sm:text-3xl text-navy mt-2 break-words">
@@ -95,8 +191,7 @@ const Contact = () => {
                 </h2>
 
                 <p className="mt-4 text-sm sm:text-base text-muted-foreground leading-relaxed break-words">
-                  {page?.formIntro ||
-                    "For immediate assistance or a more personal touch, our team is available via WhatsApp."}
+                  For immediate assistance or a more personal touch, our team is available via WhatsApp.
                 </p>
 
                 <Button
@@ -112,45 +207,10 @@ const Contact = () => {
                   >
                     <MessageCircle className="h-4 w-4 mr-2 shrink-0" />
                     <span className="break-words">
-                      {page?.whatsappLabel || "Message on WhatsApp"}
+                      Message on WhatsApp
                     </span>
                   </a>
                 </Button>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-cream border border-border p-6 sm:p-8 shadow-soft">
-            <div className="flex items-start gap-4">
-              <div className="h-11 w-11 rounded-full bg-gold/15 text-gold grid place-items-center shrink-0">
-                <Mail className="h-5 w-5" />
-              </div>
-
-              <div className="min-w-0">
-                <p className="eyebrow !text-gold">Email</p>
-
-                <a
-                  href={`mailto:${email}`}
-                  className="mt-3 block font-serif text-xl sm:text-2xl text-navy break-words"
-                >
-                  {email}
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-cream border border-border p-6 sm:p-8 shadow-soft">
-            <div className="flex items-start gap-4">
-              <div className="h-11 w-11 rounded-full bg-gold/15 text-gold grid place-items-center shrink-0">
-                <MapPin className="h-5 w-5" />
-              </div>
-
-              <div>
-                <p className="eyebrow !text-gold">Our Office</p>
-
-                <p className="mt-3 font-serif text-xl sm:text-2xl text-navy whitespace-pre-line leading-snug">
-                  {address}
-                </p>
               </div>
             </div>
           </div>
@@ -244,10 +304,15 @@ const Contact = () => {
             type="submit"
             variant="outlineNavy"
             size="lg"
+            disabled={sending}
             className="w-full !text-gold !border-gold hover:!bg-gold hover:!text-cream"
           >
-            Send Message
+            {sending ? "Sending…" : "Send Message"}
           </Button>
+
+          <p className="text-xs text-muted-foreground text-center">
+            We aim to respond within 24 business hours during Mon–Fri, 08:00–17:00 SAST.
+          </p>
         </form>
       </section>
     </Layout>

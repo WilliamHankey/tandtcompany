@@ -1,90 +1,26 @@
-import type { ReactNode } from "react";
 import Layout from "@/components/Layout";
+import { Link } from "react-router-dom";
+import { Mail, MapPin, Phone } from "lucide-react";
 import { useState, useEffect } from "react";
-import { CheckCircle2, Mail, MapPin } from "lucide-react";
-import { useTermsPage, useSiteSettings } from "@/hooks/useSanityContent";
-import { PortableTextBlock } from "@/components/PortableTextBlock";
-import { imageUrl } from "@/lib/sanity";
-import heroFallback from "@/assets/hero.jpg";
 
-type FallbackSection = {
-  id: string;
-  title: string;
-  content: ReactNode;
-};
-
-const fallbackSections: FallbackSection[] = [
-  {
-    id: "general",
-    title: "General Information",
-    content: (
-      <>
-        <p>Welcome to T AND T COMPANY. By accessing our website and services, you agree to be bound by the following terms and conditions.</p>
-        <p>These terms apply to all visitors, users, and others who access or use our Service.</p>
-      </>
-    ),
-  },
-  {
-    id: "products",
-    title: "Products & Availability",
-    content: (
-      <p>All products shown on our site are subject to availability. We strive to provide accurate representations of our items.</p>
-    ),
-  },
-  {
-    id: "pricing",
-    title: "Pricing",
-    content: <p>All prices are listed in ZAR unless otherwise specified.</p>,
-  },
-  {
-    id: "orders",
-    title: "Orders & Payments",
-    content: (
-      <>
-        <p>We utilize <span className="font-serif text-navy">Paystack</span> for secure, encrypted payment processing.</p>
-        <ul className="mt-5 space-y-3">
-          <li className="flex gap-3 text-sm"><CheckCircle2 className="h-4 w-4 text-gold mt-0.5 shrink-0" />Order confirmation emails are sent upon successful transaction.</li>
-        </ul>
-      </>
-    ),
-  },
-  {
-    id: "shipping",
-    title: "Shipping & Delivery",
-    content: <p>T AND T COMPANY ships across South Africa. Standard processing time is 2–4 business days.</p>,
-  },
-  {
-    id: "returns",
-    title: "Returns & Exchanges",
-    content: <p>You may return unworn items within 30 days of delivery in original condition.</p>,
-  },
-  {
-    id: "privacy",
-    title: "Privacy Policy",
-    content: <p>We collect only information necessary to process orders. We do not sell your data for marketing.</p>,
-  },
-  {
-    id: "contact",
-    title: "Contact Information",
-    content: (
-      <ul className="mt-6 space-y-3 text-sm">
-        <li className="flex items-center gap-3"><Mail className="h-4 w-4 text-gold" />stewardship@tandtcompany.com</li>
-        <li className="flex items-center gap-3"><MapPin className="h-4 w-4 text-gold" />South Africa | Global Operations</li>
-      </ul>
-    ),
-  },
+const sections = [
+  { id: "company", title: "Company Details" },
+  { id: "definitions", title: "Definitions" },
+  { id: "orders", title: "Orders" },
+  { id: "pricing", title: "Pricing & Taxes" },
+  { id: "payment", title: "Payment" },
+  { id: "shipping", title: "Shipping & Delivery" },
+  { id: "returns", title: "Returns & Exchanges" },
+  { id: "refunds", title: "Refunds" },
+  { id: "liability", title: "Limitation of Liability" },
+  { id: "privacy", title: "Privacy" },
+  { id: "intellectual", title: "Intellectual Property" },
+  { id: "governing", title: "Governing Law" },
+  { id: "contact", title: "Contact" },
 ];
 
 const Terms = () => {
-  const { data: page } = useTermsPage();
-  const { data: settings } = useSiteSettings();
-  const cmsSections = page?.sections;
-  const sections = cmsSections?.length
-    ? cmsSections.map((s: { id: string; title: string }) => ({ id: s.id, title: s.title }))
-    : fallbackSections.map((s) => ({ id: s.id, title: s.title }));
-
-  const [active, setActive] = useState(sections[0]?.id || "general");
-  const heroImg = page?.heroImage ? imageUrl(page.heroImage, 1600) : heroFallback;
+  const [active, setActive] = useState(sections[0]?.id || "company");
 
   useEffect(() => {
     const onScroll = () => {
@@ -100,18 +36,18 @@ const Terms = () => {
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [sections]);
+  }, []);
 
   return (
     <Layout>
       <section className="relative bg-navy-deep text-cream pt-32 pb-20 overflow-hidden">
-        <img src={heroImg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-15" />
         <div className="relative container-prose text-center">
-          <h1 className="font-serif text-5xl md:text-6xl">{page?.heroHeadline || "Terms & Policies"}</h1>
+          <p className="eyebrow !text-gold mb-4">Legal</p>
+          <h1 className="font-serif text-5xl md:text-6xl">Terms & Conditions</h1>
           <p className="mt-6 text-cream/75 max-w-xl mx-auto leading-relaxed">
-            {page?.heroSubtext ||
-              "Establishing our commitment to excellence, integrity, and the shared values that define T AND T COMPANY."}
+            Please read these terms carefully before using our website or placing an order.
           </p>
+          <p className="mt-4 text-cream/50 text-xs">Last updated: 19 July 2026</p>
         </div>
       </section>
 
@@ -133,40 +69,185 @@ const Terms = () => {
         </aside>
 
         <div className="space-y-16 max-w-2xl">
-          {cmsSections?.length
-            ? cmsSections.map((s: { id: string; title: string; body?: unknown[]; callout?: { title?: string; text?: string } }) => (
-                <article key={s.id} id={s.id} className="scroll-mt-32">
-                  <h2 className="font-serif text-3xl text-navy">{s.title}</h2>
-                  <div className="hairline mt-4 mb-6 bg-border" />
-                  <PortableTextBlock value={s.body as never} />
-                  {s.callout?.title && (
-                    <div className="mt-6 bg-secondary/50 border-l-2 border-gold p-5">
-                      <p className="font-serif text-navy">{s.callout.title}</p>
-                      {s.callout.text && <p className="mt-2 text-sm">{s.callout.text}</p>}
-                    </div>
-                  )}
-                </article>
-              ))
-            : fallbackSections.map((s) => (
-                <article key={s.id} id={s.id} className="scroll-mt-32">
-                  <h2 className="font-serif text-3xl text-navy">{s.title}</h2>
-                  <div className="hairline mt-4 mb-6 bg-border" />
-                  <div className="space-y-4 text-foreground/85 leading-relaxed">{s.content}</div>
-                </article>
-              ))}
+          {/* 1. Company Details */}
+          <article id="company" className="scroll-mt-32 space-y-4">
+            <h2 className="font-serif text-3xl text-navy">Company Details</h2>
+            <div className="hairline mt-4 mb-6 bg-border" />
+            <div className="space-y-3 text-foreground/85 leading-relaxed text-sm">
+              <p><strong>Company Name:</strong> T AND T COMPANY (Pty) Ltd</p>
+              <p><strong>Trading Name:</strong> T & T Company</p>
+              <p><strong>Website:</strong> tandtcompany.co.za</p>
+              <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-gold" /> stewardship@tandtcompany.com</div>
+              <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-gold" /> +27 (0) 61 485 2498</div>
+              <div className="flex items-start gap-2"><MapPin className="h-4 w-4 text-gold mt-0.5" /> South Africa</div>
+            </div>
+          </article>
 
-          {page?.contactBlock && (
-            <article className="border-t border-border pt-12">
-              <h2 className="font-serif text-2xl text-navy">{page.contactBlock.title}</h2>
-              <p className="mt-4 text-muted-foreground">{page.contactBlock.body}</p>
-              <ul className="mt-4 space-y-2 text-sm">
-                <li className="flex items-center gap-3">
-                  <Mail className="h-4 w-4 text-gold" />
-                  {settings?.stewardshipEmail || settings?.email || "hello@tandt.co"}
-                </li>
+          {/* 2. Definitions */}
+          <article id="definitions" className="scroll-mt-32 space-y-4">
+            <h2 className="font-serif text-3xl text-navy">Definitions</h2>
+            <div className="hairline mt-4 mb-6 bg-border" />
+            <div className="space-y-3 text-foreground/85 leading-relaxed text-sm">
+              <p>In these Terms, the following definitions apply:</p>
+              <ul className="list-disc pl-6 space-y-2 mt-3">
+                <li><strong>"Company", "we", "us", "our"</strong> refers to T AND T COMPANY (Pty) Ltd.</li>
+                <li><strong>"Website"</strong> refers to tandtcompany.co.za and all associated pages.</li>
+                <li><strong>"Customer", "you", "your"</strong> refers to any individual or entity placing an order through the Website.</li>
+                <li><strong>"Products"</strong> refers to any items available for purchase on the Website.</li>
+                <li><strong>"Order"</strong> refers to a request to purchase Products submitted through the Website.</li>
               </ul>
-            </article>
-          )}
+            </div>
+          </article>
+
+          {/* 3. Orders */}
+          <article id="orders" className="scroll-mt-32 space-y-4">
+            <h2 className="font-serif text-3xl text-navy">Orders</h2>
+            <div className="hairline mt-4 mb-6 bg-border" />
+            <div className="space-y-3 text-foreground/85 leading-relaxed text-sm">
+              <p>By placing an Order, you confirm that:</p>
+              <ul className="list-disc pl-6 space-y-2 mt-3">
+                <li>You are at least 18 years of age.</li>
+                <li>All information provided during the Order process is accurate and complete.</li>
+                <li>You are authorised to use the payment method specified.</li>
+              </ul>
+              <p className="mt-4">An Order constitutes an offer to purchase. We reserve the right to accept or decline any Order at our sole discretion. An Order is only confirmed once you receive an Order Confirmation email.</p>
+              <p>If a Product is unavailable after an Order is placed, we will notify you and offer a full refund or an alternative.</p>
+            </div>
+          </article>
+
+          {/* 4. Pricing & Taxes */}
+          <article id="pricing" className="scroll-mt-32 space-y-4">
+            <h2 className="font-serif text-3xl text-navy">Pricing & Taxes</h2>
+            <div className="hairline mt-4 mb-6 bg-border" />
+            <div className="space-y-3 text-foreground/85 leading-relaxed text-sm">
+              <p>All prices displayed on the Website are in <strong>South African Rand (ZAR)</strong> and include South African Value-Added Tax (VAT) at the applicable rate (currently 15%).</p>
+              <p>We reserve the right to change prices at any time without prior notice. However, price changes will not affect Orders that have already been confirmed.</p>
+              <p>In the event of a pricing error, we reserve the right to cancel the Order and issue a full refund.</p>
+            </div>
+          </article>
+
+          {/* 5. Payment */}
+          <article id="payment" className="scroll-mt-32 space-y-4">
+            <h2 className="font-serif text-3xl text-navy">Payment</h2>
+            <div className="hairline mt-4 mb-6 bg-border" />
+            <div className="space-y-3 text-foreground/85 leading-relaxed text-sm">
+              <p>Payments are processed securely through <strong>Paystack</strong>, a PCI DSS Level 1 certified payment gateway. We accept the following payment methods:</p>
+              <ul className="list-disc pl-6 space-y-2 mt-3">
+                <li>Credit and debit cards (Visa, Mastercard)</li>
+                <li>Bank transfers (EFT)</li>
+                <li>Mobile money</li>
+              </ul>
+              <p className="mt-4">We do not store your credit card details, CVV, or banking credentials. All payment information is handled exclusively by Paystack.</p>
+              <p>Order confirmation will be sent via email once payment has been successfully processed.</p>
+            </div>
+          </article>
+
+          {/* 6. Shipping & Delivery */}
+          <article id="shipping" className="scroll-mt-32 space-y-4">
+            <h2 className="font-serif text-3xl text-navy">Shipping & Delivery</h2>
+            <div className="hairline mt-4 mb-6 bg-border" />
+            <div className="space-y-3 text-foreground/85 leading-relaxed text-sm">
+              <p>Orders are processed within 2–4 business days. Delivery times vary by shipping method and location:</p>
+              <ul className="list-disc pl-6 space-y-2 mt-3">
+                <li><strong>Pick-up:</strong> By arrangement, free of charge.</li>
+                <li><strong>Pudo (Locker-to-Locker):</strong> 3–5 business days, nationwide.</li>
+                <li><strong>Courier Guy (Door-to-Door):</strong> 2–4 business days for major centres, 4–7 for outlying areas.</li>
+              </ul>
+              <p className="mt-4">We currently ship within South Africa only. International shipping is not available at this time.</p>
+              <p>For full details, please refer to our <Link to="/shipping-policy" className="text-gold link-underline">Shipping Policy</Link>.</p>
+            </div>
+          </article>
+
+          {/* 7. Returns & Exchanges */}
+          <article id="returns" className="scroll-mt-32 space-y-4">
+            <h2 className="font-serif text-3xl text-navy">Returns & Exchanges</h2>
+            <div className="hairline mt-4 mb-6 bg-border" />
+            <div className="space-y-3 text-foreground/85 leading-relaxed text-sm">
+              <p>You may return unworn items within <strong>30 days</strong> of delivery, provided they are in their original condition with tags attached.</p>
+              <p>Items that have been worn, washed, altered, or are missing tags are not eligible for return.</p>
+              <p>For full details on the return process, eligible items, and non-returnable items, please refer to our <Link to="/returns-policy" className="text-gold link-underline">Returns Policy</Link>.</p>
+            </div>
+          </article>
+
+          {/* 8. Refunds */}
+          <article id="refunds" className="scroll-mt-32 space-y-4">
+            <h2 className="font-serif text-3xl text-navy">Refunds</h2>
+            <div className="hairline mt-4 mb-6 bg-border" />
+            <div className="space-y-3 text-foreground/85 leading-relaxed text-sm">
+              <p>Approved refunds are processed within 5–7 business days using the original payment method. Please allow an additional 3–5 business days for the refund to reflect in your account.</p>
+              <p>Original shipping costs are non-refundable unless the return is due to our error.</p>
+              <p>For full details, please refer to our <Link to="/refund-policy" className="text-gold link-underline">Refund Policy</Link>.</p>
+            </div>
+          </article>
+
+          {/* 9. Limitation of Liability */}
+          <article id="liability" className="scroll-mt-32 space-y-4">
+            <h2 className="font-serif text-3xl text-navy">Limitation of Liability</h2>
+            <div className="hairline mt-4 mb-6 bg-border" />
+            <div className="space-y-3 text-foreground/85 leading-relaxed text-sm">
+              <p>To the maximum extent permitted by law:</p>
+              <ul className="list-disc pl-6 space-y-2 mt-3">
+                <li>The Website and Products are provided "as is" without warranties of any kind, express or implied.</li>
+                <li>We shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the Website or Products.</li>
+                <li>Our total liability for any claim shall not exceed the purchase price of the Product giving rise to the claim.</li>
+              </ul>
+              <p className="mt-4">Nothing in these Terms excludes or limits liability for fraud, gross negligence, or any liability that cannot be excluded under South African law.</p>
+            </div>
+          </article>
+
+          {/* 10. Privacy */}
+          <article id="privacy" className="scroll-mt-32 space-y-4">
+            <h2 className="font-serif text-3xl text-navy">Privacy</h2>
+            <div className="hairline mt-4 mb-6 bg-border" />
+            <div className="space-y-3 text-foreground/85 leading-relaxed text-sm">
+              <p>Your privacy is important to us. We collect, use, and protect your personal information in accordance with the Protection of Personal Information Act 4 of 2013 (POPIA).</p>
+              <p>For full details on how we handle your data, please refer to our <Link to="/privacy-policy" className="text-gold link-underline">Privacy Policy</Link> and <Link to="/cookie-policy" className="text-gold link-underline">Cookie Policy</Link>.</p>
+            </div>
+          </article>
+
+          {/* 11. Intellectual Property */}
+          <article id="intellectual" className="scroll-mt-32 space-y-4">
+            <h2 className="font-serif text-3xl text-navy">Intellectual Property</h2>
+            <div className="hairline mt-4 mb-6 bg-border" />
+            <div className="space-y-3 text-foreground/85 leading-relaxed text-sm">
+              <p>All content on the Website — including but not limited to text, graphics, logos, images, product designs, and software — is the intellectual property of T AND T COMPANY (Pty) Ltd and is protected by South African and international copyright and trademark laws.</p>
+              <p>You may not reproduce, distribute, modify, or create derivative works from any content without our prior written consent.</p>
+            </div>
+          </article>
+
+          {/* 12. Governing Law */}
+          <article id="governing" className="scroll-mt-32 space-y-4">
+            <h2 className="font-serif text-3xl text-navy">Governing Law</h2>
+            <div className="hairline mt-4 mb-6 bg-border" />
+            <div className="space-y-3 text-foreground/85 leading-relaxed text-sm">
+              <p>These Terms are governed by and construed in accordance with the laws of the Republic of South Africa. Any disputes arising from these Terms shall be subject to the exclusive jurisdiction of the courts of South Africa.</p>
+            </div>
+          </article>
+
+          {/* 13. Contact */}
+          <article id="contact" className="scroll-mt-32 space-y-4">
+            <h2 className="font-serif text-3xl text-navy">Contact</h2>
+            <div className="hairline mt-4 mb-6 bg-border" />
+            <div className="space-y-3 text-foreground/85 leading-relaxed text-sm">
+              <p>If you have any questions about these Terms, please contact us:</p>
+              <div className="mt-4 bg-cream border border-border p-5 shadow-soft space-y-3">
+                <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-gold" /> stewardship@tandtcompany.com</div>
+                <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-gold" /> +27 (0) 61 485 2498</div>
+                <div className="flex items-start gap-2"><MapPin className="h-4 w-4 text-gold mt-0.5" /> South Africa</div>
+              </div>
+            </div>
+          </article>
+
+          <div className="border-t border-border pt-10">
+            <p className="text-sm text-muted-foreground">
+              Related policies:{" "}
+              <Link to="/privacy-policy" className="text-gold link-underline">Privacy Policy</Link> ·{" "}
+              <Link to="/shipping-policy" className="text-gold link-underline">Shipping Policy</Link> ·{" "}
+              <Link to="/returns-policy" className="text-gold link-underline">Returns Policy</Link> ·{" "}
+              <Link to="/refund-policy" className="text-gold link-underline">Refund Policy</Link> ·{" "}
+              <Link to="/cookie-policy" className="text-gold link-underline">Cookie Policy</Link>
+            </p>
+          </div>
         </div>
       </section>
     </Layout>

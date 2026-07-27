@@ -7,7 +7,7 @@ import ProductCard from "@/components/ProductCard";
 import { useCart } from "@/context/CartContext";
 import { useProduct, useResolvedProducts } from "@/hooks/useSanityContent";
 import { toast } from "sonner";
-import { Minus, Plus, Truck, RotateCcw, ShieldCheck, Star } from "lucide-react";
+import { Minus, Plus, Truck, RotateCcw, ShieldCheck, Star, Package, Shirt } from "lucide-react";
 
 const ProductDetail = () => {
   const { slug } = useParams();
@@ -16,6 +16,7 @@ const ProductDetail = () => {
 
   const [qty, setQty] = useState(1);
   const [selectedImage, setSelectedImage] = useState("");
+  const [selectedSize, setSelectedSize] = useState("");
 
   const { add } = useCart();
   const navigate = useNavigate();
@@ -25,6 +26,13 @@ const ProductDetail = () => {
       setSelectedImage(product.image);
     }
   }, [product?.image]);
+
+  useEffect(() => {
+    if (product?.sizes?.length && !selectedSize) {
+      const inStock = product.sizes.find((s) => s.inStock);
+      if (inStock) setSelectedSize(inStock.label);
+    }
+  }, [product?.sizes, selectedSize]);
 
   const galleryImages = useMemo(() => {
     if (!product?.gallery) return [];
@@ -53,15 +61,18 @@ const ProductDetail = () => {
   }
 
   const mainImage = selectedImage || product.image;
+  const hasSizes = product.sizes && product.sizes.length > 0;
 
   return (
     <Layout>
       <section className="container-prose pt-28 md:pt-36 pb-24 grid lg:grid-cols-2 gap-10 lg:gap-20">
         <div className="space-y-4">
           <div className="relative overflow-hidden bg-secondary aspect-square">
-            <span className="absolute left-4 top-4 z-10 bg-gold px-3 py-1 text-[10px] tracking-[0.2em] uppercase text-navy-deep">
-              Limited Release
-            </span>
+            {product.badge && (
+              <span className="absolute left-4 top-4 z-10 bg-gold px-3 py-1 text-[10px] tracking-[0.2em] uppercase text-navy-deep">
+                {product.badge}
+              </span>
+            )}
 
             <img
               src={mainImage}
@@ -120,7 +131,7 @@ const ProductDetail = () => {
                 <Star key={i} className="h-4 w-4 fill-gold text-gold" />
               ))}
             </div>
-            <span className="text-sm text-muted-foreground">128 reviews</span>
+            <span className="text-sm text-muted-foreground">Trusted by 1 200+ customers</span>
           </div>
 
           <div className="mt-7 flex items-baseline gap-3">
@@ -142,7 +153,7 @@ const ProductDetail = () => {
           </div>
 
           <p className="text-sm text-muted-foreground mt-1">
-            Tax included. Shipping calculated at checkout.
+            Tax included (VAT 15%). Shipping calculated at checkout.
           </p>
 
           <p className="mt-8 leading-relaxed text-foreground/80">
@@ -153,6 +164,32 @@ const ProductDetail = () => {
             <p className="eyebrow mb-3">The Meaning</p>
             <p className="italic font-serif text-lg">{product.meaning}</p>
           </div>
+
+          {/* Sizes */}
+          {hasSizes && (
+            <div className="mt-10">
+              <p className="eyebrow mb-3">Size</p>
+              <div className="flex flex-wrap gap-2">
+                {product.sizes!.map((size) => (
+                  <button
+                    key={size.label}
+                    type="button"
+                    disabled={!size.inStock}
+                    onClick={() => setSelectedSize(size.label)}
+                    className={`px-4 py-2 border text-sm font-medium transition ${
+                      selectedSize === size.label
+                        ? "border-gold bg-gold text-navy-deep"
+                        : size.inStock
+                          ? "border-border hover:border-navy"
+                          : "border-border opacity-40 cursor-not-allowed line-through"
+                    }`}
+                  >
+                    {size.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="mt-10 flex flex-col sm:flex-row gap-4">
             <div className="flex border border-border h-14">
@@ -177,12 +214,13 @@ const ProductDetail = () => {
               variant="navy"
               size="lg"
               className="w-full"
+              disabled={product.inStock === false}
               onClick={() => {
                 add(product, qty);
                 toast.success("Added to bag", { description: product.name });
               }}
             >
-              Add to Bag · {formatZAR(product.price * qty)}
+              {product.inStock === false ? "Out of Stock" : `Add to Bag · ${formatZAR(product.price * qty)}`}
             </Button>
           </div>
 
@@ -190,6 +228,7 @@ const ProductDetail = () => {
             variant="gold"
             size="lg"
             className="mt-3 w-full"
+            disabled={product.inStock === false}
             onClick={() => {
               add(product, qty);
               navigate("/checkout");
@@ -198,15 +237,16 @@ const ProductDetail = () => {
             Buy It Now
           </Button>
 
+          {/* Trust badges */}
           <div className="mt-10 grid grid-cols-3 gap-5 py-8 border-y">
             <div className="text-center">
               <Truck className="mx-auto h-5 w-5 text-gold mb-2" />
-              <p className="text-[10px] uppercase">Free Over R1000</p>
+              <p className="text-[10px] uppercase">Nationwide Delivery</p>
             </div>
 
             <div className="text-center">
               <RotateCcw className="mx-auto h-5 w-5 text-gold mb-2" />
-              <p className="text-[10px] uppercase">14 Day Returns</p>
+              <p className="text-[10px] uppercase">30-Day Returns</p>
             </div>
 
             <div className="text-center">
@@ -215,18 +255,54 @@ const ProductDetail = () => {
             </div>
           </div>
 
+          {/* Product Details */}
           <div className="mt-10">
             <p className="eyebrow mb-4">Details</p>
-
             <ul className="space-y-3">
+              {product.sku && (
+                <li className="flex gap-3 text-muted-foreground text-sm">
+                  <Package className="h-4 w-4 text-gold shrink-0 mt-0.5" />
+                  <span>SKU: {product.sku}</span>
+                </li>
+              )}
+              <li className="flex gap-3 text-muted-foreground text-sm">
+                <ShieldCheck className="h-4 w-4 text-gold shrink-0 mt-0.5" />
+                <span>
+                  Stock:{" "}
+                  {product.inStock === false ? (
+                    <span className="text-red-600">Out of Stock</span>
+                  ) : (
+                    <span className="text-green-700">In Stock</span>
+                  )}
+                </span>
+              </li>
               {product.details?.map((d: string) => (
-                <li key={d} className="flex gap-3 text-muted-foreground">
-                  <span>—</span>
+                <li key={d} className="flex gap-3 text-muted-foreground text-sm">
+                  <span className="text-gold">—</span>
                   {d}
                 </li>
               ))}
             </ul>
           </div>
+
+          {/* Materials */}
+          {product.materials && (
+            <div className="mt-8">
+              <p className="eyebrow mb-3">Materials</p>
+              <p className="text-sm text-foreground/80 leading-relaxed">{product.materials}</p>
+            </div>
+          )}
+
+          {/* Care Instructions */}
+          {product.careInstructions && (
+            <div className="mt-8">
+              <p className="eyebrow mb-3">Care Instructions</p>
+              <div className="flex items-start gap-3 bg-cream border border-border p-4">
+                <Shirt className="h-4 w-4 text-gold shrink-0 mt-0.5" />
+                <p className="text-sm text-foreground/80 leading-relaxed">{product.careInstructions}</p>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -242,7 +318,7 @@ const ProductDetail = () => {
             .filter((p) => p.slug !== product.slug)
             .slice(0, 4)
             .map((p) => (
-              <ProductCard key={p.id} product={p} full={p} />
+              <ProductCard key={p._id} product={p} full={p} />
             ))}
         </div>
       </section>
@@ -251,12 +327,13 @@ const ProductDetail = () => {
         <Button
           variant="navy"
           className="w-full"
+          disabled={product.inStock === false}
           onClick={() => {
             add(product, qty);
             toast.success("Added to bag");
           }}
         >
-          Add To Bag · {formatZAR(product.price * qty)}
+          {product.inStock === false ? "Out of Stock" : `Add To Bag · ${formatZAR(product.price * qty)}`}
         </Button>
       </div>
     </Layout>

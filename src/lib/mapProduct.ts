@@ -19,6 +19,8 @@ type SanityProductRaw = {
   description?: string | null;
   meaning?: string | null;
   details?: string[] | null;
+  materials?: string | null;
+  careInstructions?: string | null;
   image?: SanityImageSource | string | null;
   gallery?: SanityImageSource[] | null;
   badge?: string | null;
@@ -57,6 +59,7 @@ export function mapSanityProduct(raw: SanityProductRaw): Product {
     : undefined;
 
   return {
+    _id: raw._id || "",
     id: raw.id || raw._id || "",
     slug: raw.slug || "",
     name: raw.name || raw.title || "Untitled product",
@@ -71,9 +74,14 @@ export function mapSanityProduct(raw: SanityProductRaw): Product {
     description: raw.description || "",
     meaning: raw.meaning || "",
     details: raw.details || [],
+    materials: raw.materials || "",
+    careInstructions: raw.careInstructions || "",
+    sku: raw.id || "",
+    sizes: [],
     badge: raw.badge || undefined,
     category: raw.category || "",
     featured: Boolean(raw.featured),
     inStock: raw.inStock !== false,
+    currency: "ZAR",
   };
 }

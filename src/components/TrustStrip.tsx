@@ -1,4 +1,4 @@
-import { Truck, ShieldCheck, RotateCcw, Sparkles, type LucideIcon } from "lucide-react";
+import { Truck, ShieldCheck, RotateCcw, Sparkles, Star, type LucideIcon } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSanityContent";
 
 const iconMap: Record<string, LucideIcon> = {
@@ -6,13 +6,14 @@ const iconMap: Record<string, LucideIcon> = {
   shield: ShieldCheck,
   rotate: RotateCcw,
   sparkles: Sparkles,
+  star: Star,
 };
 
 const defaultItems = [
-  { icon: "truck", title: "Nationwide Delivery", text: "Tracked shipping across South Africa, 2–4 working days." },
-  { icon: "shield", title: "Secure Checkout", text: "Encrypted payments via Paystack & EFT." },
-  { icon: "rotate", title: "Easy Returns", text: "14-day exchanges on unworn pieces." },
-  { icon: "sparkles", title: "Crafted to Last", text: "Premium fabrics, considered construction." },
+  { icon: "truck", title: "Nationwide Delivery", text: "Tracked shipping across South Africa, 2–7 working days." },
+  { icon: "shield", title: "Secure Checkout", text: "PCI DSS Level 1 certified. 256-bit SSL encryption via Paystack." },
+  { icon: "rotate", title: "30-Day Returns", text: "Hassle-free returns on unworn items within 30 days." },
+  { icon: "sparkles", title: "Crafted to Last", text: "Premium fabrics, considered construction, ethically made." },
 ];
 
 const TrustStrip = () => {

@@ -10,7 +10,7 @@ import { formatZAR } from "@/types/product";
 import { useSiteSettings } from "@/hooks/useSanityContent";
 import { payWithPaystack } from "@/lib/paystack";
 import { toast } from "sonner";
-import { ShieldCheck, Truck, RotateCcw, Lock } from "lucide-react";
+import { ShieldCheck, Truck, RotateCcw, Lock, CreditCard, CheckCircle2 } from "lucide-react";
 
 const schema = z.object({
   fullName: z.string().trim().min(2).max(100),
@@ -20,6 +20,9 @@ const schema = z.object({
   address: z.string().trim().min(5).max(500),
   city: z.string().trim().min(2).max(100),
   postcode: z.string().trim().min(3).max(20),
+  billingAddress: z.union([z.literal(""), z.string().trim().min(5).max(500)]),
+  billingCity: z.union([z.literal(""), z.string().trim().min(2).max(100)]),
+  billingPostcode: z.union([z.literal(""), z.string().trim().min(3).max(20)]),
 });
 
 type SiteSettings = {
@@ -49,7 +52,7 @@ const defaultDelivery = [
     id: "courier" as const,
     name: "Courier Guy",
     price: 100,
-    sub: "Door-to-door delivery across the region.",
+    sub: "Door-to-door delivery across South Africa.",
   },
 ];
 
@@ -75,10 +78,15 @@ const Checkout = () => {
     address: "",
     city: "",
     postcode: "",
+    billingAddress: "",
+    billingCity: "",
+    billingPostcode: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [delivery, setDelivery] = useState<DeliveryOpt>("pickup");
   const [submitting, setSubmitting] = useState(false);
+  const [sameAsDelivery, setSameAsDelivery] = useState(true);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const deliveryOptions = settings?.shippingOptions?.length
     ? settings.shippingOptions.map(
@@ -121,6 +129,8 @@ const Checkout = () => {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("[Checkout] submit fired", { form, delivery, sameAsDelivery, acceptedTerms, items });
+
     const r = schema.safeParse(form);
     if (!r.success) {
       const errs: Record<string, string> = {};
@@ -128,14 +138,25 @@ const Checkout = () => {
         errs[i.path[0] as string] = i.message;
       });
       setErrors(errs);
+      console.log("[Checkout] validation failed", errs);
       return;
     }
+
+    if (!acceptedTerms) {
+      setErrors({ terms: "You must accept the Terms & Conditions to proceed." });
+      console.log("[Checkout] terms not accepted");
+      return;
+    }
+
     setErrors({});
     setSubmitting(true);
+    console.log("[Checkout] validation passed, starting order flow");
 
     const paystackKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
+    console.log("[Checkout] PAYSTACK_KEY present?", !!paystackKey);
 
     const completeOrder = (paymentRef: string) => {
+      console.log("[Checkout] completeOrder called", paymentRef);
       clear();
       toast.success("Payment verified", {
         description: `Reference ${paymentRef}`,
@@ -152,49 +173,68 @@ const Checkout = () => {
     }
 
     try {
+      const payload = JSON.stringify({
+        customer: {
+          fullName: form.fullName,
+          email: form.email,
+          phone: form.phone,
+        },
+        shipping: {
+          delivery,
+          country: form.country,
+          address: form.address,
+          city: form.city,
+          postcode: form.postcode,
+        },
+        billing: sameAsDelivery
+          ? {
+              address: form.address,
+              city: form.city,
+              postcode: form.postcode,
+            }
+          : {
+              address: form.billingAddress,
+              city: form.billingCity,
+              postcode: form.billingPostcode,
+            },
+        items: items.map((i) => ({
+          id: i.product.id,
+          qty: i.qty,
+        })),
+      });
+      console.log("[Checkout] POST /api/orders/create body", JSON.parse(payload));
+
       const orderRes = await fetch("/api/orders/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customer: {
-            fullName: form.fullName,
-            email: form.email,
-            phone: form.phone,
-          },
-          shipping: {
-            delivery,
-            country: form.country,
-            address: form.address,
-            city: form.city,
-            postcode: form.postcode,
-          },
-          items: items.map((i) => ({
-            id: i.product.id,
-            qty: i.qty,
-          })),
-        }),
+        body: payload,
       });
 
       const order = await orderRes.json();
+      console.log("[Checkout] /api/orders/create response", { ok: orderRes.ok, status: orderRes.status, order });
 
       if (!orderRes.ok) {
         throw new Error(order.error || "Could not create order");
       }
 
+      console.log("[Checkout] calling payWithPaystack", { email: form.email, amountZar: order.total, reference: order.reference });
       await payWithPaystack({
         email: form.email,
         amountZar: order.total,
         reference: order.reference,
         onSuccess: async (paymentRef) => {
+          console.log("[Checkout] payWithPaystack onSuccess", paymentRef);
           completeOrder(paymentRef);
           setSubmitting(false);
         },
         onCancel: () => {
+          console.log("[Checkout] payWithPaystack onCancel");
           setSubmitting(false);
           toast.info("Payment cancelled");
         },
       });
     } catch (err) {
+      console.log("[Checkout] caught error", err);
       setSubmitting(false);
       toast.error("Payment failed", {
         description: err instanceof Error ? err.message : "Please try again",
@@ -218,6 +258,7 @@ const Checkout = () => {
           noValidate
         >
           <div className="lg:col-span-2 space-y-14">
+            {/* 01 — Delivery Details */}
             <div>
               <SectionHeader n="01" title="Delivery Details" />
               <div className="grid sm:grid-cols-2 gap-6">
@@ -344,8 +385,39 @@ const Checkout = () => {
               </div>
             </div>
 
+            {/* Billing Address */}
             <div>
-              <SectionHeader n="02" title="Delivery Option" />
+              <SectionHeader n="02" title="Billing Address" />
+              <label className="flex items-center gap-3 mb-6 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={sameAsDelivery}
+                  onChange={(e) => setSameAsDelivery(e.target.checked)}
+                  className="h-4 w-4 accent-gold"
+                />
+                <span className="text-sm text-foreground/80">Same as delivery address</span>
+              </label>
+              {!sameAsDelivery && (
+                <div className="grid sm:grid-cols-2 gap-6">
+                  <div className="sm:col-span-2">
+                    <Label htmlFor="billingAddress" className="eyebrow">Billing Street Address</Label>
+                    <Input id="billingAddress" placeholder="House number and street name" className="mt-2" value={form.billingAddress} onChange={set("billingAddress")} />
+                  </div>
+                  <div>
+                    <Label htmlFor="billingCity" className="eyebrow">Town / City</Label>
+                    <Input id="billingCity" placeholder="City" className="mt-2" value={form.billingCity} onChange={set("billingCity")} />
+                  </div>
+                  <div>
+                    <Label htmlFor="billingPostcode" className="eyebrow">Postcode / ZIP</Label>
+                    <Input id="billingPostcode" placeholder="00000" className="mt-2" value={form.billingPostcode} onChange={set("billingPostcode")} />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 03 — Delivery Option */}
+            <div>
+              <SectionHeader n="03" title="Delivery Option" />
               <div className="grid sm:grid-cols-3 gap-4">
                 {deliveryOptions.map((opt) => (
                   <button
@@ -377,8 +449,9 @@ const Checkout = () => {
               </div>
             </div>
 
+            {/* 04 — Payment Method */}
             <div>
-              <SectionHeader n="03" title="Payment Method" />
+              <SectionHeader n="04" title="Payment Method" />
               <div className="border border-border p-6 bg-cream">
                 <div className="flex items-center gap-3 pb-4 border-b border-border">
                   <ShieldCheck className="h-5 w-5 text-navy" />
@@ -391,14 +464,45 @@ const Checkout = () => {
                   opens to pay by card, bank transfer, or mobile money. Your
                   order is confirmed once payment succeeds.
                 </p>
+
+                {/* Accepted payment methods */}
                 <div className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
+                  <CreditCard className="h-4 w-4" />
+                  <span>Accepted: Visa · Mastercard · EFT · Mobile Money</span>
+                </div>
+                <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
                   <Lock className="h-4 w-4" />
-                  <span>256-bit encrypted · PCI DSS compliant</span>
+                  <span>256-bit SSL encryption · PCI DSS Level 1 compliant</span>
                 </div>
               </div>
             </div>
+
+            {/* Terms & Conditions */}
+            <div>
+              <SectionHeader n="05" title="Terms & Conditions" />
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className="h-4 w-4 accent-gold mt-0.5"
+                />
+                <span className="text-sm text-foreground/80 leading-relaxed">
+                  I have read and agree to the{" "}
+                  <Link to="/terms" target="_blank" className="text-gold link-underline">Terms & Conditions</Link>,{" "}
+                  <Link to="/privacy-policy" target="_blank" className="text-gold link-underline">Privacy Policy</Link>,{" "}
+                  <Link to="/shipping-policy" target="_blank" className="text-gold link-underline">Shipping Policy</Link>,{" "}
+                  <Link to="/returns-policy" target="_blank" className="text-gold link-underline">Returns Policy</Link>, and{" "}
+                  <Link to="/refund-policy" target="_blank" className="text-gold link-underline">Refund Policy</Link>.
+                </span>
+              </label>
+              {errors.terms && (
+                <p className="text-destructive text-xs mt-2 ml-7">{errors.terms}</p>
+              )}
+            </div>
           </div>
 
+          {/* Order Summary */}
           <aside className="lg:sticky lg:top-28 h-fit border-t-2 border-gold bg-cream border border-border p-8 shadow-elegant">
             <h3 className="font-serif text-2xl text-navy">Order Summary</h3>
             <ul className="mt-6 space-y-5">
@@ -415,6 +519,11 @@ const Checkout = () => {
                     <p className="font-serif text-navy leading-tight">
                       {product.name}
                     </p>
+                    {product.sizes && (
+                      <p className="text-muted-foreground mt-1 text-xs">
+                        Size: {product.sizes.find((s) => s.inStock)?.label || "One Size"}
+                      </p>
+                    )}
                     <p className="text-muted-foreground mt-1 text-xs">
                       Qty {qty}
                     </p>
@@ -438,7 +547,7 @@ const Checkout = () => {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span>Taxes (Est.)</span>
+                <span>VAT (15%)</span>
                 <span className="tabular-nums">{formatZAR(tax)}</span>
               </div>
             </div>
@@ -453,7 +562,7 @@ const Checkout = () => {
               type="submit"
               variant="gold"
               size="lg"
-              disabled={submitting}
+              disabled={submitting || !acceptedTerms}
               className="w-full mt-8"
             >
               {submitting ? "Opening payment…" : "Complete Purchase"}
@@ -464,7 +573,7 @@ const Checkout = () => {
               <RotateCcw className="h-4 w-4" />
             </div>
             <p className="text-[0.65rem] uppercase tracking-[0.2em] text-muted-foreground text-center mt-3">
-              Secure checkout · Global shipping · 30-day returns
+              Secure checkout · South Africa-wide shipping · 30-day returns
             </p>
           </aside>
         </form>

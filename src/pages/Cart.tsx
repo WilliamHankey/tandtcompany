@@ -3,10 +3,16 @@ import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { formatZAR } from "@/data/products";
-import { Minus, Plus, X, ShieldCheck } from "lucide-react";
+import { useSiteSettings } from "@/hooks/useSanityContent";
+import { Minus, Plus, X, ShieldCheck, Truck, RotateCcw, Lock } from "lucide-react";
 
 const Cart = () => {
   const { items, setQty, remove, subtotal } = useCart();
+  const { data: rawSettings } = useSiteSettings();
+  const settings = rawSettings as { taxRate?: number } | undefined;
+  const taxRate = settings?.taxRate ?? 0.08;
+  const tax = Math.round(subtotal * taxRate);
+  const total = subtotal + tax;
 
   return (
     <Layout>
@@ -34,6 +40,11 @@ const Cart = () => {
                       <p className="mt-1 text-[0.65rem] uppercase tracking-[0.22em] text-muted-foreground">
                         {product.tagline}
                       </p>
+                      {product.sizes && (
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Size: {product.sizes.find((s) => s.inStock)?.label || "One Size"}
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center border border-border">
                       <button onClick={() => setQty(product.id, qty - 1)} className="h-9 w-9 grid place-items-center hover:bg-secondary"><Minus className="h-3 w-3" /></button>
@@ -54,16 +65,28 @@ const Cart = () => {
                 <p className="eyebrow !text-gold">Order Summary</p>
                 <div className="mt-6 space-y-4 text-sm">
                   <div className="flex justify-between"><span>Subtotal</span><span className="tabular-nums">{formatZAR(subtotal)}</span></div>
-                  <div className="flex justify-between text-muted-foreground"><span>Tax</span><span className="tabular-nums">{formatZAR(0)}</span></div>
+                  <div className="flex justify-between text-muted-foreground"><span>VAT (15%)</span><span className="tabular-nums">{formatZAR(tax)}</span></div>
+                  <div className="flex justify-between text-muted-foreground"><span>Shipping</span><span className="text-xs">Calculated at checkout</span></div>
                 </div>
                 <div className="border-t border-border my-6" />
                 <div className="flex justify-between items-baseline">
                   <span className="font-serif text-2xl text-navy">Total</span>
-                  <span className="font-serif text-2xl text-gold tabular-nums">{formatZAR(subtotal)}</span>
+                  <span className="font-serif text-2xl text-gold tabular-nums">{formatZAR(total)}</span>
                 </div>
-                <Button asChild variant="gold" size="lg" className="w-full mt-8"><Link to="/checkout">Proceed to Checkout</Link></Button>
-                <p className="text-xs text-muted-foreground mt-4 text-center">
-                  Safe and secure checkout via encrypted gateway.
+                <p className="text-xs text-muted-foreground mt-2 text-center">
+                  Incl. VAT · Shipping calculated at checkout
+                </p>
+                <Button asChild variant="gold" size="lg" className="w-full mt-6"><Link to="/checkout">Proceed to Checkout</Link></Button>
+
+                {/* Trust signals */}
+                <div className="mt-6 flex items-center justify-center gap-4 text-muted-foreground">
+                  <ShieldCheck className="h-4 w-4" />
+                  <Truck className="h-4 w-4" />
+                  <RotateCcw className="h-4 w-4" />
+                  <Lock className="h-4 w-4" />
+                </div>
+                <p className="text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground text-center mt-2">
+                  Secure checkout · Paystack PCI DSS Level 1 · 30-day returns
                 </p>
               </div>
 

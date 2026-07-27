@@ -9,6 +9,7 @@ const links = [
   { to: "/about", label: "About" },
   { to: "/shop", label: "Shop" },
   { to: "/contact", label: "Contact" },
+  { to: "/faq", label: "FAQ" },
 ];
 
 const Header = () => {

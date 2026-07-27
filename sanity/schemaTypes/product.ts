@@ -1,4 +1,5 @@
 import { defineField, defineType } from "sanity";
+import SkuInput from "./components/SkuInput";
 
 export const product = defineType({
   name: "product",
@@ -13,7 +14,14 @@ export const product = defineType({
       options: { source: "title", maxLength: 96 },
       validation: (r) => r.required(),
     }),
-    defineField({ name: "sku", title: "SKU / ID", type: "string", validation: (r) => r.required() }),
+    defineField({
+      name: "sku",
+      title: "SKU / ID",
+      type: "string",
+      description: "Auto-generated in format TTC-XXX-000. Click 'Generate SKU' after entering the product title.",
+      validation: (r) => r.required(),
+      components: { input: SkuInput },
+    }),
     defineField({ name: "price", title: "Price (ZAR)", type: "number", validation: (r) => r.required().min(0) }),
     defineField({
       name: "sale",
@@ -96,6 +104,8 @@ export const product = defineType({
     defineField({ name: "description", title: "Description", type: "text", rows: 4 }),
     defineField({ name: "meaning", title: "Meaning / Story", type: "text", rows: 3 }),
     defineField({ name: "details", title: "Details", type: "array", of: [{ type: "string" }] }),
+    defineField({ name: "materials", title: "Materials", type: "text", rows: 2, description: "Describe the materials used in this product." }),
+    defineField({ name: "careInstructions", title: "Care Instructions", type: "text", rows: 2, description: "How to care for this product (washing, drying, ironing, etc.)." }),
     defineField({
       name: "image",
       title: "Primary Image",

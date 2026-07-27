@@ -200,7 +200,7 @@ const Home = () => {
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-10">
             {featured.map((p) => (
-              <ProductCard key={p.id} product={p} full={p} />
+              <ProductCard key={p._id} product={p} full={p} />
             ))}
           </div>
           <div className="mt-12 text-center md:hidden">

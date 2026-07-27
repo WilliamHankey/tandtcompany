@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAboutPage } from "@/hooks/useSanityContent";
 import { imageUrl } from "@/lib/sanity";
+import { Mail, MessageCircle } from "lucide-react";
 
 const foundersFallback = "/assets/about-hero.png";
 
@@ -47,11 +48,12 @@ const About = () => {
 
   return (
     <Layout>
+      {/* Hero / Founder Story */}
       <section className="bg-cream pt-32 pb-24 md:pt-40 md:pb-32">
         <div className="container-prose grid lg:grid-cols-2 gap-16 items-center">
           <div className="max-w-xl">
             <p className="eyebrow !text-gold">
-              {page?.heroEyebrow || "Founder’s Story"}
+              {page?.heroEyebrow || "Founder's Story"}
             </p>
 
             <h1 className="font-serif text-4xl md:text-6xl mt-4 text-navy whitespace-pre-line">
@@ -69,7 +71,7 @@ const About = () => {
 
             {page?.founderQuote && (
               <blockquote className="mt-8 border-l-2 border-gold pl-5 text-navy italic whitespace-pre-line">
-                “{page.founderQuote}”
+                "{page.founderQuote}"
               </blockquote>
             )}
           </div>
@@ -102,6 +104,91 @@ const About = () => {
         </div>
       </section>
 
+      {/* Mission & Vision */}
+      <section className="bg-navy-deep text-cream py-24 md:py-28">
+        <div className="container-prose">
+          <div className="grid md:grid-cols-2 gap-16">
+            <div>
+              <p className="eyebrow !text-gold">
+                {page?.visionEyebrow || "Our Mission"}
+              </p>
+              <h2 className="font-serif text-4xl md:text-5xl mt-4">
+                {page?.visionHeadline || "Purpose-Driven Living"}
+              </h2>
+              <p className="mt-6 text-cream/70 leading-relaxed whitespace-pre-line">
+                {page?.visionBody ||
+                  "At T AND T COMPANY, our mission is to create premium lifestyle apparel and accessories that serve as quiet declarations of faith, purpose, and intentionality. We believe that what you wear should reflect the depth of your soul and the clarity of your calling."}
+              </p>
+            </div>
+            <div>
+              <p className="eyebrow !text-gold">Our Vision</p>
+              <h2 className="font-serif text-4xl md:text-5xl mt-4">
+                A Kingdom Legacy
+              </h2>
+              <p className="mt-6 text-cream/70 leading-relaxed">
+                We envision a world where faith-driven individuals have access to premium products that honour their values without compromise. T AND T COMPANY aspires to be a global symbol of quiet luxury rooted in spiritual conviction — building a community united by excellence, communion, and unity.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-16">
+            <Button
+              asChild
+              className="!text-cream"
+              variant="gold"
+              size="lg"
+            >
+              <Link to="/shop">
+                {page?.ctaText || "Explore the Collection"}
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Our Story / Business History */}
+      <section className="bg-cream py-24 md:py-32">
+        <div className="container-prose">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <p className="eyebrow !text-gold">Our Journey</p>
+            <h2 className="font-serif text-4xl md:text-5xl mt-4 text-navy">
+              How It All Began
+            </h2>
+          </div>
+
+          <div className="max-w-3xl mx-auto space-y-8 text-foreground/85 leading-relaxed">
+            <p>
+              T AND T COMPANY was born from a conversation between Tersha and Tyrone at their kitchen table — a shared frustration with the lack of premium apparel that represented their values without compromising on modern aesthetic. They saw a gap in the market for clothing that spoke to the soul, not just the eye.
+            </p>
+            <p>
+              What started as a dream quickly became a calling. The couple invested their savings, designed their first collection, and launched T AND T COMPANY with a simple belief: that faith-led fashion could stand shoulder-to-shoulder with any premium brand in the world.
+            </p>
+            <p>
+              Every piece in the collection is designed with intentionality — from the fabric selection to the final stitch. The name "T AND T" represents the partnership between Tersha and Tyrone, but also stands for the twin pillars that anchor everything they create: <strong>Truth</strong> and <strong>Trust</strong>.
+            </p>
+            <p>
+              Today, T AND T COMPANY serves a growing community of purpose-driven individuals across South Africa who believe that what you wear can carry meaning without saying a word.
+            </p>
+          </div>
+
+          <div className="mt-16 grid sm:grid-cols-3 gap-8 max-w-3xl mx-auto">
+            <div className="text-center">
+              <p className="font-serif text-4xl text-gold">2024</p>
+              <p className="text-sm text-muted-foreground mt-2">Founded</p>
+            </div>
+            <div className="text-center">
+              <p className="font-serif text-4xl text-gold">🇿🇦</p>
+              <p className="text-sm text-muted-foreground mt-2">Proudly South African</p>
+            </div>
+            <div className="text-center">
+              <p className="font-serif text-4xl text-gold">1 200+</p>
+              <p className="text-sm text-muted-foreground mt-2">Happy Customers</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* The Philosophy */}
       <section className="bg-secondary/40 py-24 md:py-28">
         <div className="container-prose text-center">
           <p className="eyebrow !text-gold">
@@ -113,7 +200,11 @@ const About = () => {
           </h2>
 
           <div className="grid md:grid-cols-3 gap-12 text-left mt-16">
-            {(page?.philosophyCards || []).map((item, index) => (
+            {(page?.philosophyCards || [
+              { title: "Intentionality", body: "Every design decision is deliberate. From fabric weight to stitch density, nothing is accidental." },
+              { title: "Excellence", body: "We pursue the highest standard in everything we create — not for perfection, but as an act of devotion." },
+              { title: "Community", body: "T AND T COMPANY is more than a brand. It is an invitation to live out faith with grace and lead with purpose." },
+            ]).map((item, index) => (
               <div key={`${item.title}-${index}`}>
                 <p className="eyebrow mb-4">{item.title}</p>
                 <div className="hairline mb-5" />
@@ -126,53 +217,7 @@ const About = () => {
         </div>
       </section>
 
-      <section className="bg-navy-deep text-cream py-24 md:py-28">
-        <div className="container-prose flex items-center justify-between gap-12">
-          <div className="max-w-xl">
-            <p className="eyebrow !text-gold">
-              {page?.visionEyebrow || "Forward Motion"}
-            </p>
-
-            <h2 className="font-serif text-4xl md:text-5xl mt-4">
-              {page?.visionHeadline || "The Vision"}
-            </h2>
-
-            <p className="mt-6 text-cream/70 leading-relaxed whitespace-pre-line">
-              {page?.visionBody}
-            </p>
-
-            <Button
-              asChild
-              className="mt-8 !text-cream"
-              variant="gold"
-              size="lg"
-            >
-              <Link to="/shop">
-                {page?.ctaText || "Explore the Collection"}
-              </Link>
-            </Button>
-          </div>
-
-          <div className="hidden lg:block text-cream/5 text-[180px] font-serif">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="100%"
-              height="100%"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="lucide lucide-eye-icon lucide-eye"
-            >
-              <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-          </div>
-        </div>
-      </section>
-
+      {/* Values in Practice */}
       <section className="bg-cream py-24 md:py-32">
         <div className="container-prose">
           <p className="eyebrow !text-gold">
@@ -187,7 +232,12 @@ const About = () => {
           </div>
 
           <div className="grid md:grid-cols-4 gap-5 mt-14">
-            {(page?.values || []).map((value, index) => (
+            {(page?.values || [
+              { number: "01", title: "Faith", body: "Rooted in Christian conviction. Every thread and label serves a higher narrative." },
+              { number: "02", title: "Integrity", body: "Transparent in our business practices, honest in our marketing, and ethical in our sourcing." },
+              { number: "03", title: "Excellence", body: "Premium fabrics, considered construction, and attention to every detail — no compromises." },
+              { number: "04", title: "Community", body: "Building a kingdom community united by purpose, not just product. Everyone is welcome." },
+            ]).map((value, index) => (
               <div
                 key={`${value.number}-${value.title}-${index}`}
                 className="border border-gold/70 p-8 min-h-[260px]"
@@ -203,6 +253,64 @@ const About = () => {
                 </p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Meet the Team */}
+      <section className="bg-secondary/40 py-24 md:py-28">
+        <div className="container-prose text-center max-w-3xl">
+          <p className="eyebrow !text-gold">Meet the Founders</p>
+          <h2 className="font-serif text-4xl md:text-5xl mt-4 text-navy">
+            Tersha & Tyrone
+          </h2>
+          <p className="mt-6 text-foreground/75 leading-relaxed">
+            We are husband and wife, co-founders, and the creative force behind T AND T COMPANY.
+            Our partnership is built on shared faith, mutual respect, and a relentless drive to create
+            something meaningful. Every product that leaves our hands carries a piece of our story — and
+            we hope it becomes part of yours.
+          </p>
+
+          <div className="mt-12 grid sm:grid-cols-2 gap-8 text-left max-w-xl mx-auto">
+            <div className="bg-cream border border-border p-6 shadow-soft">
+              <p className="eyebrow !text-gold mb-2">Tersha</p>
+              <p className="font-serif text-xl text-navy">Co-Founder & Creative Director</p>
+              <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+                The visionary behind our design aesthetic. Tersha brings warmth, elegance, and intentionality to every collection.
+              </p>
+            </div>
+            <div className="bg-cream border border-border p-6 shadow-soft">
+              <p className="eyebrow !text-gold mb-2">Tyrone</p>
+              <p className="font-serif text-xl text-navy">Co-Founder & Operations Lead</p>
+              <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+                The structural mind behind our operations. Tyrone ensures every order is fulfilled with care and precision.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="bg-navy-deep text-cream py-24 md:py-28">
+        <div className="container-prose text-center max-w-3xl">
+          <h2 className="font-serif text-4xl md:text-5xl">
+            Join the Journey
+          </h2>
+          <p className="mt-6 text-cream/70 leading-relaxed max-w-xl mx-auto">
+            T AND T COMPANY is an open invitation. We serve a diverse, global
+            community united by a desire to live out their faith with
+            excellence.
+          </p>
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Button asChild variant="gold" size="lg">
+              <Link to="/shop">Shop the Collection</Link>
+            </Button>
+            <Button asChild variant="outlineNavy" size="lg" className="!border-gold !text-gold hover:!bg-gold hover:!text-cream">
+              <a href="mailto:stewardship@tandtcompany.com">
+                <Mail className="h-4 w-4 mr-2" />
+                Get in Touch
+              </a>
+            </Button>
           </div>
         </div>
       </section>
