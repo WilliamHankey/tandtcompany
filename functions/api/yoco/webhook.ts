@@ -6,6 +6,7 @@ type Env = {
   VITE_SANITY_API_VERSION: string;
   SANITY_API_TOKEN: string;
   YOCO_SECRET_KEY: string;
+  YOCO_WEBHOOK_SECRET: string;
   RESEND_API_KEY: string;
   RESEND_FROM_EMAIL: string;
 };
@@ -21,24 +22,63 @@ const json = (body: unknown, status = 200) =>
     headers: { "Content-Type": "application/json" },
   });
 
-async function sha256HmacHex(secret: string, body: string) {
+// --- Yoco webhook signature verification ---------------------------------
+// Scheme (from Yoco Checkout API docs):
+//   signedContent = `${webhook-id}.${webhook-timestamp}.${rawBody}`
+//   secret = base64decode( whsec_xxx.split("_")[1] )
+//   expectedSig = base64( HMAC-SHA256(secret, signedContent) )
+//   header `webhook-signature` = "v1,<base64sig> [v1,<base64sig> ...]"
+
+function b64ToBytes(b64: string): Uint8Array {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+async function verifyYocoSignature(
+  secret: string,
+  id: string,
+  timestamp: string,
+  rawBody: string,
+  headerSig: string
+): Promise<boolean> {
+  const signedContent = `${id}.${timestamp}.${rawBody}`;
+
+  const keyBytes = b64ToBytes(secret.replace(/^whsec_/, "").replace(/=$/, ""));
   const key = await crypto.subtle.importKey(
     "raw",
-    new TextEncoder().encode(secret),
+    keyBytes,
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"]
   );
 
-  const signature = await crypto.subtle.sign(
+  const sigBuf = await crypto.subtle.sign(
     "HMAC",
     key,
-    new TextEncoder().encode(body)
+    new TextEncoder().encode(signedContent)
+  );
+  const expected = btoa(
+    String.fromCharCode(...new Uint8Array(sigBuf))
   );
 
-  return [...new Uint8Array(signature)]
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  // header may contain multiple "v1,<sig>" entries separated by spaces
+  const candidates = headerSig
+    .split(" ")
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((s) => s.replace(/^v\d+,/, ""));
+
+  let matched = false;
+  for (const cand of candidates) {
+    if (cand.length === expected.length) {
+      const a = new TextEncoder().encode(cand);
+      const b = new TextEncoder().encode(expected);
+      if (crypto.subtle.timingSafeEqual(a, b)) matched = true;
+    }
+  }
+  return matched;
 }
 
 async function sanityFetch<T>(
@@ -47,7 +87,6 @@ async function sanityFetch<T>(
   params: Record<string, unknown> = {}
 ): Promise<T> {
   const url = `https://${env.VITE_SANITY_PROJECT_ID}.api.sanity.io/v${env.VITE_SANITY_API_VERSION}/data/query/${env.VITE_SANITY_DATASET}`;
-
   const res = await fetch(url, {
     method: "POST",
     headers: {
@@ -56,49 +95,56 @@ async function sanityFetch<T>(
     },
     body: JSON.stringify({ query, params }),
   });
-
   const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data?.error?.description || "Sanity query failed");
-  }
-
+  if (!res.ok) throw new Error(data?.error?.description || "Sanity query failed");
   return data.result as T;
 }
 
 async function sanityPatch(env: Env, id: string, set: Record<string, unknown>) {
   const url = `https://${env.VITE_SANITY_PROJECT_ID}.api.sanity.io/v${env.VITE_SANITY_API_VERSION}/data/mutate/${env.VITE_SANITY_DATASET}`;
-
   const res = await fetch(url, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${env.SANITY_API_TOKEN}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      mutations: [{ patch: { id, set } }],
-    }),
+    body: JSON.stringify({ mutations: [{ patch: { id, set } }] }),
   });
-
   const data = await res.json().catch(() => ({}));
-
-  if (!res.ok) {
-    throw new Error(data?.error?.description || "Sanity patch failed");
-  }
+  if (!res.ok) throw new Error(data?.error?.description || "Sanity patch failed");
 }
 
 export async function onRequestPost({ request, env }: FunctionContext) {
   try {
-    const signature = request.headers.get("yoco-signature");
+    const id = request.headers.get("webhook-id");
+    const timestamp = request.headers.get("webhook-timestamp");
+    const signature = request.headers.get("webhook-signature");
 
-    if (!signature) {
-      return json({ error: "Missing Yoco signature" }, 401);
+    if (!id || !timestamp || !signature) {
+      return json({ error: "Missing Yoco webhook headers" }, 401);
+    }
+
+    if (!env.YOCO_WEBHOOK_SECRET) {
+      return json({ error: "YOCO_WEBHOOK_SECRET is not configured" }, 500);
     }
 
     const rawBody = await request.text();
-    const hash = await sha256HmacHex(env.YOCO_SECRET_KEY, rawBody);
 
-    if (hash !== signature) {
+    // Replay protection: timestamp within 3 minutes
+    const ts = parseInt(timestamp, 10);
+    const now = Math.floor(Date.now() / 1000);
+    if (Math.abs(now - ts) > 180) {
+      return json({ error: "Webhook timestamp out of range" }, 401);
+    }
+
+    const ok = await verifyYocoSignature(
+      env.YOCO_WEBHOOK_SECRET,
+      id,
+      timestamp,
+      rawBody,
+      signature
+    );
+    if (!ok) {
       return json({ error: "Invalid Yoco signature" }, 401);
     }
 
@@ -110,21 +156,23 @@ export async function onRequestPost({ request, env }: FunctionContext) {
         amount?: number;
         currency?: string;
         paidAt?: string;
-        metadata?: {
-          orderId?: string;
-          reference?: string;
-        };
+        metadata?: { checkoutId?: string; orderId?: string; reference?: string };
       };
     };
 
-    if (event.event !== "checkout.completed") {
+    const evtName = event.event || "";
+    const isPaid =
+      event.data?.status === "successful" ||
+      /(succeeded|completed|paid)/i.test(evtName);
+
+    if (!isPaid) {
       return json({ received: true });
     }
 
-    const checkout = event.data;
-
-    if (!checkout?.metadata?.orderId) {
-      return json({ error: "Missing orderId in metadata" }, 400);
+    const checkoutId =
+      event.data?.metadata?.checkoutId || event.data?.metadata?.orderId;
+    if (!checkoutId) {
+      return json({ error: "Missing checkoutId in metadata" }, 400);
     }
 
     const order = await sanityFetch<{
@@ -135,37 +183,30 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       currency: string;
     }>(
       env,
-      `*[_type == "order" && _id == $orderId][0]{
-        _id,
-        reference,
-        status,
-        total,
-        currency
+      `*[_type == "order" && yoco.checkoutId == $checkoutId][0]{
+        _id, reference, status, total, currency
       }`,
-      { orderId: checkout.metadata.orderId }
+      { checkoutId }
     );
 
     if (!order) {
-      return json({ error: "Order not found" }, 404);
+      return json({ error: "Order not found for checkout" }, 404);
     }
 
     const expectedAmount = Math.round(order.total * 100);
-
     if (
-      checkout.status === "successful" &&
-      checkout.amount === expectedAmount &&
-      checkout.currency === order.currency
+      event.data?.amount === expectedAmount &&
+      event.data?.currency === order.currency
     ) {
       await sanityPatch(env, order._id, {
         status: "paid",
-        "yoco.paidAt": checkout.paidAt,
+        "yoco.paidAt": event.data?.paidAt,
         "yoco.rawVerifyResponse": rawBody,
       });
 
       const fullOrder = await sanityFetch<{
         _id: string;
         reference: string;
-        status: string;
         total: number;
         tax: number;
         subtotal: number;
@@ -176,18 +217,14 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       }>(
         env,
         `*[_type == "order" && _id == $orderId][0]{
-          _id, reference, status, total, tax, subtotal, currency,
-          customer,
-          shipping,
-          items
+          _id, reference, total, tax, subtotal, currency, customer, shipping, items
         }`,
-        { orderId: checkout.metadata.orderId }
+        { orderId: order._id }
       );
 
       if (fullOrder?.customer?.email && env.RESEND_API_KEY) {
         try {
           const resend = new Resend(env.RESEND_API_KEY);
-
           await resend.emails.send({
             from: env.RESEND_FROM_EMAIL,
             to: fullOrder.customer.email,
@@ -202,44 +239,28 @@ export async function onRequestPost({ request, env }: FunctionContext) {
                   <p style="margin: 4px 0 0; color: #071726; font-size: 20px; font-weight: 600;">#${fullOrder.reference}</p>
                 </div>
                 <table style="width: 100%; border-collapse: collapse; margin: 24px 0;">
-                  <thead>
-                    <tr>
-                      <td style="padding: 0 0 8px; border-bottom: 2px solid #071726; color: #071726; font-weight: 600;">Item</td>
-                      <td style="padding: 0 0 8px; border-bottom: 2px solid #071726; text-align: right; color: #071726; font-weight: 600;">Total</td>
-                    </tr>
-                  </thead>
+                  <thead><tr>
+                    <td style="padding: 0 0 8px; border-bottom: 2px solid #071726; color: #071726; font-weight: 600;">Item</td>
+                    <td style="padding: 0 0 8px; border-bottom: 2px solid #071726; text-align: right; color: #071726; font-weight: 600;">Total</td>
+                  </tr></thead>
                   <tbody>
-                    ${(fullOrder.items || []).map((item: { name: string; price: number; qty: number }) => `
+                    ${(fullOrder.items || []).map((item) => `
                       <tr>
                         <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #333;">${item.name} &times; ${item.qty}</td>
                         <td style="padding: 12px 0; border-bottom: 1px solid #eee; text-align: right; color: #333;">R ${(item.price * item.qty).toLocaleString("en-ZA", { minimumFractionDigits: 2 })}</td>
-                      </tr>
-                    `).join("")}
+                      </tr>`).join("")}
                   </tbody>
                 </table>
                 <div style="margin: 16px 0; padding-top: 8px; border-top: 1px solid #eee;">
-                  <div style="display: flex; justify-content: space-between; padding: 4px 0; color: #555;">
-                    <span>Subtotal</span><span>R ${(fullOrder.subtotal || 0).toLocaleString("en-ZA", { minimumFractionDigits: 2 })}</span>
-                  </div>
-                  <div style="display: flex; justify-content: space-between; padding: 4px 0; color: #555;">
-                    <span>Shipping (${fullOrder.shipping?.delivery || "standard"})</span>
-                    <span>${(fullOrder.shipping?.shippingCost || 0) === 0 ? "Free" : "R " + (fullOrder.shipping?.shippingCost || 0).toLocaleString("en-ZA", { minimumFractionDigits: 2 })}</span>
-                  </div>
-                  <div style="display: flex; justify-content: space-between; padding: 4px 0; color: #555;">
-                    <span>VAT</span><span>R ${(fullOrder.tax || 0).toLocaleString("en-ZA", { minimumFractionDigits: 2 })}</span>
-                  </div>
-                  <div style="display: flex; justify-content: space-between; padding: 12px 0 0; margin-top: 8px; border-top: 2px solid #071726; font-size: 18px; font-weight: 600; color: #071726;">
-                    <span>Total</span><span>R ${fullOrder.total.toLocaleString("en-ZA", { minimumFractionDigits: 2 })}</span>
-                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 4px 0; color: #555;"><span>Subtotal</span><span>R ${(fullOrder.subtotal || 0).toLocaleString("en-ZA", { minimumFractionDigits: 2 })}</span></div>
+                  <div style="display: flex; justify-content: space-between; padding: 4px 0; color: #555;"><span>Shipping (${fullOrder.shipping?.delivery || "standard"})</span><span>${(fullOrder.shipping?.shippingCost || 0) === 0 ? "Free" : "R " + (fullOrder.shipping?.shippingCost || 0).toLocaleString("en-ZA", { minimumFractionDigits: 2 })}</span></div>
+                  <div style="display: flex; justify-content: space-between; padding: 4px 0; color: #555;"><span>VAT</span><span>R ${(fullOrder.tax || 0).toLocaleString("en-ZA", { minimumFractionDigits: 2 })}</span></div>
+                  <div style="display: flex; justify-content: space-between; padding: 12px 0 0; margin-top: 8px; border-top: 2px solid #071726; font-size: 18px; font-weight: 600; color: #071726;"><span>Total</span><span>R ${fullOrder.total.toLocaleString("en-ZA", { minimumFractionDigits: 2 })}</span></div>
                 </div>
                 <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;" />
-                <p style="color: #555; font-size: 14px; line-height: 1.6;">
-                  You will receive a dispatch notification once your order ships. If you have any questions, reply to this email or reach out via
-                  <a href="mailto:stewardship@tandtcompany.com" style="color: #c5a55a;">stewardship@tandtcompany.com</a>.
-                </p>
+                <p style="color: #555; font-size: 14px; line-height: 1.6;">You will receive a dispatch notification once your order ships. If you have any questions, reply to this email or reach out via <a href="mailto:stewardship@tandtcompany.com" style="color: #c5a55a;">stewardship@tandtcompany.com</a>.</p>
                 <p style="color: #888; font-size: 12px; margin-top: 32px;">T AND T COMPANY (Pty) Ltd — A faith-led lifestyle brand.</p>
-              </div>
-            `,
+              </div>`,
           });
         } catch {
           // Email failure should not block webhook processing
@@ -250,12 +271,7 @@ export async function onRequestPost({ request, env }: FunctionContext) {
     return json({ received: true });
   } catch (error) {
     return json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Webhook processing failed",
-      },
+      { error: error instanceof Error ? error.message : "Webhook processing failed" },
       500
     );
   }
