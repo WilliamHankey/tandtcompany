@@ -13,28 +13,46 @@ const PaymentResult = () => {
   const [searchParams] = useSearchParams();
 
   // Check multiple possible parameter names that Yoco might use
-  const checkoutId = searchParams.get("checkout_id") ||
-                     searchParams.get("id") ||
-                     searchParams.get("reference") ||
-                     searchParams.get("session_id") ||
-                     sessionStorage.getItem("yoco_checkout_id");
+  const urlCheckoutId = searchParams.get("checkout_id") ||
+                        searchParams.get("id") ||
+                        searchParams.get("reference") ||
+                        searchParams.get("session_id") ||
+                        searchParams.get("checkoutId") ||
+                        searchParams.get("checkout_reference");
 
-  // Also check for status from URL or sessionStorage
+  // Fall back to sessionStorage (set before redirect in payWithYoco)
+  const sessionCheckoutId = sessionStorage.getItem("yoco_checkout_id");
+  const sessionReference = sessionStorage.getItem("yoco_checkout_reference");
+
+  // Also check localStorage as a last resort (persists across tabs)
+  const localCheckoutId = localStorage.getItem("yoco_checkout_id");
+  const localReference = localStorage.getItem("yoco_checkout_reference");
+
+  // Use the first available checkout ID
+  const checkoutId = urlCheckoutId || sessionCheckoutId || sessionReference || localCheckoutId || localReference;
+
+  // Check for status from URL or sessionStorage
   const urlStatus = searchParams.get("status") || searchParams.get("result");
   const sessionStatus = sessionStorage.getItem("yoco_checkout_status");
 
-  // Determine final status: URL status > session status > infer from checkoutId presence
+  // Determine final status
   const status = urlStatus || sessionStatus || (checkoutId ? "pending" : "unknown");
 
   useEffect(() => {
     const handleResult = async () => {
-      // Debug: log all search params for troubleshooting
-      console.log("Yoco redirect params:", Object.fromEntries(searchParams.entries()));
-      console.log("SessionStorage yoco_checkout_id:", sessionStorage.getItem("yoco_checkout_id"));
-      console.log("SessionStorage yoco_checkout_reference:", sessionStorage.getItem("yoco_checkout_reference"));
+      // Debug: log all search params and storage for troubleshooting
+      console.log("=== Yoco Redirect Debug ===");
+      console.log("URL search params:", Object.fromEntries(searchParams.entries()));
+      console.log("sessionStorage yoco_checkout_id:", sessionStorage.getItem("yoco_checkout_id"));
+      console.log("sessionStorage yoco_checkout_reference:", sessionStorage.getItem("yoco_checkout_reference"));
+      console.log("localStorage yoco_checkout_id:", localStorage.getItem("yoco_checkout_id"));
+      console.log("localStorage yoco_checkout_reference:", localStorage.getItem("yoco_checkout_reference"));
+      console.log("Resolved checkoutId:", checkoutId);
+      console.log("Resolved status:", status);
+      console.log("============================");
 
       if (!checkoutId) {
-        toast.error("Missing checkout reference. Please check your order status.");
+        toast.error("Missing checkout reference. Please check your order status or contact support.");
         navigate("/confirmation");
         return;
       }
@@ -50,14 +68,14 @@ const PaymentResult = () => {
         } else if (status === "failed" || urlStatus === "failed") {
           toast.error("Payment failed");
         } else {
-          toast.error("Could not verify payment status. Please contact support.");
+          toast.error("Could not verify payment status. Please contact support with your order reference.");
         }
         navigate("/confirmation");
       }
     };
 
     handleResult();
-  }, [checkoutId, status, navigate, searchParams]);
+  }, [checkoutId, status, navigate, searchParams, urlStatus, sessionCheckoutId, sessionReference, localCheckoutId, localReference]);
 
   const getIcon = () => {
     if (status === "success" || urlStatus === "success") return <CheckCircle2 className="h-8 w-8 text-green-600" />;
