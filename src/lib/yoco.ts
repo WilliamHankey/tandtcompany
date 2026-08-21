@@ -72,6 +72,7 @@ export async function payWithYoco(opts: {
     // Store the checkout ID for potential verification
     sessionStorage.setItem("yoco_checkout_id", init.id);
     sessionStorage.setItem("yoco_checkout_reference", init.reference);
+    sessionStorage.setItem("yoco_customer_email", opts.email);
 
     // Redirect to Yoco's hosted payment page
     window.location.href = init.redirectUrl;

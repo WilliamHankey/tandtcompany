@@ -59,9 +59,15 @@ const PaymentResult = () => {
 
       try {
         // Try to verify the checkout status with Yoco
-        await verifyCheckout(checkoutId);
+        const result = await verifyCheckout(checkoutId);
         toast.success("Payment successful!");
-        navigate("/confirmation", { state: { verified: true } });
+        // Get the order reference from sessionStorage (stored as yoco_checkout_reference)
+        const orderRef = sessionStorage.getItem("yoco_checkout_reference") || checkoutId;
+        // Try to get email from sessionStorage or use a default
+        const email = sessionStorage.getItem("yoco_customer_email") || "";
+        navigate("/confirmation", { 
+          state: { ref: orderRef, email: email, verified: true } 
+        });
       } catch {
         if (status === "cancelled" || urlStatus === "cancelled") {
           toast.info("Payment was cancelled");
