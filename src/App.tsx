@@ -27,6 +27,7 @@ import RefundPolicy from "./pages/RefundPolicy";
 import CookiePolicy from "./pages/CookiePolicy";
 import FAQ from "./pages/FAQ";
 import NotFound from "./pages/NotFound.tsx";
+import PaymentResult from "./pages/PaymentResult";
 
 const queryClient = new QueryClient();
 
@@ -69,7 +70,10 @@ const App = () => (
             <Route path="/shop/:slug" element={<ProductDetail />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
-            <Route path="/confirmation" element={<Confirmation />} />
+                        <Route path="/checkout/success" element={<PaymentResult />} />
+                        <Route path="/checkout/cancel" element={<PaymentResult />} />
+                        <Route path="/checkout/failure" element={<PaymentResult />} />
+                        <Route path="/confirmation" element={<Confirmation />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
