@@ -1,6 +1,6 @@
 # T & T Company
 
-T & T Company is a faith-led South African lifestyle and apparel storefront. The site combines a responsive React shopping experience with Sanity-managed content and Paystack payments in South African rand (ZAR).
+T & T Company is a faith-led South African lifestyle and apparel storefront. The site combines a responsive React shopping experience with Sanity-managed content and Yoco payments in South African rand (ZAR).
 
 ## Features
 
@@ -9,7 +9,7 @@ T & T Company is a faith-led South African lifestyle and apparel storefront. The
 - Local fallback content when Sanity is not configured or unavailable
 - Product filtering and individual product pages
 - Persistent browser cart backed by `localStorage`
-- Delivery options, order totals, and secure Paystack checkout
+- Delivery options, order totals, and secure Yoco checkout
 - Contact links and business details managed through Sanity
 - Separate Sanity Studio for content editors
 
@@ -22,7 +22,7 @@ T & T Company is a faith-led South African lifestyle and apparel storefront. The
 - Tailwind CSS
 - shadcn/ui and Radix UI
 - Sanity
-- Paystack Inline
+- Yoco Checkout API
 - React Hook Form and Zod
 - Vitest and Testing Library
 - ESLint
@@ -34,7 +34,7 @@ T & T Company is a faith-led South African lifestyle and apparel storefront. The
 - Node.js 18 or newer
 - npm
 - A Sanity project for CMS-backed content
-- A Paystack account for checkout testing
+- A Yoco account for checkout testing
 
 ### Installation
 
@@ -67,10 +67,10 @@ Copy `.env.example` to `.env` and replace the placeholder values.
 | `SANITY_STUDIO_DATASET` | Sanity Studio | Dataset used by the Studio |
 | `SANITY_STUDIO_HOSTNAME` | Sanity Studio | Hosted Studio subdomain |
 | `SANITY_API_TOKEN` | Setup scripts | Write token used to seed content and configure CORS |
-| `VITE_PAYSTACK_PUBLIC_KEY` | Browser | Paystack public key |
-| `PAYSTACK_SECRET_KEY` | Server only | Paystack secret key used by payment API handlers |
+| `VITE_YOCO_PUBLIC_KEY` | Browser | Yoco public key |
+| `YOCO_SECRET_KEY` | Server only | Yoco secret key used by payment API handlers |
 
-Never expose `PAYSTACK_SECRET_KEY` or `SANITY_API_TOKEN` in client-side code or commit a populated `.env` file.
+Never expose `YOCO_SECRET_KEY` or `SANITY_API_TOKEN` in client-side code or commit a populated `.env` file.
 
 ## Sanity CMS
 
@@ -88,12 +88,14 @@ The storefront continues to render its bundled fallback products and content whe
 
 ## Payments
 
-Checkout uses Paystack Inline and charges in ZAR. The browser calls:
+Checkout uses Yoco Checkout API and charges in ZAR. The browser calls:
 
-- `POST /api/paystack/initialize`
-- `POST /api/paystack/verify`
+- `POST /api/yoco/initialize` (creates a checkout session)
+- `POST /api/yoco/verify` (optional, for manual verification)
 
-Keep the Paystack secret key in the server environment. The Vite development configuration includes local payment-initialization middleware, while production must expose the payment API handlers and make both routes available over HTTPS. Use Paystack test keys during development and verify the complete successful-payment flow before enabling live keys.
+Keep the Yoco secret key in the server environment. The Vite development configuration includes local payment-initialization middleware, while production must expose the payment API handlers and make both routes available over HTTPS. Use Yoco test keys during development and verify the complete successful-payment flow before enabling live keys.
+
+The Yoco webhook endpoint `POST /api/yoco/webhook` handles asynchronous payment confirmation.
 
 ## Available scripts
 
@@ -139,7 +141,7 @@ Keep the Paystack secret key in the server environment. The Vite development con
 │   ├── context/            Cart state and persistence
 │   ├── data/               Fallback catalogue content
 │   ├── hooks/              Sanity-backed data hooks
-│   ├── lib/                Sanity and Paystack clients
+│   ├── lib/                Sanity and Yoco clients
 │   ├── pages/              Route-level page components
 │   ├── types/              Shared TypeScript types
 │   ├── App.tsx             Providers and application routes
@@ -157,16 +159,17 @@ npm test
 npm run build
 ```
 
-Also test Sanity and fallback content, cart persistence, delivery totals, Paystack success/cancellation/failure, and responsive navigation and checkout.
+Also test Sanity and fallback content, cart persistence, delivery totals, Yoco success/cancellation/failure, and responsive navigation and checkout.
 
 ## Deployment notes
 
 - Configure all required environment variables in the hosting platform.
 - Serve the SPA with history fallback so React Router routes resolve.
-- Provide secure server-side Paystack initialization and verification handlers.
+- Provide secure server-side Yoco initialization and verification handlers.
 - Add the production storefront origin to Sanity CORS.
 - Confirm the Sanity dataset is populated and readable.
-- Exercise checkout with Paystack test keys before switching to live keys.
+- Exercise checkout with Yoco test keys before switching to live keys.
+- Verify the Yoco webhook URL is configured in the Yoco dashboard.
 
 ## License
 

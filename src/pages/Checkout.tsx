@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useCart } from "@/context/CartContext";
 import { formatZAR } from "@/types/product";
 import { useSiteSettings } from "@/hooks/useSanityContent";
-import { payWithPaystack } from "@/lib/paystack";
+import { payWithYoco } from "@/lib/yoco";
 import { toast } from "sonner";
 import { ShieldCheck, Truck, RotateCcw, Lock, CreditCard, CheckCircle2 } from "lucide-react";
 
@@ -149,24 +149,6 @@ const Checkout = () => {
     setErrors({});
     setSubmitting(true);
 
-    const paystackKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
-
-    const completeOrder = (paymentRef: string) => {
-      clear();
-      toast.success("Payment verified", {
-        description: `Reference ${paymentRef}`,
-      });
-      navigate("/confirmation", {
-        state: { ref: paymentRef, email: form.email },
-      });
-    };
-
-    if (!paystackKey) {
-      setSubmitting(false);
-      toast.error("Payment is not configured");
-      return;
-    }
-
     try {
       const payload = JSON.stringify({
         customer: {
@@ -211,17 +193,29 @@ const Checkout = () => {
         throw new Error(order.error || "Could not create order");
       }
 
-      await payWithPaystack({
+      await payWithYoco({
         email: form.email,
         amountZar: order.total,
         reference: order.reference,
         onSuccess: async (paymentRef) => {
-          completeOrder(paymentRef);
+          clear();
+          toast.success("Payment verified", {
+            description: `Reference ${paymentRef}`,
+          });
+          navigate("/confirmation", {
+            state: { ref: paymentRef, email: form.email },
+          });
           setSubmitting(false);
         },
         onCancel: () => {
           setSubmitting(false);
           toast.info("Payment cancelled");
+        },
+        onFailure: () => {
+          setSubmitting(false);
+          toast.error("Payment failed", {
+            description: "Please try again or contact support",
+          });
         },
       });
     } catch (err) {
@@ -429,7 +423,9 @@ const Checkout = () => {
                         </p>
                       </div>
                       <span
-                        className={`h-4 w-4 rounded-full border ${delivery === opt.id ? "border-gold bg-gold" : "border-border"}`}
+                        className={`h-4 w-4 rounded-full border ${
+                          delivery === opt.id ? "border-gold bg-gold" : "border-border"
+                        }`}
                       />
                     </div>
                     <p className="mt-4 text-xs text-muted-foreground leading-relaxed">
@@ -447,19 +443,19 @@ const Checkout = () => {
                 <div className="flex items-center gap-3 pb-4 border-b border-border">
                   <ShieldCheck className="h-5 w-5 text-navy" />
                   <p className="font-serif text-navy">
-                    Secure payment via Paystack
+                    Secure payment via Yoco
                   </p>
                 </div>
                 <p className="mt-6 text-sm text-muted-foreground leading-relaxed">
-                  When you click Complete Purchase, a secure Paystack window
-                  opens to pay by card, bank transfer, or mobile money. Your
+                  When you click Complete Purchase, you will be redirected to Yoco's secure
+                  payment page to pay by card, bank transfer (EFT), or Apple Pay. Your
                   order is confirmed once payment succeeds.
                 </p>
 
                 {/* Accepted payment methods */}
                 <div className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
                   <CreditCard className="h-4 w-4" />
-                  <span>Accepted: Visa · Mastercard · EFT · Mobile Money</span>
+                  <span>Accepted: Visa · Mastercard · EFT · Apple Pay</span>
                 </div>
                 <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
                   <Lock className="h-4 w-4" />
@@ -552,7 +548,7 @@ const Checkout = () => {
               disabled={submitting || !acceptedTerms}
               className="w-full mt-8"
             >
-              {submitting ? "Opening payment…" : "Complete Purchase"}
+              {submitting ? "Redirecting to payment…" : "Complete Purchase"}
             </Button>
             <div className="mt-6 flex items-center justify-center gap-5 text-muted-foreground">
               <ShieldCheck className="h-4 w-4" />
