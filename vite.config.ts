@@ -176,6 +176,7 @@ function ordersCreateApi(env: Record<string, string>): Plugin {
             if (!cart) throw new Error(`Cart item not found for SKU ${product.sku}`);
             if (!product.inStock) throw new Error(`${product.title} is currently out of stock`);
             return {
+              _key: crypto.randomUUID(),
               productId: product.sku,
               sanityProductId: product._id,
               name: product.title,
