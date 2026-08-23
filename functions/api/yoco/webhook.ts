@@ -5,7 +5,6 @@ type Env = {
   VITE_SANITY_DATASET: string;
   VITE_SANITY_API_VERSION: string;
   SANITY_API_TOKEN: string;
-  YOCO_SECRET_KEY: string;
   YOCO_WEBHOOK_SECRET: string;
   RESEND_API_KEY: string;
   RESEND_FROM_EMAIL: string;
@@ -36,6 +35,19 @@ function b64ToBytes(b64: string): Uint8Array {
   return bytes;
 }
 
+function constantTimeEqual(a: string, b: string): boolean {
+  const aBytes = new TextEncoder().encode(a);
+  const bBytes = new TextEncoder().encode(b);
+  let mismatch = aBytes.length ^ bBytes.length;
+  const length = Math.max(aBytes.length, bBytes.length);
+
+  for (let i = 0; i < length; i++) {
+    mismatch |= (aBytes[i] ?? 0) ^ (bBytes[i] ?? 0);
+  }
+
+  return mismatch === 0;
+}
+
 async function verifyYocoSignature(
   secret: string,
   id: string,
@@ -45,7 +57,10 @@ async function verifyYocoSignature(
 ): Promise<boolean> {
   const signedContent = `${id}.${timestamp}.${rawBody}`;
 
-  const keyBytes = b64ToBytes(secret.replace(/^whsec_/, "").replace(/=$/, ""));
+  const encodedSecret = secret.startsWith("whsec_")
+    ? secret.slice("whsec_".length)
+    : secret;
+  const keyBytes = b64ToBytes(encodedSecret);
   const key = await crypto.subtle.importKey(
     "raw",
     keyBytes,
@@ -70,15 +85,7 @@ async function verifyYocoSignature(
     .filter(Boolean)
     .map((s) => s.replace(/^v\d+,/, ""));
 
-  let matched = false;
-  for (const cand of candidates) {
-    if (cand.length === expected.length) {
-      const a = new TextEncoder().encode(cand);
-      const b = new TextEncoder().encode(expected);
-      if (crypto.subtle.timingSafeEqual(a, b)) matched = true;
-    }
-  }
-  return matched;
+  return candidates.some((candidate) => constantTimeEqual(candidate, expected));
 }
 
 async function sanityFetch<T>(
@@ -149,28 +156,34 @@ export async function onRequestPost({ request, env }: FunctionContext) {
     }
 
     const event = JSON.parse(rawBody) as {
-      event?: string;
-      data?: {
+      id?: string;
+      type?: string;
+      createdDate?: string;
+      payload?: {
         id?: string;
+        type?: string;
         status?: string;
         amount?: number;
         currency?: string;
-        paidAt?: string;
-        metadata?: { checkoutId?: string; orderId?: string; reference?: string };
+        createdDate?: string;
+        mode?: "test" | "live";
+        metadata?: {
+          checkoutId?: string;
+          orderId?: string;
+          reference?: string;
+        };
       };
     };
 
-    const evtName = event.event || "";
-    const isPaid =
-      event.data?.status === "successful" ||
-      /(succeeded|completed|paid)/i.test(evtName);
-
-    if (!isPaid) {
-      return json({ received: true });
+    if (event.type !== "payment.succeeded") {
+      return json({ received: true, ignored: true });
     }
 
-    const checkoutId =
-      event.data?.metadata?.checkoutId || event.data?.metadata?.orderId;
+    if (!event.id || !event.payload || event.payload.status !== "succeeded") {
+      return json({ error: "Invalid payment.succeeded payload" }, 400);
+    }
+
+    const checkoutId = event.payload.metadata?.checkoutId;
     if (!checkoutId) {
       return json({ error: "Missing checkoutId in metadata" }, 400);
     }
@@ -181,10 +194,11 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       status: string;
       total: number;
       currency: string;
+      yoco?: { webhookEventId?: string };
     }>(
       env,
       `*[_type == "order" && yoco.checkoutId == $checkoutId][0]{
-        _id, reference, status, total, currency
+        _id, reference, status, total, currency, yoco
       }`,
       { checkoutId }
     );
@@ -193,43 +207,55 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       return json({ error: "Order not found for checkout" }, 404);
     }
 
+    // Yoco retries failed deliveries. Do not send a second confirmation email
+    // or repeat mutations when the same event is delivered again.
+    if (order.yoco?.webhookEventId === event.id) {
+      return json({ received: true, duplicate: true });
+    }
+
     const expectedAmount = Math.round(order.total * 100);
     if (
-      event.data?.amount === expectedAmount &&
-      event.data?.currency === order.currency
+      event.payload.amount !== expectedAmount ||
+      event.payload.currency !== order.currency
     ) {
-      await sanityPatch(env, order._id, {
-        status: "paid",
-        "yoco.paidAt": event.data?.paidAt,
-        "yoco.rawVerifyResponse": rawBody,
-      });
+      return json({ error: "Payment amount or currency does not match order" }, 400);
+    }
 
-      const fullOrder = await sanityFetch<{
-        _id: string;
-        reference: string;
-        total: number;
-        tax: number;
-        subtotal: number;
-        currency: string;
-        customer: { fullName: string; email: string };
-        shipping: { delivery: string; shippingCost: number };
-        items: { name: string; price: number; qty: number }[];
-      }>(
-        env,
-        `*[_type == "order" && _id == $orderId][0]{
+    await sanityPatch(env, order._id, {
+      status: "paid",
+      "yoco.paymentId": event.payload.id,
+      "yoco.webhookEventId": event.id,
+      "yoco.mode": event.payload.mode,
+      "yoco.paidAt": event.payload.createdDate || event.createdDate,
+      "yoco.rawVerifyResponse": rawBody,
+    });
+
+    const fullOrder = await sanityFetch<{
+      _id: string;
+      reference: string;
+      total: number;
+      tax: number;
+      subtotal: number;
+      currency: string;
+      customer: { fullName: string; email: string };
+      shipping: { delivery: string; shippingCost: number };
+      items: { name: string; price: number; qty: number }[];
+    }>(
+      env,
+      `*[_type == "order" && _id == $orderId][0]{
           _id, reference, total, tax, subtotal, currency, customer, shipping, items
         }`,
-        { orderId: order._id }
-      );
+      { orderId: order._id }
+    );
 
-      if (fullOrder?.customer?.email && env.RESEND_API_KEY) {
-        try {
-          const resend = new Resend(env.RESEND_API_KEY);
-          await resend.emails.send({
-            from: env.RESEND_FROM_EMAIL,
-            to: fullOrder.customer.email,
-            subject: `Order Confirmed — ${fullOrder.reference}`,
-            html: `
+    if (fullOrder?.customer?.email && env.RESEND_API_KEY) {
+      try {
+        const resend = new Resend(env.RESEND_API_KEY);
+        await resend.emails.send({
+          from: env.RESEND_FROM_EMAIL,
+          to: fullOrder.customer.email,
+          subject: `Order Confirmed — ${fullOrder.reference}`,
+          html: `
               <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
                 <h2 style="color: #071726; margin-bottom: 4px;">Order Confirmed</h2>
                 <p style="color: #888; margin-top: 0;">Thank you, ${fullOrder.customer.fullName}!</p>
@@ -261,10 +287,9 @@ export async function onRequestPost({ request, env }: FunctionContext) {
                 <p style="color: #555; font-size: 14px; line-height: 1.6;">You will receive a dispatch notification once your order ships. If you have any questions, reply to this email or reach out via <a href="mailto:stewardship@tandtcompany.com" style="color: #c5a55a;">stewardship@tandtcompany.com</a>.</p>
                 <p style="color: #888; font-size: 12px; margin-top: 32px;">T AND T COMPANY (Pty) Ltd — A faith-led lifestyle brand.</p>
               </div>`,
-          });
-        } catch {
-          // Email failure should not block webhook processing
-        }
+        });
+      } catch {
+        // Email failure should not block webhook processing
       }
     }
 
