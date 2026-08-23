@@ -1,7 +1,6 @@
 import type { OrderConfirmation } from "./orderConfirmation";
 
-const NTFY_BASE_URL = "https://ntfy.meiflume.com";
-const NTFY_TOPIC = "TandT_Orders";
+const NTFY_TOPIC_URL = "https://ntfy.meiflume.com/TandT_Orders";
 
 export type OrderNotificationEnv = {
   NTFY_ACCESS_TOKEN?: string;
@@ -20,22 +19,21 @@ export async function sendOrderNotification(
     "Open Sanity Studio to view and fulfil the order.",
   ].join("\n");
 
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const headers: Record<string, string> = {
+    "Content-Type": "text/plain; charset=utf-8",
+    Title: `New T AND T order - ${order.reference}`,
+    Priority: "4",
+    Tags: "shopping_cart,tada",
+  };
 
   if (env.NTFY_ACCESS_TOKEN) {
-    headers.Authorization = `Bearer ${env.NTFY_ACCESS_TOKEN}`;
+    headers.Authorization = `Bearer ${env.NTFY_ACCESS_TOKEN.trim().replace(/^Bearer\s+/i, "")}`;
   }
 
-  const response = await fetch(NTFY_BASE_URL, {
+  const response = await fetch(NTFY_TOPIC_URL, {
     method: "POST",
     headers,
-    body: JSON.stringify({
-      topic: NTFY_TOPIC,
-      title: `New T AND T order - ${order.reference}`,
-      message,
-      priority: 4,
-      tags: ["shopping_cart", "tada"],
-    }),
+    body: message,
   });
 
   if (!response.ok) {
