@@ -14,6 +14,9 @@ export type OrderConfirmation = {
   items: { name: string; price: number; qty: number }[];
 };
 
+const cleanSecret = (value: string) =>
+  value.trim().replace(/^["']|["']$/g, "");
+
 const escapeHtml = (value: unknown) =>
   String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -33,15 +36,18 @@ export async function sendOrderConfirmation(
   if (!env.RESEND_FROM_EMAIL) throw new Error("RESEND_FROM_EMAIL is not configured");
   if (!order.customer?.email) throw new Error("Order has no customer email");
 
+  const apiKey = cleanSecret(env.RESEND_API_KEY).replace(/^Bearer\s+/i, "");
+  const fromEmail = cleanSecret(env.RESEND_FROM_EMAIL);
+
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
       "Idempotency-Key": `order-confirmation/${order._id}`,
     },
     body: JSON.stringify({
-      from: env.RESEND_FROM_EMAIL,
+      from: fromEmail,
       to: [order.customer.email],
       reply_to: "tandtcompany525@gmail.com",
       subject: `Order Confirmed — ${order.reference}`,
@@ -99,7 +105,7 @@ export async function sendOrderConfirmation(
 
   if (!response.ok) {
     throw new Error(
-      result.message || resultError || responseText.slice(0, 500) || `Resend rejected the email (${response.status})`
+      `Resend rejected the email (${response.status}): ${result.message || resultError || responseText.slice(0, 500) || "empty response"}`
     );
   }
 
