@@ -102,6 +102,23 @@ export const order = defineType({
       ],
     }),
     defineField({
+      name: "yoco",
+      title: "Yoco",
+      type: "object",
+      fields: [
+        { name: "checkoutId", title: "Checkout ID", type: "string" },
+        { name: "paymentId", title: "Payment ID", type: "string" },
+        { name: "webhookEventId", title: "Webhook Event ID", type: "string" },
+        { name: "mode", title: "Mode", type: "string" },
+        { name: "redirectUrl", title: "Redirect URL", type: "url" },
+        { name: "successUrl", title: "Success URL", type: "url" },
+        { name: "cancelUrl", title: "Cancel URL", type: "url" },
+        { name: "failureUrl", title: "Failure URL", type: "url" },
+        { name: "paidAt", title: "Paid At", type: "datetime" },
+        { name: "rawVerifyResponse", title: "Raw Webhook Response", type: "text" },
+      ],
+    }),
+    defineField({
       name: "createdAt",
       title: "Created At",
       type: "datetime",
