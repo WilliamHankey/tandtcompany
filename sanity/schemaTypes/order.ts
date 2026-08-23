@@ -115,6 +115,8 @@ export const order = defineType({
         { name: "cancelUrl", title: "Cancel URL", type: "url" },
         { name: "failureUrl", title: "Failure URL", type: "url" },
         { name: "paidAt", title: "Paid At", type: "datetime" },
+        { name: "confirmationEmailSentAt", title: "Confirmation Email Sent At", type: "datetime" },
+        { name: "confirmationEmailError", title: "Confirmation Email Error", type: "text" },
         { name: "rawVerifyResponse", title: "Raw Webhook Response", type: "text" },
       ],
     }),

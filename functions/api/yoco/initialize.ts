@@ -149,7 +149,7 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       successUrl: data.successUrl,
       cancelUrl: data.cancelUrl,
       failureUrl: data.failureUrl,
-      reference: data.id, // Yoco uses id as the reference
+      reference: order.reference,
     });
   } catch (error) {
     return json(

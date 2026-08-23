@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from "react";
 import type { Product } from "@/types/product";
 
 export type CartItem = { product: Product; qty: number; size?: string };
@@ -42,7 +42,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setItems((cur) => cur.filter((i) => itemKey(i.product.id, i.size) !== itemKey(id, size)));
   const setQty = (id: string, qty: number, size?: string) =>
     setItems((cur) => cur.map((i) => (itemKey(i.product.id, i.size) === itemKey(id, size) ? { ...i, qty: Math.max(1, qty) } : i)));
-  const clear = () => setItems([]);
+  const clear = useCallback(() => setItems([]), []);
 
   const value = useMemo<CartCtx>(() => {
     const count = items.reduce((s, i) => s + i.qty, 0);

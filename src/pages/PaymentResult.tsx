@@ -7,9 +7,11 @@ import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Loader2, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { useCart } from "@/context/CartContext";
 
 const PaymentResult = () => {
   const navigate = useNavigate();
+  const { clear } = useCart();
   const [searchParams] = useSearchParams();
 
   // Check multiple possible parameter names that Yoco might use
@@ -60,13 +62,24 @@ const PaymentResult = () => {
       try {
         // Try to verify the checkout status with Yoco
         const result = await verifyCheckout(checkoutId);
-        toast.success("Payment successful!");
-        // Get the order reference from sessionStorage (stored as yoco_checkout_reference)
-        const orderRef = sessionStorage.getItem("yoco_checkout_reference") || checkoutId;
-        // Try to get email from sessionStorage or use a default
+        const orderRef = result.reference || sessionStorage.getItem("yoco_checkout_reference") || checkoutId;
         const email = sessionStorage.getItem("yoco_customer_email") || "";
+        clear();
+        sessionStorage.removeItem("yoco_checkout_id");
+        sessionStorage.removeItem("yoco_checkout_reference");
+        sessionStorage.removeItem("yoco_customer_email");
+        sessionStorage.removeItem("yoco_checkout_status");
+        localStorage.removeItem("yoco_checkout_id");
+        localStorage.removeItem("yoco_checkout_reference");
+        toast.success("Payment successful!");
         navigate("/confirmation", { 
-          state: { ref: orderRef, email: email, verified: true } 
+          state: {
+            ref: orderRef,
+            email,
+            verified: true,
+            emailSent: result.emailSent,
+            emailError: result.emailError,
+          }
         });
       } catch {
         if (status === "cancelled" || urlStatus === "cancelled") {
@@ -81,7 +94,7 @@ const PaymentResult = () => {
     };
 
     handleResult();
-  }, [checkoutId, status, navigate, searchParams, urlStatus, sessionCheckoutId, sessionReference, localCheckoutId, localReference]);
+  }, [checkoutId, status, navigate, searchParams, urlStatus, sessionCheckoutId, sessionReference, localCheckoutId, localReference, clear]);
 
   const getIcon = () => {
     if (status === "success" || urlStatus === "success") return <CheckCircle2 className="h-8 w-8 text-green-600" />;

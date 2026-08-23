@@ -5,7 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Ticket, MailCheck, Truck, Clock, MessageCircle, ShieldCheck } from "lucide-react";
 
 const Confirmation = () => {
-  const { state } = useLocation() as { state?: { ref?: string; email?: string } };
+  const { state } = useLocation() as {
+    state?: {
+      ref?: string;
+      email?: string;
+      emailSent?: boolean;
+      emailError?: string;
+    };
+  };
   if (!state?.ref) return <Navigate to="/" replace />;
 
   return (
@@ -32,8 +39,16 @@ const Confirmation = () => {
           </div>
           <div className="p-10 text-center">
             <MailCheck className="h-7 w-7 text-gold mx-auto" />
-            <p className="eyebrow mt-4">Confirmation Sent</p>
-            <p className="mt-3 text-foreground/80">A receipt and order summary have been sent to <strong>{state.email}</strong>.</p>
+            <p className="eyebrow mt-4">
+              {state.emailSent === false ? "Confirmation Pending" : "Confirmation Sent"}
+            </p>
+            <p className="mt-3 text-foreground/80">
+              {state.emailSent === false ? (
+                <>Your order is confirmed, but the receipt email could not be sent yet. Please keep your order reference.</>
+              ) : (
+                <>A receipt and order summary have been sent to <strong>{state.email}</strong>.</>
+              )}
+            </p>
           </div>
         </div>
 

@@ -1,3 +1,5 @@
+import { sendOrderConfirmation } from "../_shared/orderConfirmation";
+
 type Env = {
   VITE_SANITY_PROJECT_ID: string;
   VITE_SANITY_DATASET: string;
@@ -5,6 +7,8 @@ type Env = {
   SANITY_API_TOKEN: string;
   YOCO_SECRET_KEY: string;
   YOCO_WEBHOOK_REGISTRATION_TOKEN: string;
+  RESEND_API_KEY: string;
+  RESEND_FROM_EMAIL: string;
 };
 
 type FunctionContext = {
@@ -19,9 +23,13 @@ type Order = {
   reference: string;
   status: string;
   total: number;
+  tax?: number;
+  subtotal: number;
   currency: string;
   items?: OrderItem[];
-  yoco?: { checkoutId?: string };
+  customer: { fullName: string; email: string };
+  shipping: { delivery: string; shippingCost: number };
+  yoco?: { checkoutId?: string; confirmationEmailSentAt?: string };
 };
 
 type YocoCheckout = {
@@ -103,7 +111,8 @@ export async function onRequestPost({ request, env }: FunctionContext) {
     const order = await sanityFetch<Order | null>(
       env,
       `*[_type == "order" && reference == $reference][0]{
-        _id, reference, status, total, currency, items, yoco
+        _id, reference, status, total, tax, subtotal, currency,
+        customer, shipping, items, yoco
       }`,
       { reference }
     );
@@ -160,6 +169,28 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       "yoco.paidAt": new Date().toISOString(),
     });
 
+    let emailSent = Boolean(order.yoco?.confirmationEmailSentAt);
+    let emailError: string | undefined;
+
+    if (!emailSent) {
+      try {
+        await sendOrderConfirmation(env, {
+          ...order,
+          items: repairedItems as { name: string; price: number; qty: number }[],
+        });
+        emailSent = true;
+        await sanityPatch(env, order._id, {
+          "yoco.confirmationEmailSentAt": new Date().toISOString(),
+          "yoco.confirmationEmailError": null,
+        });
+      } catch (error) {
+        emailError = error instanceof Error ? error.message : "Email failed";
+        await sanityPatch(env, order._id, {
+          "yoco.confirmationEmailError": emailError,
+        });
+      }
+    }
+
     return json({
       reconciled: true,
       reference: order.reference,
@@ -167,6 +198,8 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       repairedItemKeys: repairedItems.filter((_, index) => !order.items?.[index]?._key)
         .length,
       checkoutStatus: checkout.status,
+      emailSent,
+      ...(emailError ? { emailError } : {}),
     });
   } catch (error) {
     return json(
