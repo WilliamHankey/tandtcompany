@@ -20,7 +20,9 @@ export async function sendOrderNotification(
     "Open Sanity Studio to view and fulfil the order.",
   ].join("\n");
 
-  const token = env.NTFY_ACCESS_TOKEN?.trim().replace(/^Bearer\s+/i, "");
+  const token = env.NTFY_ACCESS_TOKEN?.trim()
+    .replace(/^["']|["']$/g, "")
+    .replace(/^Bearer\s+/i, "");
   const headers: Record<string, string> = {
     "Content-Type": "text/plain; charset=utf-8",
   };
