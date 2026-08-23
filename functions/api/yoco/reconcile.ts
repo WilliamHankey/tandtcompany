@@ -10,6 +10,7 @@ type Env = {
   YOCO_WEBHOOK_REGISTRATION_TOKEN: string;
   RESEND_API_KEY: string;
   RESEND_FROM_EMAIL: string;
+  NTFY_ACCESS_TOKEN?: string;
 };
 
 type FunctionContext = {
@@ -201,7 +202,7 @@ export async function onRequestPost({ request, env }: FunctionContext) {
 
     if (!notificationSent) {
       try {
-        await sendOrderNotification({
+        await sendOrderNotification(env, {
           ...order,
           items: repairedItems as { name: string; price: number; qty: number }[],
         });

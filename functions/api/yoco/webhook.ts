@@ -9,6 +9,7 @@ type Env = {
   YOCO_WEBHOOK_SECRET: string;
   RESEND_API_KEY: string;
   RESEND_FROM_EMAIL: string;
+  NTFY_ACCESS_TOKEN?: string;
 };
 
 type FunctionContext = {
@@ -281,7 +282,7 @@ export async function onRequestPost({ request, env }: FunctionContext) {
 
     if (fullOrder && !notificationSent) {
       try {
-        await sendOrderNotification(fullOrder);
+        await sendOrderNotification(env, fullOrder);
         notificationSent = true;
         await sanityPatch(env, order._id, {
           "yoco.orderNotificationSentAt": new Date().toISOString(),

@@ -11,6 +11,7 @@ type Env = OrderConfirmationEnv & {
   VITE_SANITY_API_VERSION: string;
   SANITY_API_TOKEN: string;
   YOCO_SECRET_KEY: string;
+  NTFY_ACCESS_TOKEN?: string;
 };
 
 type FunctionContext = { request: Request; env: Env };
@@ -128,7 +129,7 @@ export async function onRequestPost({ request, env }: FunctionContext) {
 
     if (!notificationSent) {
       try {
-        await sendOrderNotification(order);
+        await sendOrderNotification(env, order);
         notificationSent = true;
         await sanityPatch(env, order._id, {
           "yoco.orderNotificationSentAt": new Date().toISOString(),
