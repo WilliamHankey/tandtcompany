@@ -66,3 +66,9 @@ This storefront uses build-time `VITE_SANITY_*` variables. Deploy production
 through the connected Git repository so Cloudflare injects the configured build
 variables. Do not upload a locally generated `dist` directory unless the same
 production variables were present during the local build.
+
+## Customer and merchant notifications
+
+Production requires `RESEND_API_KEY` and `RESEND_FROM_EMAIL` for customer
+receipts. The configured Resend sending domain must be verified. The protected
+ntfy topic uses `NTFY_ACCESS_TOKEN` for merchant order alerts.
