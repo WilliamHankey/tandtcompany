@@ -1,5 +1,6 @@
 type Env = {
   YOCO_SECRET_KEY: string;
+  YOCO_WEBHOOK_REGISTRATION_TOKEN: string;
 };
 
 type FunctionContext = {
@@ -31,6 +32,15 @@ export async function onRequestPost({ request, env }: FunctionContext) {
   try {
     if (!env.YOCO_SECRET_KEY) {
       return json({ error: "YOCO_SECRET_KEY is not configured" }, 500);
+    }
+
+    if (!env.YOCO_WEBHOOK_REGISTRATION_TOKEN) {
+      return json({ error: "YOCO_WEBHOOK_REGISTRATION_TOKEN is not configured" }, 500);
+    }
+
+    const authorization = request.headers.get("authorization");
+    if (authorization !== `Bearer ${env.YOCO_WEBHOOK_REGISTRATION_TOKEN}`) {
+      return json({ error: "Unauthorized" }, 401);
     }
 
     const { url, name } = (await request.json().catch(() => ({}))) as {
