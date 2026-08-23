@@ -80,14 +80,27 @@ export async function sendOrderConfirmation(
     }),
   });
 
-  const result = (await response.json().catch(() => ({}))) as {
-    id?: string;
-    message?: string;
-    error?: { message?: string };
-  };
+  const responseText = await response.text();
+  const result = (() => {
+    try {
+      return JSON.parse(responseText) as {
+        id?: string;
+        message?: string;
+        error?: { message?: string } | string;
+      };
+    } catch {
+      return {};
+    }
+  })();
+
+  const resultError = typeof result.error === "string"
+    ? result.error
+    : result.error?.message;
 
   if (!response.ok) {
-    throw new Error(result.message || result.error?.message || "Resend rejected the email");
+    throw new Error(
+      result.message || resultError || responseText.slice(0, 500) || `Resend rejected the email (${response.status})`
+    );
   }
 
   return result.id;

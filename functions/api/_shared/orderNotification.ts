@@ -1,6 +1,7 @@
 import type { OrderConfirmation } from "./orderConfirmation";
 
-const ORDER_TOPIC_URL = "https://ntfy.meiflume.com/TandT_Orders";
+const NTFY_BASE_URL = "https://ntfy.meiflume.com";
+const NTFY_TOPIC = "TandT_Orders";
 
 export type OrderNotificationEnv = {
   NTFY_ACCESS_TOKEN?: string;
@@ -19,24 +20,28 @@ export async function sendOrderNotification(
     "Open Sanity Studio to view and fulfil the order.",
   ].join("\n");
 
-  const headers: Record<string, string> = {
-    "Content-Type": "text/plain; charset=utf-8",
-    "X-Title": `New T AND T order — ${order.reference}`,
-    "X-Priority": "high",
-    "X-Tags": "shopping_cart,tada",
-  };
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
 
   if (env.NTFY_ACCESS_TOKEN) {
     headers.Authorization = `Bearer ${env.NTFY_ACCESS_TOKEN}`;
   }
 
-  const response = await fetch(ORDER_TOPIC_URL, {
+  const response = await fetch(NTFY_BASE_URL, {
     method: "POST",
     headers,
-    body: message,
+    body: JSON.stringify({
+      topic: NTFY_TOPIC,
+      title: `New T AND T order - ${order.reference}`,
+      message,
+      priority: 4,
+      tags: ["shopping_cart", "tada"],
+    }),
   });
 
   if (!response.ok) {
-    throw new Error(`ntfy rejected the order notification (${response.status})`);
+    const detail = await response.text().catch(() => "");
+    throw new Error(
+      `ntfy rejected the order notification (${response.status})${detail ? `: ${detail.slice(0, 300)}` : ""}`
+    );
   }
 }
