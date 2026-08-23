@@ -59,3 +59,10 @@ curl --request GET \
 The receiver validates the raw-body HMAC signature, rejects timestamps older
 than three minutes, checks that the Checkout ID belongs to a Sanity order,
 checks amount and currency, and handles Yoco retries idempotently.
+
+## Cloudflare Pages deployment warning
+
+This storefront uses build-time `VITE_SANITY_*` variables. Deploy production
+through the connected Git repository so Cloudflare injects the configured build
+variables. Do not upload a locally generated `dist` directory unless the same
+production variables were present during the local build.
