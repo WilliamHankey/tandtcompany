@@ -1,4 +1,5 @@
 import { sendOrderConfirmation } from "../_shared/orderConfirmation";
+import { sendOrderNotification } from "../_shared/orderNotification";
 
 type Env = {
   VITE_SANITY_PROJECT_ID: string;
@@ -194,7 +195,11 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       status: string;
       total: number;
       currency: string;
-      yoco?: { webhookEventId?: string; confirmationEmailSentAt?: string };
+      yoco?: {
+        webhookEventId?: string;
+        confirmationEmailSentAt?: string;
+        orderNotificationSentAt?: string;
+      };
     }>(
       env,
       `*[_type == "order" && yoco.checkoutId == $checkoutId][0]{
@@ -211,7 +216,8 @@ export async function onRequestPost({ request, env }: FunctionContext) {
     // or repeat mutations when the same event is delivered again.
     if (
       order.yoco?.webhookEventId === event.id &&
-      order.yoco?.confirmationEmailSentAt
+      order.yoco?.confirmationEmailSentAt &&
+      order.yoco?.orderNotificationSentAt
     ) {
       return json({ received: true, duplicate: true });
     }
@@ -270,7 +276,32 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       }
     }
 
-    return json({ received: true, emailSent, ...(emailError ? { emailError } : {}) });
+    let notificationSent = Boolean(order.yoco?.orderNotificationSentAt);
+    let notificationError: string | undefined;
+
+    if (fullOrder && !notificationSent) {
+      try {
+        await sendOrderNotification(fullOrder);
+        notificationSent = true;
+        await sanityPatch(env, order._id, {
+          "yoco.orderNotificationSentAt": new Date().toISOString(),
+          "yoco.orderNotificationError": null,
+        });
+      } catch (error) {
+        notificationError = error instanceof Error ? error.message : "ntfy failed";
+        await sanityPatch(env, order._id, {
+          "yoco.orderNotificationError": notificationError,
+        });
+      }
+    }
+
+    return json({
+      received: true,
+      emailSent,
+      notificationSent,
+      ...(emailError ? { emailError } : {}),
+      ...(notificationError ? { notificationError } : {}),
+    });
   } catch (error) {
     return json(
       { error: error instanceof Error ? error.message : "Webhook processing failed" },

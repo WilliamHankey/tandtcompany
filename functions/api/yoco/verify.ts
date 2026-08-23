@@ -3,6 +3,7 @@ import {
   type OrderConfirmation,
   type OrderConfirmationEnv,
 } from "../_shared/orderConfirmation";
+import { sendOrderNotification } from "../_shared/orderNotification";
 
 type Env = OrderConfirmationEnv & {
   VITE_SANITY_PROJECT_ID: string;
@@ -17,7 +18,10 @@ type FunctionContext = { request: Request; env: Env };
 type Order = OrderConfirmation & {
   status: string;
   currency: string;
-  yoco?: { confirmationEmailSentAt?: string };
+  yoco?: {
+    confirmationEmailSentAt?: string;
+    orderNotificationSentAt?: string;
+  };
 };
 
 const json = (body: unknown, status = 200) =>
@@ -119,13 +123,34 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       }
     }
 
+    let notificationSent = Boolean(order.yoco?.orderNotificationSentAt);
+    let notificationError: string | undefined;
+
+    if (!notificationSent) {
+      try {
+        await sendOrderNotification(order);
+        notificationSent = true;
+        await sanityPatch(env, order._id, {
+          "yoco.orderNotificationSentAt": new Date().toISOString(),
+          "yoco.orderNotificationError": null,
+        });
+      } catch (error) {
+        notificationError = error instanceof Error ? error.message : "ntfy failed";
+        await sanityPatch(env, order._id, {
+          "yoco.orderNotificationError": notificationError,
+        });
+      }
+    }
+
     return json({
       status: checkout.status,
       amount: checkout.amount,
       currency: checkout.currency,
       reference: order.reference,
       emailSent,
+      notificationSent,
       ...(emailError ? { emailError } : {}),
+      ...(notificationError ? { notificationError } : {}),
     });
   } catch (error) {
     return json(

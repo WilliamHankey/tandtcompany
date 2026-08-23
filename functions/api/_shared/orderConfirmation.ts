@@ -43,6 +43,7 @@ export async function sendOrderConfirmation(
     body: JSON.stringify({
       from: env.RESEND_FROM_EMAIL,
       to: [order.customer.email],
+      reply_to: "tandtcompany525@gmail.com",
       subject: `Order Confirmed — ${order.reference}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">

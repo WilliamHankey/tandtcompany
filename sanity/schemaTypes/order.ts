@@ -117,6 +117,8 @@ export const order = defineType({
         { name: "paidAt", title: "Paid At", type: "datetime" },
         { name: "confirmationEmailSentAt", title: "Confirmation Email Sent At", type: "datetime" },
         { name: "confirmationEmailError", title: "Confirmation Email Error", type: "text" },
+        { name: "orderNotificationSentAt", title: "Order Notification Sent At", type: "datetime" },
+        { name: "orderNotificationError", title: "Order Notification Error", type: "text" },
         { name: "rawVerifyResponse", title: "Raw Webhook Response", type: "text" },
       ],
     }),
