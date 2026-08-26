@@ -1,6 +1,7 @@
 export type OrderConfirmationEnv = {
   RESEND_API_KEY: string;
   RESEND_FROM_EMAIL: string;
+  RESEND_TEMPLATE_ID?: string;
 };
 
 export type OrderConfirmation = {
@@ -39,19 +40,38 @@ export async function sendOrderConfirmation(
   const apiKey = cleanSecret(env.RESEND_API_KEY).replace(/^Bearer\s+/i, "");
   const fromEmail = cleanSecret(env.RESEND_FROM_EMAIL);
 
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-      "Idempotency-Key": `order-confirmation/${order._id}`,
-    },
-    body: JSON.stringify({
-      from: fromEmail,
-      to: [order.customer.email],
-      reply_to: "tandtcompany525@gmail.com",
-      subject: `Order Confirmed — ${order.reference}`,
-      html: `
+  const body = env.RESEND_TEMPLATE_ID
+    ? {
+        from: fromEmail,
+        to: [order.customer.email],
+        reply_to: "tandtcompany525@gmail.com",
+        subject: `Order Confirmed — ${order.reference}`,
+        template: {
+          id: env.RESEND_TEMPLATE_ID,
+          variables: {
+            customer_name: order.customer.fullName,
+            order_ref: order.reference,
+            order_total: zar(order.total),
+            subtotal: zar(order.subtotal || 0),
+            delivery_method: order.shipping?.delivery || "standard",
+            shipping_cost:
+              (order.shipping?.shippingCost || 0) === 0
+                ? "Free"
+                : zar(order.shipping.shippingCost),
+            tax: zar(order.tax || 0),
+            order_items:
+              (order.items || [])
+                .map((i) => `${i.name} x${i.qty}`)
+                .join("\n") || "—",
+          },
+        },
+      }
+    : {
+        from: fromEmail,
+        to: [order.customer.email],
+        reply_to: "tandtcompany525@gmail.com",
+        subject: `Order Confirmed — ${order.reference}`,
+        html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
           <h2 style="color: #071726; margin-bottom: 4px;">Order Confirmed</h2>
           <p style="color: #888; margin-top: 0;">Thank you, ${escapeHtml(order.customer.fullName)}!</p>
@@ -83,7 +103,16 @@ export async function sendOrderConfirmation(
           <p style="color: #555; font-size: 14px; line-height: 1.6;">You will receive a dispatch notification once your order ships. Questions? Email <a href="mailto:stewardship@tandtcompany.com" style="color: #c5a55a;">stewardship@tandtcompany.com</a>.</p>
           <p style="color: #888; font-size: 12px; margin-top: 32px;">T AND T COMPANY (Pty) Ltd — A faith-led lifestyle brand.</p>
         </div>`,
-    }),
+      };
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: *** ${apiKey}`,
+      "Content-Type": "application/json",
+      "Idempotency-Key": `order-confirmation/${order._id}`,
+    },
+    body: JSON.stringify(body),
   });
 
   const responseText = await response.text();

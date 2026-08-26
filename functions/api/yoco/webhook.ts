@@ -9,6 +9,7 @@ type Env = {
   YOCO_WEBHOOK_SECRET: string;
   RESEND_API_KEY: string;
   RESEND_FROM_EMAIL: string;
+  RESEND_TEMPLATE_ID?: string;
   NTFY_ACCESS_TOKEN?: string;
 };
 
@@ -185,9 +186,15 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       return json({ error: "Invalid payment.succeeded payload" }, 400);
     }
 
+    // The order is identified by either the Yoco checkout id or the Sanity
+    // order id. `initialize.ts` stores both `yoco.checkoutId` (from Yoco's
+    // create response) and sends `orderId` in the checkout metadata, so we
+    // match on whichever the event provides.
     const checkoutId = event.payload.metadata?.checkoutId;
-    if (!checkoutId) {
-      return json({ error: "Missing checkoutId in metadata" }, 400);
+    const orderId = event.payload.metadata?.orderId;
+
+    if (!checkoutId && !orderId) {
+      return json({ error: "Missing checkoutId/orderId in metadata" }, 400);
     }
 
     const order = await sanityFetch<{
@@ -203,10 +210,10 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       };
     }>(
       env,
-      `*[_type == "order" && yoco.checkoutId == $checkoutId][0]{
+      `*[_type == "order" && (yoco.checkoutId == $checkoutId || _id == $orderId)][0]{
         _id, reference, status, total, currency, yoco
       }`,
-      { checkoutId }
+      { checkoutId: checkoutId ?? "", orderId: orderId ?? "" }
     );
 
     if (!order) {

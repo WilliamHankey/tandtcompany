@@ -21,7 +21,7 @@ variables must also be configured in the production environment.
 
 ## 2. Deploy, then register the webhook once
 
-Replace the token below with the value configured in step 1:
+Replace the token and domain below with the values configured in step 1:
 
 ```bash
 curl --request POST \
@@ -47,7 +47,20 @@ curl --request GET \
   --header "Authorization: Bearer YOUR_YOCO_SECRET_KEY"
 ```
 
-## 3. Test the complete flow
+## 3. (Optional) Use a Resend stored template
+
+The confirmation email is sent with inline HTML by default. To use a template
+you design in the Resend dashboard instead:
+
+1. Create a template in Resend with variables `customer_name`, `order_ref`,
+   `order_total`, and `order_items` (see `scripts/create-resend-template.mjs`).
+2. Publish it and copy its template id (`tmpl_...`).
+3. Set that id as `RESEND_TEMPLATE_ID` in the production environment.
+
+When `RESEND_TEMPLATE_ID` is set, the webhook sends via that template;
+otherwise it falls back to the inline HTML above.
+
+## 4. Test the complete flow
 
 1. Start a test checkout from the storefront and complete payment with Yoco's
    test credentials.
@@ -59,16 +72,3 @@ curl --request GET \
 The receiver validates the raw-body HMAC signature, rejects timestamps older
 than three minutes, checks that the Checkout ID belongs to a Sanity order,
 checks amount and currency, and handles Yoco retries idempotently.
-
-## Cloudflare Pages deployment warning
-
-This storefront uses build-time `VITE_SANITY_*` variables. Deploy production
-through the connected Git repository so Cloudflare injects the configured build
-variables. Do not upload a locally generated `dist` directory unless the same
-production variables were present during the local build.
-
-## Customer and merchant notifications
-
-Production requires `RESEND_API_KEY` and `RESEND_FROM_EMAIL` for customer
-receipts. The configured Resend sending domain must be verified. The protected
-ntfy topic uses `NTFY_ACCESS_TOKEN` for merchant order alerts.

@@ -203,7 +203,6 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       }
 
       return {
-        _key: crypto.randomUUID(),
         productId: product.sku,
         sanityProductId: product._id,
         name: product.title,

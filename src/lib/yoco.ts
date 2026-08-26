@@ -30,14 +30,7 @@ export async function initializeCheckout(payload: {
   return data as YocoInitResponse;
 }
 
-export async function verifyCheckout(checkoutId: string): Promise<{
-  status: string;
-  amount: number;
-  currency: string;
-  reference: string;
-  emailSent: boolean;
-  emailError?: string;
-}> {
+export async function verifyCheckout(checkoutId: string) {
   const res = await fetch("/api/yoco/verify", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -52,14 +45,7 @@ export async function verifyCheckout(checkoutId: string): Promise<{
     );
   }
 
-  return data as {
-    status: string;
-    amount: number;
-    currency: string;
-    reference: string;
-    emailSent: boolean;
-    emailError?: string;
-  };
+  return data;
 }
 
 export async function payWithYoco(opts: {
