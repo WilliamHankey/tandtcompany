@@ -19,7 +19,7 @@ export const product = defineType({
       title: "SKU / ID",
       type: "string",
       description: "Auto-generated in format TTC-XXX-000. Click 'Generate SKU' after entering the product title.",
-      validation: (r) => r.required(),
+      validation: (r) => r.required().unique(),
       components: { input: SkuInput },
     }),
     defineField({ name: "price", title: "Price (ZAR)", type: "number", validation: (r) => r.required().min(0) }),

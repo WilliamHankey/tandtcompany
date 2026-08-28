@@ -39,7 +39,7 @@ const faqData: FAQItem[] = [
   },
   {
     question: "What is your return policy?",
-    answer: "You have 30 days from the date of delivery to return unworn items in their original condition with tags attached. Please contact us at stewardship@tandtcompany.com or via WhatsApp to initiate a return. Return shipping costs are the customer's responsibility unless the item was defective or incorrectly sent.",
+    answer: "You have 7 days from the date of delivery to return unworn items in their original condition with tags attached. Please contact us at stewardship@tandtcompany.com or via WhatsApp to initiate a return. Return shipping costs are the customer's responsibility unless the item was defective or incorrectly sent.",
   },
   {
     question: "How long do refunds take?",
@@ -47,7 +47,7 @@ const faqData: FAQItem[] = [
   },
   {
     question: "Can I exchange an item?",
-    answer: "Yes, we offer exchanges for items of equal value, subject to availability. Contact us within the 30-day return window with your order number and preferred replacement. We will reserve the item and provide return instructions.",
+    answer: "Yes, we offer exchanges for items of equal value, subject to availability. Contact us within the 7-day return window with your order number and preferred replacement. We will reserve the item and provide return instructions.",
   },
   {
     question: "What if I receive a damaged or incorrect item?",

@@ -70,7 +70,7 @@ const RefundPolicy = () => (
           <ul className="list-disc pl-6 space-y-2 mt-3">
             <li>Items returned with visible signs of wear, use, or damage not caused by us</li>
             <li>Items returned without original tags or packaging</li>
-            <li>Items returned after the 30-day return window but within 45 days (subject to approval)</li>
+            <li>Items returned after the 7-day return window (subject to approval)</li>
           </ul>
           <p>
             The partial refund amount will be determined based on the item's condition and will be communicated to you before processing.
@@ -110,7 +110,7 @@ const RefundPolicy = () => (
             <li>Gift cards</li>
             <li>Personalised or custom-made items (unless defective)</li>
             <li>Items that have been worn, washed, altered, or damaged by the customer</li>
-            <li>Return requests made after 45 days from delivery</li>
+            <li>Return requests made after 7 days from delivery</li>
           </ul>
         </Section>
 

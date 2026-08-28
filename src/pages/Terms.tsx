@@ -160,7 +160,7 @@ const Terms = () => {
             <h2 className="font-serif text-3xl text-navy">Returns & Exchanges</h2>
             <div className="hairline mt-4 mb-6 bg-border" />
             <div className="space-y-3 text-foreground/85 leading-relaxed text-sm">
-              <p>You may return unworn items within <strong>30 days</strong> of delivery, provided they are in their original condition with tags attached.</p>
+              <p>You may return unworn items within <strong>7 days</strong> of delivery, provided they are in their original condition with tags attached.</p>
               <p>Items that have been worn, washed, altered, or are missing tags are not eligible for return.</p>
               <p>For full details on the return process, eligible items, and non-returnable items, please refer to our <Link to="/returns-policy" className="text-gold link-underline">Returns Policy</Link>.</p>
             </div>

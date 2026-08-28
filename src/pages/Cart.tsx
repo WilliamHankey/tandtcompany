@@ -82,7 +82,7 @@ const Cart = () => {
                   <Lock className="h-4 w-4" />
                 </div>
                 <p className="text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground text-center mt-2">
-                  Secure checkout · Paystack PCI DSS Level 1 · 30-day returns
+                  Secure checkout · Paystack PCI DSS Level 1 · 7-day returns
                 </p>
               </div>
 

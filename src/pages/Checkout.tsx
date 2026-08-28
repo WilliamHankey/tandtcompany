@@ -556,7 +556,7 @@ const Checkout = () => {
               <RotateCcw className="h-4 w-4" />
             </div>
             <p className="text-[0.65rem] uppercase tracking-[0.2em] text-muted-foreground text-center mt-3">
-              Secure checkout · South Africa-wide shipping · 30-day returns
+              Secure checkout · South Africa-wide shipping · 7-day returns
             </p>
           </aside>
         </form>

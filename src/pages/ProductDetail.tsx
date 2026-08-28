@@ -269,7 +269,7 @@ const ProductDetail = () => {
             </p>
             <p className="flex items-center gap-2">
               <RotateCcw className="h-4 w-4 text-gold shrink-0" />
-              <span>30-day returns. Exchanges available for sizing — see our <Link to="/returns-policy" className="text-gold link-underline">Returns Policy</Link>.</span>
+              <span>7-day returns. Exchanges available for sizing — see our <Link to="/returns-policy" className="text-gold link-underline">Returns Policy</Link>.</span>
             </p>
           </div>
 

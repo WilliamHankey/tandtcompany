@@ -29,9 +29,9 @@ const ReturnsPolicy = () => (
           <div className="flex items-start gap-4 bg-cream border border-border p-5 shadow-soft">
             <RotateCcw className="h-5 w-5 text-gold shrink-0 mt-0.5" />
             <div>
-              <p className="font-serif text-navy text-lg">30-day return window</p>
+              <p className="font-serif text-navy text-lg">7-day return window</p>
               <p className="mt-2 text-sm text-muted-foreground">
-                You have 30 calendar days from the date of delivery to request a return. Returns requested after 30 days will not be accepted.
+                You have 7 calendar days from the date of delivery to request a return. Returns requested after 7 days will not be accepted.
               </p>
             </div>
           </div>
@@ -97,7 +97,7 @@ const ReturnsPolicy = () => (
             We offer exchanges for items of equal value, subject to availability. If you wish to exchange for a different size or colour:
           </p>
           <ul className="list-disc pl-6 space-y-2 mt-3">
-            <li>Contact us within the 30-day return window</li>
+            <li>Contact us within the 7-day return window</li>
             <li>Specify the item you'd like to exchange and your preferred alternative</li>
             <li>We will reserve the replacement item and provide return instructions</li>
             <li>If the replacement item is of higher value, we will provide a payment link for the difference</li>

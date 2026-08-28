@@ -12,7 +12,7 @@ const iconMap: Record<string, LucideIcon> = {
 const defaultItems = [
   { icon: "truck", title: "Nationwide Delivery", text: "Tracked shipping across South Africa, 2–7 working days." },
   { icon: "shield", title: "Secure Checkout", text: "PCI DSS Level 1 certified. 256-bit SSL encryption via Paystack." },
-  { icon: "rotate", title: "30-Day Returns", text: "Hassle-free returns on unworn items within 30 days." },
+  { icon: "rotate", title: "7-Day Returns", text: "Hassle-free returns on unworn items within 7 days." },
   { icon: "sparkles", title: "Crafted to Last", text: "Premium fabrics, considered construction, ethically made." },
 ];
 

@@ -141,10 +141,28 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       { skus }
     );
 
-    if (products.length !== cleanItems.length) {
+    // Deduplicate by sku (defensive: a duplicate SKU in Sanity would otherwise
+    // make products.length exceed cleanItems.length and trigger a false
+    // "product not found" error). Track which skus are duplicated.
+    const bySku = new Map<string, SanityProduct>();
+    const duplicateSkus: string[] = [];
+    for (const p of products) {
+      if (bySku.has(p.sku)) {
+        if (!duplicateSkus.includes(p.sku)) duplicateSkus.push(p.sku);
+        continue;
+      }
+      bySku.set(p.sku, p);
+    }
+
+    const foundSkus = new Set(bySku.keys());
+    const missingSkus = skus.filter((s) => !foundSkus.has(s));
+
+    if (missingSkus.length > 0 || duplicateSkus.length > 0) {
       return json(
         {
-          error: "One or more products could not be found",
+          error: "One or more products could not be resolved",
+          missingSkus,
+          duplicateSkus,
           sentSkus: skus,
           foundProducts: products.map((p) => p.sku),
         },
@@ -152,11 +170,11 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       );
     }
 
-    const orderItems = products.map((product) => {
-      const cart = cleanItems.find((item) => item.id === product.sku);
+    const orderItems = cleanItems.map((cart) => {
+      const product = bySku.get(cart.id);
 
-      if (!cart) {
-        throw new Error(`Cart item not found for SKU ${product.sku}`);
+      if (!product) {
+        throw new Error(`Product not found for SKU ${cart.id}`);
       }
 
       if (!product.inStock) {

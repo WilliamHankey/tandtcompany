@@ -254,9 +254,9 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       tax: number;
       subtotal: number;
       currency: string;
-      customer: { fullName: string; email: string };
-      shipping: { delivery: string; shippingCost: number };
-      items: { name: string; price: number; qty: number }[];
+      customer: { fullName: string; email: string; phone?: string };
+      shipping: { delivery: string; shippingCost: number; address?: string; city?: string; postcode?: string; country?: string };
+      items: { name: string; price: number; qty: number; size?: string }[];
     }>(
       env,
       `*[_type == "order" && _id == $orderId][0]{

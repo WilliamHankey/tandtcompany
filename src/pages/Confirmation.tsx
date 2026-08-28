@@ -3,6 +3,7 @@ import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Ticket, MailCheck, Truck, Clock, MessageCircle, ShieldCheck } from "lucide-react";
+import { formatDispatchDate } from "@/lib/dispatch";
 
 const Confirmation = () => {
   const { state } = useLocation() as { state?: { ref?: string; email?: string } };
@@ -41,6 +42,9 @@ const Confirmation = () => {
 
         <div className="mt-16 border-l-2 border-gold pl-8">
           <h2 className="font-serif text-2xl text-navy">What happens next?</h2>
+          <p className="mt-3 text-foreground/80 leading-relaxed">
+            We dispatch orders on <strong>Tuesdays and Thursdays</strong>. Your order will be sent out on <strong>{formatDispatchDate()}</strong>.
+          </p>
           <ol className="mt-8 space-y-7">
             <li className="flex gap-5">
               <span className="font-serif text-gold border border-gold/40 w-10 h-10 grid place-items-center shrink-0">01</span>

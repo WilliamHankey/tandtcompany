@@ -10,10 +10,19 @@ export type OrderConfirmation = {
   total: number;
   tax?: number;
   subtotal: number;
-  customer: { fullName: string; email: string };
-  shipping: { delivery: string; shippingCost: number };
-  items: { name: string; price: number; qty: number }[];
+  customer: { fullName: string; email: string; phone?: string };
+  shipping: {
+    delivery: string;
+    shippingCost: number;
+    address?: string;
+    city?: string;
+    postcode?: string;
+    country?: string;
+  };
+  items: { name: string; price: number; qty: number; size?: string }[];
 };
+
+import { formatDispatchDate } from "./dispatch";
 
 const cleanSecret = (value: string) =>
   value.trim().replace(/^["']|["']$/g, "");
@@ -59,6 +68,7 @@ export async function sendOrderConfirmation(
                 ? "Free"
                 : zar(order.shipping.shippingCost),
             tax: zar(order.tax || 0),
+            dispatch_date: formatDispatchDate(),
             order_items:
               (order.items || [])
                 .map((i) => `${i.name} x${i.qty}`)
@@ -100,6 +110,7 @@ export async function sendOrderConfirmation(
             <div style="display: flex; justify-content: space-between; padding: 12px 0 0; margin-top: 8px; border-top: 2px solid #071726; font-size: 18px; font-weight: 600; color: #071726;"><span>Total</span><span>${zar(order.total)}</span></div>
           </div>
           <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;" />
+          <p style="color: #555; font-size: 14px; line-height: 1.6;">We dispatch orders on <strong>Tuesdays and Thursdays</strong>. Your estimated dispatch date is <strong>${escapeHtml(formatDispatchDate())}</strong>.</p>
           <p style="color: #555; font-size: 14px; line-height: 1.6;">You will receive a dispatch notification once your order ships. Questions? Email <a href="mailto:stewardship@tandtcompany.com" style="color: #c5a55a;">stewardship@tandtcompany.com</a>.</p>
           <p style="color: #888; font-size: 12px; margin-top: 32px;">T AND T COMPANY (Pty) Ltd — A faith-led lifestyle brand.</p>
         </div>`,

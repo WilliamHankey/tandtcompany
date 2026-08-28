@@ -54,7 +54,7 @@ export const pageMeta: Record<string, { title: string; description: string }> = 
   },
   "/returns-policy": {
     title: "Returns Policy — T AND T COMPANY",
-    description: "Returns and exchange policy for T AND T COMPANY. 30-day return window.",
+    description: "Returns and exchange policy for T AND T COMPANY. 7-day return window.",
   },
   "/refund-policy": {
     title: "Refund Policy — T AND T COMPANY",

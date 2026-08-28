@@ -1,4 +1,5 @@
 import type { OrderConfirmation } from "./orderConfirmation";
+import { formatDispatchDate } from "./dispatch";
 
 const NTFY_TOPIC_URL = "https://ntfy.meiflume.com/TandT_Orders";
 
@@ -10,14 +11,35 @@ export async function sendOrderNotification(
   env: OrderNotificationEnv,
   order: OrderConfirmation
 ) {
-  const itemCount = (order.items || []).reduce((sum, item) => sum + item.qty, 0);
+  const itemLines = (order.items || [])
+    .map((i) => `  - ${i.name}${i.size ? ` (${i.size})` : ""} x${i.qty}`)
+    .join("\n");
+
+  const shipping = order.shipping || {};
+  const customer = order.customer || {};
+
   const message = [
-    `New T AND T order - ${order.reference}`,
-    `Order: ${order.reference}`,
+    `New T AND T order — ${order.reference}`,
+    "",
     `Total: R ${order.total.toLocaleString("en-ZA", { minimumFractionDigits: 2 })}`,
-    `Items: ${itemCount}`,
-    `Delivery: ${order.shipping?.delivery || "Not specified"}`,
+    `Delivery: ${shipping.delivery || "Not specified"}`,
+    "",
+    "Customer:",
+    `  Name: ${customer.fullName || "—"}`,
+    `  Phone: ${customer.phone || "—"}`,
+    `  Email: ${customer.email || "—"}`,
+    "",
+    "Ship to:",
+    `  ${shipping.address || "—"}`,
+    `  ${shipping.city || ""}${shipping.postcode ? ` ${shipping.postcode}` : ""}`,
+    `  ${shipping.country || ""}`,
+    "",
+    "Items:",
+    itemLines || "  —",
+    "",
     "Open Sanity Studio to view and fulfil the order.",
+    "Dispatch runs Tuesdays & Thursdays.",
+    `Estimated dispatch: ${formatDispatchDate()}`,
   ].join("\n");
 
   const token = env.NTFY_ACCESS_TOKEN?.trim()
