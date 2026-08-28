@@ -105,8 +105,8 @@ export async function sendOrderConfirmation(
           </table>
           <div style="margin: 16px 0; padding-top: 8px; border-top: 1px solid #eee;">
             <div style="display: flex; justify-content: space-between; padding: 4px 0;"><span>Subtotal</span><span>${zar(order.subtotal || 0)}</span></div>
-            <div style="display: flex; justify-content: space-between; padding: 4px 0;"><span>Shipping (${escapeHtml(order.shipping?.delivery || "standard")})</span><span>${(order.shipping?.shippingCost || 0) === 0 ? "Free" : zar(order.shipping.shippingCost)}</span></div>
-            <div style="display: flex; justify-content: space-between; padding: 4px 0;"><span>VAT</span><span>${zar(order.tax || 0)}</span></div>
+            <div style="display: flex; justify-content: space-between; padding: 4px 0;"><span>Shipping (${escapeHtml(order.shipping?.delivery || "standard"})</span><span>${(order.shipping?.shippingCost || 0) === 0 ? "Free" : zar(order.shipping.shippingCost)}</span></div>
+            ${order.tax ? `<div style="display: flex; justify-content: space-between; padding: 4px 0;"><span>VAT</span><span>${zar(order.tax)}</span></div>` : ""}
             <div style="display: flex; justify-content: space-between; padding: 12px 0 0; margin-top: 8px; border-top: 2px solid #071726; font-size: 18px; font-weight: 600; color: #071726;"><span>Total</span><span>${zar(order.total)}</span></div>
           </div>
           <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;" />

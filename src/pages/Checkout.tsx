@@ -533,6 +533,12 @@ const Checkout = () => {
                   {shippingCost === 0 ? "Free" : formatZAR(shippingCost)}
                 </span>
               </div>
+              {tax > 0 && (
+                <div className="flex justify-between">
+                  <span>VAT ({Math.round(taxRate * 100)}%)</span>
+                  <span className="tabular-nums">{formatZAR(tax)}</span>
+                </div>
+              )}
             </div>
             <div className="border-t border-border my-6" />
             <div className="flex justify-between items-baseline">

@@ -54,8 +54,8 @@ const faqData: FAQItem[] = [
     answer: "Please contact us within 48 hours of delivery with photographic evidence. We will arrange a prepaid return label and either reship the correct item or issue a full refund including shipping costs.",
   },
   {
-    question: "Do your prices include tax?",
-    answer: "All prices are displayed in South African rand. Any applicable taxes will be calculated and shown at checkout.",
+    question: "What is included in the price I pay?",
+    answer: "All prices are displayed in South African rand. The final amount payable is shown at checkout before you complete your order.",
   },
   {
     question: "Can I cancel my order?",

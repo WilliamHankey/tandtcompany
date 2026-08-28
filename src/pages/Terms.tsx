@@ -7,7 +7,7 @@ const sections = [
   { id: "company", title: "Company Details" },
   { id: "definitions", title: "Definitions" },
   { id: "orders", title: "Orders" },
-  { id: "pricing", title: "Pricing & Taxes" },
+  { id: "pricing", title: "Pricing" },
   { id: "payment", title: "Payment" },
   { id: "shipping", title: "Shipping & Delivery" },
   { id: "returns", title: "Returns & Exchanges" },
@@ -116,10 +116,10 @@ const Terms = () => {
 
           {/* 4. Pricing & Taxes */}
           <article id="pricing" className="scroll-mt-32 space-y-4">
-            <h2 className="font-serif text-3xl text-navy">Pricing & Taxes</h2>
+            <h2 className="font-serif text-3xl text-navy">Pricing</h2>
             <div className="hairline mt-4 mb-6 bg-border" />
             <div className="space-y-3 text-foreground/85 leading-relaxed text-sm">
-              <p>All prices displayed on the Website are in <strong>South African Rand (ZAR)</strong>. Any applicable taxes will be calculated at checkout.</p>
+              <p>All prices displayed on the Website are in <strong>South African Rand (ZAR)</strong>. The full amount payable, including any delivery costs, is shown at checkout before you complete your order.</p>
               <p>We reserve the right to change prices at any time without prior notice. However, price changes will not affect Orders that have already been confirmed.</p>
               <p>In the event of a pricing error, we reserve the right to cancel the Order and issue a full refund.</p>
             </div>

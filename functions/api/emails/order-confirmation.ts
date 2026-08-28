@@ -107,10 +107,11 @@ export async function onRequestPost({ request, env }: FunctionContext) {
               <span>Shipping (${body.deliveryMethod})</span>
               <span>${body.shippingCost === 0 ? "Free" : formatZAR(body.shippingCost)}</span>
             </div>
+            ${body.tax ? `
             <div style="display: flex; justify-content: space-between; padding: 4px 0; color: #555;">
               <span>VAT</span>
               <span>${formatZAR(body.tax)}</span>
-            </div>
+            </div>` : ""}
             <div style="display: flex; justify-content: space-between; padding: 12px 0 0; margin-top: 8px; border-top: 2px solid #071726; font-size: 18px; font-weight: 600; color: #071726;">
               <span>Total</span>
               <span>${formatZAR(body.total)}</span>
