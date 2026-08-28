@@ -30,10 +30,16 @@ export default function SkuInput(props: StringInputProps) {
       // Find the next free number for this initials prefix so we never
       // generate a colliding SKU (the old count+1 approach could collide
       // after products were deleted/reordered).
-      const used = await client.fetch<(number | null)[]>(
-        `*[_type == "product" && sku match "TTC-${initials}-*"]{ "n": toNumber(string::split(sku, "-")[2]) }.n`
+      const used = await client.fetch<string[]>(
+        `*[_type == "product" && sku match "TTC-${initials}-*"].sku`
       );
-      const taken = new Set((used || []).filter((n): n is number => typeof n === "number" && !isNaN(n)));
+      // Extract the trailing 3-digit number from each "TTC-XXX-NNN" and find
+      // the next free one (computed in JS — GROQ has no string->number cast).
+      const taken = new Set<number>();
+      for (const sku of used || []) {
+        const m = /^TTC-[A-Z]+-(\d+)$/.exec(sku);
+        if (m) taken.add(parseInt(m[1], 10));
+      }
       let nextNumber = 1;
       while (taken.has(nextNumber)) nextNumber++;
       const sku = `TTC-${initials}-${String(nextNumber).padStart(3, "0")}`;

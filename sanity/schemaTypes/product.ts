@@ -19,7 +19,23 @@ export const product = defineType({
       title: "SKU / ID",
       type: "string",
       description: "Auto-generated in format TTC-XXX-000. Click 'Generate SKU' after entering the product title.",
-      validation: (r) => r.required().unique(),
+      validation: (r) =>
+        r
+          .required()
+          .custom(async (sku, context) => {
+            // `unique()` is not supported on string fields in Sanity, so we
+            // enforce uniqueness manually. Allow the document's own current
+            // value (editing other fields must not fail), and only reject a
+            // SKU that already belongs to a *different* product.
+            const docId = (context.document as { _id?: string } | undefined)?._id;
+            const client = context.getClient({ apiVersion: "2024-05-22" });
+            const params = { sku, id: docId };
+            const collidingId = await client.fetch<string | null>(
+              `*[_type == "product" && sku == $sku && _id != $id][0]._id`,
+              params
+            );
+            return collidingId ? "This SKU is already used by another product. Regenerate or pick a unique value." : true;
+          }),
       components: { input: SkuInput },
     }),
     defineField({ name: "price", title: "Price (ZAR)", type: "number", validation: (r) => r.required().min(0) }),
