@@ -119,7 +119,7 @@ export async function sendOrderConfirmation(
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
-      Authorization: *** ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
       "Idempotency-Key": `order-confirmation/${order._id}`,
     },
