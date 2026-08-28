@@ -18,12 +18,15 @@ export default function SkuInput(props: StringInputProps) {
   const [generating, setGenerating] = useState(false);
 
   const generateSku = async () => {
-    if (!title) return;
+    // Always allowed to (re)generate, even if a SKU already exists — it
+    // simply replaces the current value. Falls back to "Product" if the
+    // title is somehow empty so the button is never dead.
+    const base = (title || "").trim() || "Product";
 
     setGenerating(true);
 
     try {
-      const initials = generateInitials(title);
+      const initials = generateInitials(base);
       // Find the next free number for this initials prefix so we never
       // generate a colliding SKU (the old count+1 approach could collide
       // after products were deleted/reordered).
@@ -57,7 +60,7 @@ export default function SkuInput(props: StringInputProps) {
         <Button
           text={generating ? "Generating…" : "Generate SKU from Title"}
           onClick={generateSku}
-          disabled={generating || !title}
+          disabled={generating}
           tone="primary"
           mode="ghost"
           fontSize={1}
