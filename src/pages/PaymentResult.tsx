@@ -49,11 +49,12 @@ const PaymentResult = () => {
       console.log("localStorage yoco_checkout_reference:", localStorage.getItem("yoco_checkout_reference"));
       console.log("Resolved checkoutId:", checkoutId);
       console.log("Resolved status:", status);
-      console.log("============================");
+      console.log("=============================");
 
       if (!checkoutId) {
+        // No checkout reference at all — go back to cart, not confirmation
         toast.error("Missing checkout reference. Please check your order status or contact support.");
-        navigate("/confirmation");
+        navigate("/checkout");
         return;
       }
 
@@ -65,8 +66,8 @@ const PaymentResult = () => {
         const orderRef = sessionStorage.getItem("yoco_checkout_reference") || checkoutId;
         // Try to get email from sessionStorage or use a default
         const email = sessionStorage.getItem("yoco_customer_email") || "";
-        navigate("/confirmation", { 
-          state: { ref: orderRef, email: email, verified: true } 
+        navigate("/confirmation", {
+          state: { ref: orderRef, email: email, verified: true },
         });
       } catch {
         if (status === "cancelled" || urlStatus === "cancelled") {
@@ -76,56 +77,13 @@ const PaymentResult = () => {
         } else {
           toast.error("Could not verify payment status. Please contact support with your order reference.");
         }
-        navigate("/confirmation");
+        // Payment not verified — go back to cart/checkout, not confirmation
+        navigate("/checkout");
       }
     };
 
     handleResult();
   }, [checkoutId, status, navigate, searchParams, urlStatus, sessionCheckoutId, sessionReference, localCheckoutId, localReference]);
-
-  const getIcon = () => {
-    if (status === "success" || urlStatus === "success") return <CheckCircle2 className="h-8 w-8 text-green-600" />;
-    if (status === "cancelled" || urlStatus === "cancelled") return <XCircle className="h-8 w-8 text-yellow-600" />;
-    if (status === "failed" || urlStatus === "failed") return <AlertCircle className="h-8 w-8 text-red-600" />;
-    return <Loader2 className="h-8 w-8 text-navy animate-spin" />;
-  };
-
-  const getTitle = () => {
-    if (status === "success" || urlStatus === "success") return "Payment Successful";
-    if (status === "cancelled" || urlStatus === "cancelled") return "Payment Cancelled";
-    if (status === "failed" || urlStatus === "failed") return "Payment Failed";
-    return "Verifying Payment...";
-  };
-
-  const getMessage = () => {
-    if (status === "success" || urlStatus === "success") return "Your payment was processed successfully. Redirecting to confirmation...";
-    if (status === "cancelled" || urlStatus === "cancelled") return "You cancelled the payment. Redirecting...";
-    if (status === "failed" || urlStatus === "failed") return "The payment could not be completed. Redirecting...";
-    return "Please wait while we verify your payment...";
-  };
-
-  return (
-    <Layout>
-      <SEO title={getTitle()} noindex />
-      <section className="container-prose pt-32 pb-24">
-        <div className="text-center">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-cream">
-            {getIcon()}
-          </div>
-          <h1 className="font-serif text-3xl md:text-4xl text-navy">{getTitle()}</h1>
-          <p className="mt-4 text-muted-foreground">{getMessage()}</p>
-          <div className="mt-8 flex justify-center gap-4">
-            <Button asChild variant="navy">
-              <Link to="/confirmation">Go to Confirmation</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link to="/shop">Continue Shopping</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-    </Layout>
-  );
 };
 
 export default PaymentResult;
