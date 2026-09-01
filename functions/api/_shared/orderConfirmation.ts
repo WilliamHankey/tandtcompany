@@ -96,6 +96,10 @@ export async function sendOrderConfirmation(
   const fromEmail = cleanSecret(env.RESEND_FROM_EMAIL);
 
   const resend = new Resend(apiKey);
+  // Yoco can deliver more than one success event for the same payment, and
+  // webhook retries can overlap. Resend uses this key to return the original
+  // send result instead of delivering another copy of the same order email.
+  const idempotencyKey = `order-confirmation-${order._id}`.slice(0, 256);
 
   if (env.RESEND_TEMPLATE_ID) {
     const variables = buildTemplateVariables(order);
@@ -103,16 +107,19 @@ export async function sendOrderConfirmation(
 
     console.log("[Resend] Sending email with template:", templateId);
 
-    const result = await resend.emails.send({
-      from: fromEmail,
-      to: [order.customer.email],
-      replyTo: "tandtcompany525@gmail.com",
-      subject: `Order Confirmed — ${order.reference}`,
-      template: {
-        id: templateId,
-        variables,
+    const result = await resend.emails.send(
+      {
+        from: fromEmail,
+        to: [order.customer.email],
+        replyTo: "tandtcompany525@gmail.com",
+        subject: `Order Confirmed — ${order.reference}`,
+        template: {
+          id: templateId,
+          variables,
+        },
       },
-    });
+      { idempotencyKey },
+    );
 
     if (result.error) {
       console.error("[Resend] Error:", result.error);
@@ -158,13 +165,16 @@ export async function sendOrderConfirmation(
     <p style="color: #888; font-size: 12px; margin-top: 32px;">T AND T COMPANY (Pty) Ltd — A faith-led lifestyle brand.</p>
   </div>`;
 
-  const result = await resend.emails.send({
-    from: fromEmail,
-    to: [order.customer.email],
-    replyTo: "tandtcompany525@gmail.com",
-    subject: `Order Confirmed — ${order.reference}`,
-    html,
-  });
+  const result = await resend.emails.send(
+    {
+      from: fromEmail,
+      to: [order.customer.email],
+      replyTo: "tandtcompany525@gmail.com",
+      subject: `Order Confirmed — ${order.reference}`,
+      html,
+    },
+    { idempotencyKey },
+  );
 
   if (result.error) {
     throw new Error(`Resend rejected the email: ${result.error.message}`);

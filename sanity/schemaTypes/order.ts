@@ -59,6 +59,12 @@ export const order = defineType({
           type: "object",
           fields: [
             { name: "productId", title: "Product ID", type: "string" },
+            {
+              name: "sanityProductId",
+              title: "Sanity Product ID",
+              type: "string",
+              hidden: true,
+            },
             { name: "name", title: "Product Name", type: "string" },
             { name: "price", title: "Unit Price", type: "number" },
             { name: "qty", title: "Quantity", type: "number" },
