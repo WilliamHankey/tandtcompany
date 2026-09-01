@@ -28,8 +28,6 @@ export type OrderConfirmation = {
     imageUrl?: string | null;
     productId?: string;
   }[];
-  subtotal: number;
-  total: number;
   currency: string;
   createdAt: string;
   paymentMethod?: string;
@@ -43,6 +41,48 @@ const cleanSecret = (value: string) =>
 
 const zar = (amount: number) =>
   `R ${amount.toLocaleString("en-ZA", { minimumFractionDigits: 2 })}`;
+
+const escapeHtml = (value: unknown) =>
+  String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+const renderOrderItem = (item: OrderConfirmation["items"][number]) => {
+  const image = item.imageUrl
+    ? `<img src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.name)}" width="90" height="90" class="product-image" style="display:block;width:90px;height:90px;object-fit:cover;border-radius:4px;background:#e5e5e2;">`
+    : `<table role="presentation" width="90" height="90" cellpadding="0" cellspacing="0" border="0" bgcolor="#e5e5e2" style="width:90px;height:90px;background:#e5e5e2;border-radius:4px;"><tr><td align="center" valign="middle" style="font-size:9px;line-height:14px;color:#858585;text-transform:uppercase;">No Image</td></tr></table>`;
+
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;"><tr><td width="100" valign="top" style="width:100px;padding:0 14px 18px 0;">${image}</td><td valign="top" style="padding:3px 10px 18px 0;"><p style="margin:0 0 8px;padding:0;font-size:13px;line-height:18px;font-weight:700;color:#222a31;">${escapeHtml(item.name)}</p><p style="margin:0 0 4px;padding:0;font-size:11px;line-height:16px;color:#666b70;">Size: <span style="color:#30363b;">${escapeHtml(item.size || "—")}</span></p><p style="margin:0;padding:0;font-size:11px;line-height:16px;color:#666b70;">Quantity: <span style="color:#30363b;">${escapeHtml(item.qty)}</span></p></td><td width="115" align="right" valign="top" style="width:115px;padding:3px 0 18px 8px;font-size:13px;line-height:18px;font-weight:700;color:#30363b;white-space:nowrap;">${escapeHtml(zar(item.lineTotal))}</td></tr></table><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 18px;"><tr><td height="1" bgcolor="#d8d8d5" style="height:1px;line-height:1px;font-size:1px;background:#d8d8d5;">&nbsp;</td></tr></table>`;
+};
+
+const buildTemplateVariables = (order: OrderConfirmation) => {
+  const itemVariables = Object.fromEntries(
+    Array.from({ length: 10 }, (_, index) => [
+      `order_item_${index + 1}_html`,
+      order.items?.[index] ? renderOrderItem(order.items[index]) : "",
+    ]),
+  );
+
+  return {
+    customer_name: order.customer.fullName,
+    order_ref: order.reference,
+    order_total: zar(order.total),
+    subtotal: zar(order.subtotal || 0),
+    delivery_method: order.shipping?.delivery || "standard",
+    shipping_cost:
+      (order.shipping?.shippingCost || 0) === 0
+        ? "Free"
+        : zar(order.shipping.shippingCost),
+    tax: zar(order.tax || 0),
+    dispatch_date: formatDispatchDate(),
+    order_date: order.createdAt,
+    payment_method: order.paymentMethod || "—",
+    ...itemVariables,
+  };
+};
 
 export async function sendOrderConfirmation(
   env: OrderConfirmationEnv,
@@ -58,40 +98,20 @@ export async function sendOrderConfirmation(
   const resend = new Resend(apiKey);
 
   if (env.RESEND_TEMPLATE_ID) {
-    // Use the stored Resend template (ID: 76d7a2d5-c036-4606-9e64-4384dd9671f5)
-    const variables = {
-      customer_name: order.customer.fullName,
-      order_ref: order.reference,
-      order_total: zar(order.total),
-      subtotal: zar(order.subtotal || 0),
-      delivery_method: order.shipping?.delivery || "standard",
-      shipping_cost:
-        (order.shipping?.shippingCost || 0) === 0
-          ? "Free"
-          : zar(order.shipping.shippingCost),
-      tax: zar(order.tax || 0),
-      dispatch_date: formatDispatchDate(),
-      order_date: order.createdAt,
-      payment_method: order.paymentMethod || "—",
-      order_items: (order.items || []).map((i) => ({
-        name: i.name,
-        qty: i.qty,
-        size: i.size || "—",
-        lineTotal: zar(i.lineTotal),
-        imageUrl: i.imageUrl || "",
-      })),
-    };
+    const variables = buildTemplateVariables(order);
+    const templateId = cleanSecret(env.RESEND_TEMPLATE_ID);
 
-    console.log("[Resend] Sending email with template:", env.RESEND_TEMPLATE_ID);
-    console.log("[Resend] Variables:", JSON.stringify(variables, null, 2));
+    console.log("[Resend] Sending email with template:", templateId);
 
     const result = await resend.emails.send({
       from: fromEmail,
       to: [order.customer.email],
-      reply_to: "tandtcompany525@gmail.com",
+      replyTo: "tandtcompany525@gmail.com",
       subject: `Order Confirmed — ${order.reference}`,
-      template: env.RESEND_TEMPLATE_ID,
-      variables,
+      template: {
+        id: templateId,
+        variables,
+      },
     });
 
     if (result.error) {
@@ -141,7 +161,7 @@ export async function sendOrderConfirmation(
   const result = await resend.emails.send({
     from: fromEmail,
     to: [order.customer.email],
-    reply_to: "tandtcompany525@gmail.com",
+    replyTo: "tandtcompany525@gmail.com",
     subject: `Order Confirmed — ${order.reference}`,
     html,
   });

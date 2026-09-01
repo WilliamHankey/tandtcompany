@@ -254,13 +254,14 @@ export async function onRequestPost({ request, env }: FunctionContext) {
           tax: number;
           subtotal: number;
           currency: string;
+          createdAt: string;
           customer: { fullName: string; email: string; phone?: string };
           shipping: { delivery: string; shippingCost: number; address?: string; city?: string; postcode?: string; country?: string };
           items: { productId: string; name: string; price: number; qty: number; size?: string; lineTotal: number }[];
         }>(
           env,
           `*[_type == "order" && _id == $orderId][0]{
-              _id, reference, total, tax, subtotal, currency, customer, shipping, items
+              _id, reference, total, tax, subtotal, currency, createdAt, customer, shipping, items
             }`,
           { orderId: order._id }
         );
