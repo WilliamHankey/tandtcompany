@@ -294,27 +294,36 @@ export async function onRequestPost({ request, env }: FunctionContext) {
         }
 
         let emailSent = Boolean(order.yoco?.confirmationEmailSentAt);
-    let emailError: string | undefined;
+            let emailError: string | undefined;
 
-    if (fullOrder?.customer?.email && !emailSent) {
-          try {
-            await sendOrderConfirmation(env, {
-              ...fullOrder,
-              items: itemsWithImages,
-              paymentMethod: "Yoco",
-            });
-        emailSent = true;
-        await sanityPatch(env, order._id, {
-          "yoco.confirmationEmailSentAt": new Date().toISOString(),
-          "yoco.confirmationEmailError": null,
-        });
-      } catch (error) {
-        emailError = error instanceof Error ? error.message : "Email failed";
-        await sanityPatch(env, order._id, {
-          "yoco.confirmationEmailError": emailError,
-        });
-      }
-    }
+            if (fullOrder?.customer?.email && !emailSent) {
+              try {
+                console.log("[Webhook] Sending confirmation email via Resend...");
+                console.log("[Webhook] Template ID:", env.RESEND_TEMPLATE_ID);
+                console.log("[Webhook] To:", fullOrder.customer.email);
+                console.log("[Webhook] Order ref:", fullOrder.reference);
+        
+                await sendOrderConfirmation(env, {
+                  ...fullOrder,
+                  items: itemsWithImages,
+                  paymentMethod: "Yoco",
+                });
+                emailSent = true;
+                console.log("[Webhook] Email sent successfully");
+                await sanityPatch(env, order._id, {
+                  "yoco.confirmationEmailSentAt": new Date().toISOString(),
+                  "yoco.confirmationEmailError": null,
+                });
+              } catch (error) {
+                emailError = error instanceof Error ? error.message : "Email failed";
+                console.error("[Webhook] Email failed:", emailError);
+                await sanityPatch(env, order._id, {
+                  "yoco.confirmationEmailError": emailError,
+                });
+              }
+            } else {
+              console.log("[Webhook] Skipping email - emailSent:", emailSent, "customerEmail:", fullOrder?.customer?.email);
+            }
 
     let notificationSent = Boolean(order.yoco?.orderNotificationSentAt);
     let notificationError: string | undefined;

@@ -59,40 +59,47 @@ export async function sendOrderConfirmation(
 
   if (env.RESEND_TEMPLATE_ID) {
     // Use the stored Resend template (ID: 76d7a2d5-c036-4606-9e64-4384dd9671f5)
+    const variables = {
+      customer_name: order.customer.fullName,
+      order_ref: order.reference,
+      order_total: zar(order.total),
+      subtotal: zar(order.subtotal || 0),
+      delivery_method: order.shipping?.delivery || "standard",
+      shipping_cost:
+        (order.shipping?.shippingCost || 0) === 0
+          ? "Free"
+          : zar(order.shipping.shippingCost),
+      tax: zar(order.tax || 0),
+      dispatch_date: formatDispatchDate(),
+      order_date: order.createdAt,
+      payment_method: order.paymentMethod || "—",
+      order_items: (order.items || []).map((i) => ({
+        name: i.name,
+        qty: i.qty,
+        size: i.size || "—",
+        lineTotal: zar(i.lineTotal),
+        imageUrl: i.imageUrl || "",
+      })),
+    };
+
+    console.log("[Resend] Sending email with template:", env.RESEND_TEMPLATE_ID);
+    console.log("[Resend] Variables:", JSON.stringify(variables, null, 2));
+
     const result = await resend.emails.send({
       from: fromEmail,
       to: [order.customer.email],
       reply_to: "tandtcompany525@gmail.com",
       subject: `Order Confirmed — ${order.reference}`,
       template: env.RESEND_TEMPLATE_ID,
-      variables: {
-        customer_name: order.customer.fullName,
-        order_ref: order.reference,
-        order_total: zar(order.total),
-        subtotal: zar(order.subtotal || 0),
-        delivery_method: order.shipping?.delivery || "standard",
-        shipping_cost:
-          (order.shipping?.shippingCost || 0) === 0
-            ? "Free"
-            : zar(order.shipping.shippingCost),
-        tax: zar(order.tax || 0),
-        dispatch_date: formatDispatchDate(),
-        order_date: order.createdAt,
-        payment_method: order.paymentMethod || "—",
-        order_items: (order.items || []).map((i) => ({
-          name: i.name,
-          qty: i.qty,
-          size: i.size || "—",
-          lineTotal: zar(i.lineTotal),
-          imageUrl: i.imageUrl || "",
-        })),
-      },
+      variables,
     });
 
     if (result.error) {
+      console.error("[Resend] Error:", result.error);
       throw new Error(`Resend rejected the email: ${result.error.message}`);
     }
 
+    console.log("[Resend] Email sent successfully, ID:", result.data?.id);
     return result.data?.id;
   }
 
