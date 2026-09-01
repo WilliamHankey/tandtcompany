@@ -248,29 +248,61 @@ export async function onRequestPost({ request, env }: FunctionContext) {
     });
 
     const fullOrder = await sanityFetch<{
-      _id: string;
-      reference: string;
-      total: number;
-      tax: number;
-      subtotal: number;
-      currency: string;
-      customer: { fullName: string; email: string; phone?: string };
-      shipping: { delivery: string; shippingCost: number; address?: string; city?: string; postcode?: string; country?: string };
-      items: { name: string; price: number; qty: number; size?: string }[];
-    }>(
-      env,
-      `*[_type == "order" && _id == $orderId][0]{
-          _id, reference, total, tax, subtotal, currency, customer, shipping, items
-        }`,
-      { orderId: order._id }
-    );
+          _id: string;
+          reference: string;
+          total: number;
+          tax: number;
+          subtotal: number;
+          currency: string;
+          customer: { fullName: string; email: string; phone?: string };
+          shipping: { delivery: string; shippingCost: number; address?: string; city?: string; postcode?: string; country?: string };
+          items: { productId: string; name: string; price: number; qty: number; size?: string; lineTotal: number }[];
+        }>(
+          env,
+          `*[_type == "order" && _id == $orderId][0]{
+              _id, reference, total, tax, subtotal, currency, customer, shipping, items
+            }`,
+          { orderId: order._id }
+        );
 
-    let emailSent = Boolean(order.yoco?.confirmationEmailSentAt);
+        // Fetch product images for order items
+        let itemsWithImages = fullOrder?.items || [];
+        if (itemsWithImages.length > 0) {
+          const productIds = itemsWithImages.map((i) => i.productId).filter(Boolean);
+          if (productIds.length > 0) {
+            const products = await sanityFetch<Array<{
+              _id: string;
+              image: { asset: { _ref: string } } | null;
+            }>>(
+              env,
+              `*[_type == "product" && _id in $ids]{_id, image}`,
+              { ids: productIds }
+            );
+            const productImages = new Map(
+              products.map((p) => [
+                p._id,
+                p.image?.asset?._ref
+                  ? `https://cdn.sanity.io/images/${env.VITE_SANITY_PROJECT_ID}/${env.VITE_SANITY_DATASET}/${p.image.asset._ref.replace("image-", "").replace("-jpg", ".jpg").replace("-png", ".png").replace("-webp", ".webp")}`
+                  : null,
+              ])
+            );
+            itemsWithImages = itemsWithImages.map((item) => ({
+              ...item,
+              imageUrl: productImages.get(item.productId) || null,
+            }));
+          }
+        }
+
+        let emailSent = Boolean(order.yoco?.confirmationEmailSentAt);
     let emailError: string | undefined;
 
     if (fullOrder?.customer?.email && !emailSent) {
-      try {
-        await sendOrderConfirmation(env, fullOrder);
+          try {
+            await sendOrderConfirmation(env, {
+              ...fullOrder,
+              items: itemsWithImages,
+              paymentMethod: "Yoco",
+            });
         emailSent = true;
         await sanityPatch(env, order._id, {
           "yoco.confirmationEmailSentAt": new Date().toISOString(),

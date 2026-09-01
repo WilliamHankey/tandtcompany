@@ -19,7 +19,15 @@ export type OrderConfirmation = {
     postcode?: string;
     country?: string;
   };
-  items: { name: string; price: number; qty: number; size?: string; lineTotal: number }[];
+  items: { 
+    name: string; 
+    price: number; 
+    qty: number; 
+    size?: string; 
+    lineTotal: number;
+    imageUrl?: string | null;
+    productId?: string;
+  }[];
   subtotal: number;
   total: number;
   currency: string;
@@ -74,18 +82,18 @@ export async function sendOrderConfirmation(
                 : zar(order.shipping.shippingCost),
             tax: zar(order.tax || 0),
             dispatch_date: formatDispatchDate(),
-            order_items:
-              (order.items || [])
-                .map(
-                  (i) => `${i.name} x${i.qty} (${i.size || "—"}) — R${zar(i.lineTotal)}`
-                )
-                .join("\n") || "—",
             order_date: order.createdAt,
             payment_method: order.paymentMethod || "—",
+            order_items: (order.items || []).map((i) => ({
+              name: i.name,
+              qty: i.qty,
+              size: i.size || "—",
+              lineTotal: zar(i.lineTotal),
+              imageUrl: i.imageUrl || "",
+            })),
           },
         },
-      },
-    }
+      }
     : {
         from: fromEmail,
         to: [order.customer.email],
