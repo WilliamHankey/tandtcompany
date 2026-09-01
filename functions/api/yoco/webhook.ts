@@ -178,13 +178,13 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       };
     };
 
-    if (event.type !== "payment.succeeded") {
-      return json({ received: true, ignored: true });
-    }
+    if (event.type !== "payment.succeeded" && event.type !== "payment.completed") {
+          return json({ received: true, ignored: true });
+        }
 
-    if (!event.id || !event.payload || event.payload.status !== "succeeded") {
-      return json({ error: "Invalid payment.succeeded payload" }, 400);
-    }
+        if (!event.id || !event.payload || (event.payload.status !== "succeeded" && event.payload.status !== "completed")) {
+          return json({ error: "Invalid payment succeeded payload" }, 400);
+        }
 
     // The order is identified by either the Yoco checkout id or the Sanity
     // order id. `initialize.ts` stores both `yoco.checkoutId` (from Yoco's
