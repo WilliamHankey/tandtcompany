@@ -194,30 +194,29 @@ const Checkout = () => {
       }
 
       await payWithYoco({
-        email: form.email,
-        amountZar: order.total,
-        reference: order.reference,
-        onSuccess: async (paymentRef) => {
-          clear();
-          toast.success("Payment verified", {
-            description: `Reference ${paymentRef}`,
-          });
-          navigate("/confirmation", {
-            state: { ref: paymentRef, email: form.email },
-          });
-          setSubmitting(false);
-        },
-        onCancel: () => {
-          setSubmitting(false);
-          toast.info("Payment cancelled");
-        },
-        onFailure: () => {
-          setSubmitting(false);
-          toast.error("Payment failed", {
-            description: "Please try again or contact support",
-          });
-        },
-      });
+              email: form.email,
+              amountZar: order.total,
+              reference: order.reference,
+              onSuccess: async (paymentRef) => {
+                toast.success("Payment verified", {
+                  description: `Reference ${paymentRef}`,
+                });
+                navigate("/confirmation", {
+                  state: { ref: paymentRef, email: form.email },
+                });
+                setSubmitting(false);
+              },
+              onCancel: () => {
+                setSubmitting(false);
+                toast.info("Payment cancelled");
+              },
+              onFailure: () => {
+                setSubmitting(false);
+                toast.error("Payment failed", {
+                  description: "Please try again or contact support",
+                });
+              },
+            });
     } catch (err) {
       setSubmitting(false);
       toast.error("Payment failed", {

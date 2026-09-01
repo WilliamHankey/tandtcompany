@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { verifyCheckout } from "@/lib/yoco";
+import { useCart } from "@/context/CartContext";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { Loader2, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 const PaymentResult = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { clear } = useCart();
 
   // Check multiple possible parameter names that Yoco might use
   const urlCheckoutId = searchParams.get("checkout_id") ||
@@ -61,14 +63,23 @@ const PaymentResult = () => {
       try {
         // Try to verify the checkout status with Yoco
         const result = await verifyCheckout(checkoutId);
-        toast.success("Payment successful!");
-        // Get the order reference from sessionStorage (stored as yoco_checkout_reference)
-        const orderRef = sessionStorage.getItem("yoco_checkout_reference") || checkoutId;
-        // Try to get email from sessionStorage or use a default
-        const email = sessionStorage.getItem("yoco_customer_email") || "";
-        navigate("/confirmation", {
-          state: { ref: orderRef, email: email, verified: true },
-        });
+        console.log("Yoco verification result:", result);
+        
+        if (result.status === "succeeded") {
+          // Clear cart on successful payment
+          clear();
+          
+          toast.success("Payment successful!");
+          // Get the order reference from sessionStorage (stored as yoco_checkout_reference)
+          const orderRef = sessionStorage.getItem("yoco_checkout_reference") || checkoutId;
+          // Try to get email from sessionStorage or use a default
+          const email = sessionStorage.getItem("yoco_customer_email") || "";
+          navigate("/confirmation", {
+            state: { ref: orderRef, email: email, verified: true },
+          });
+        } else {
+          throw new Error(`Payment status: ${result.status}`);
+        }
       } catch {
         if (status === "cancelled" || urlStatus === "cancelled") {
           toast.info("Payment was cancelled");
@@ -83,7 +94,7 @@ const PaymentResult = () => {
     };
 
     handleResult();
-  }, [checkoutId, status, navigate, searchParams, urlStatus, sessionCheckoutId, sessionReference, localCheckoutId, localReference]);
-};
+      }, [checkoutId, status, navigate, searchParams, urlStatus, sessionCheckoutId, sessionReference, localCheckoutId, localReference, clear]);
+    };
 
-export default PaymentResult;
+    export default PaymentResult;
