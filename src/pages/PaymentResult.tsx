@@ -61,36 +61,38 @@ const PaymentResult = () => {
       }
 
       try {
-        // Try to verify the checkout status with Yoco
-        const result = await verifyCheckout(checkoutId);
-        console.log("Yoco verification result:", result);
+              // Try to verify the checkout status with Yoco
+              const result = await verifyCheckout(checkoutId);
+              console.log("Yoco verification result:", result);
         
-        if (result.status === "succeeded") {
-          // Clear cart on successful payment
-          clear();
+              if (result.status === "succeeded") {
+                // Clear cart on successful payment
+                clear();
           
-          toast.success("Payment successful!");
-          // Get the order reference from sessionStorage (stored as yoco_checkout_reference)
-          const orderRef = sessionStorage.getItem("yoco_checkout_reference") || checkoutId;
-          // Try to get email from sessionStorage or use a default
-          const email = sessionStorage.getItem("yoco_customer_email") || "";
-          navigate("/confirmation", {
-            state: { ref: orderRef, email: email, verified: true },
-          });
-        } else {
-          throw new Error(`Payment status: ${result.status}`);
-        }
-      } catch {
-        if (status === "cancelled" || urlStatus === "cancelled") {
-          toast.info("Payment was cancelled");
-        } else if (status === "failed" || urlStatus === "failed") {
-          toast.error("Payment failed");
-        } else {
-          toast.error("Could not verify payment status. Please contact support with your order reference.");
-        }
-        // Payment not verified — go back to cart/checkout, not confirmation
-        navigate("/checkout");
-      }
+                toast.success("Payment successful!");
+                // Get the order reference from sessionStorage (stored as yoco_checkout_reference)
+                const orderRef = sessionStorage.getItem("yoco_checkout_reference") || checkoutId;
+                // Try to get email from sessionStorage or use a default
+                const email = sessionStorage.getItem("yoco_customer_email") || "";
+                navigate("/confirmation", {
+                  state: { ref: orderRef, email: email, verified: true },
+                });
+              } else {
+                console.error("Yoco verification failed - status not succeeded:", result);
+                throw new Error(`Payment status: ${result.status}`);
+              }
+            } catch (err) {
+              console.error("Yoco verification error:", err);
+              if (status === "cancelled" || urlStatus === "cancelled") {
+                toast.info("Payment was cancelled");
+              } else if (status === "failed" || urlStatus === "failed") {
+                toast.error("Payment failed");
+              } else {
+                toast.error("Could not verify payment status. Please contact support with your order reference.");
+              }
+              // Payment not verified — go back to cart/checkout, not confirmation
+              navigate("/checkout");
+            }
     };
 
     handleResult();

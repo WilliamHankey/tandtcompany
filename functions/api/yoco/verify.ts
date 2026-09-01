@@ -48,11 +48,14 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       checkoutId?: string;
     };
 
+    console.log("[Yoco Verify] Request checkoutId:", checkoutId);
+
     if (!checkoutId) {
       return json({ error: "checkoutId is required" }, 400);
     }
 
     if (!env.YOCO_SECRET_KEY) {
+      console.error("[Yoco Verify] YOCO_SECRET_KEY not configured");
       return json({ error: "YOCO_SECRET_KEY is not configured" }, 500);
     }
 
@@ -68,6 +71,7 @@ export async function onRequestPost({ request, env }: FunctionContext) {
     );
 
     const data = await response.json();
+    console.log("[Yoco Verify] Yoco response:", { status: response.status, data });
 
     if (!response.ok || data.status === "error") {
       return json({ error: data.message || "Yoco error" }, 400);
@@ -81,6 +85,7 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       metadata: data.metadata,
     });
   } catch (error) {
+    console.error("[Yoco Verify] Error:", error);
     return json(
       {
         error:
