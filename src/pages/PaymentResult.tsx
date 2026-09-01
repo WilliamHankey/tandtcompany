@@ -65,7 +65,10 @@ const PaymentResult = () => {
               const result = await verifyCheckout(checkoutId);
               console.log("Yoco verification result:", result);
         
-              if (result.status === "succeeded") {
+              // Yoco uses "completed" for successful payments (not "succeeded")
+              const isSuccess = result.status === "succeeded" || result.status === "completed";
+        
+              if (isSuccess) {
                 // Clear cart on successful payment
                 clear();
           
@@ -78,7 +81,7 @@ const PaymentResult = () => {
                   state: { ref: orderRef, email: email, verified: true },
                 });
               } else {
-                console.error("Yoco verification failed - status not succeeded:", result);
+                console.error("Yoco verification failed - status not succeeded/completed:", result);
                 throw new Error(`Payment status: ${result.status}`);
               }
             } catch (err) {
