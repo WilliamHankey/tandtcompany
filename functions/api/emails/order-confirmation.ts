@@ -3,12 +3,16 @@ import { Resend } from "resend";
 type Env = {
   RESEND_API_KEY: string;
   RESEND_FROM_EMAIL: string;
+  RESEND_TEMPLATE_ID?: string;
 };
 
 type OrderItem = {
   name: string;
   price: number;
   qty: number;
+  size?: string;
+  lineTotal?: number;
+  imageUrl?: string | null;
 };
 
 type OrderEmailRequestBody = {
@@ -21,6 +25,8 @@ type OrderEmailRequestBody = {
   shippingCost: number;
   total: number;
   deliveryMethod: string;
+  paymentMethod?: string;
+  createdAt?: string;
 };
 
 type FunctionContext = {
@@ -41,20 +47,28 @@ function formatZAR(amount: number) {
   }).format(amount);
 }
 
-function buildItemsRows(items: OrderItem[]) {
-  return items
-    .map(
-      (item) => `
-      <tr>
-        <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #333;">
-          ${item.name} &times; ${item.qty}
-        </td>
-        <td style="padding: 12px 0; border-bottom: 1px solid #eee; text-align: right; color: #333;">
-          ${formatZAR(item.price * item.qty)}
-        </td>
-      </tr>`
-    )
-    .join("");
+function formatDispatchDate(): string {
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+  const dispatchDays = [2, 4]; // Tuesday=2, Thursday=4
+  
+  let daysUntil = 0;
+  while (true) {
+    const checkDay = (day + daysUntil) % 7;
+    if (dispatchDays.includes(checkDay)) {
+      break;
+    }
+    daysUntil++;
+  }
+  
+  const dispatchDate = new Date(now);
+  dispatchDate.setDate(now.getDate() + daysUntil);
+  
+  return dispatchDate.toLocaleDateString("en-ZA", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
 }
 
 export async function onRequestPost({ request, env }: FunctionContext) {
@@ -66,6 +80,59 @@ export async function onRequestPost({ request, env }: FunctionContext) {
     }
 
     const resend = new Resend(env.RESEND_API_KEY);
+
+    // Use stored Resend template if available
+    if (env.RESEND_TEMPLATE_ID) {
+      const result = await resend.emails.send({
+        from: env.RESEND_FROM_EMAIL,
+        to: body.customerEmail,
+        reply_to: "tandtcompany525@gmail.com",
+        subject: `Order Confirmed — ${body.reference}`,
+        template: env.RESEND_TEMPLATE_ID,
+        variables: {
+          customer_name: body.customerName,
+          order_ref: body.reference,
+          order_total: formatZAR(body.total),
+          subtotal: formatZAR(body.subtotal),
+          delivery_method: body.deliveryMethod,
+          shipping_cost: body.shippingCost === 0 ? "Free" : formatZAR(body.shippingCost),
+          tax: formatZAR(body.tax),
+          dispatch_date: formatDispatchDate(),
+          order_date: body.createdAt || new Date().toISOString(),
+          payment_method: body.paymentMethod || "—",
+          order_items: (body.items || []).map((i) => ({
+            name: i.name,
+            qty: i.qty,
+            size: i.size || "—",
+            lineTotal: formatZAR(i.lineTotal || i.price * i.qty),
+            imageUrl: i.imageUrl || "",
+          })),
+        },
+      });
+
+      if (result.error) {
+        return json({ error: result.error.message }, 500);
+      }
+
+      return json({ success: true, id: result.data?.id });
+    }
+
+    // Fallback: inline HTML
+    function buildItemsRows(items: OrderItem[]) {
+      return items
+        .map(
+          (item) => `
+        <tr>
+          <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #333;">
+            ${item.name} &times; ${item.qty}${item.size ? ` (${item.size})` : ""}
+          </td>
+          <td style="padding: 12px 0; border-bottom: 1px solid #eee; text-align: right; color: #333;">
+            ${formatZAR(item.lineTotal || item.price * item.qty)}
+          </td>
+        </tr>`
+        )
+        .join("");
+    }
 
     const { error } = await resend.emails.send({
       from: env.RESEND_FROM_EMAIL,
