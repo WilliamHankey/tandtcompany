@@ -50,6 +50,9 @@ export const formatOrderDate = (createdAt: string) =>
     timeZone: "Africa/Johannesburg",
   }).format(new Date(createdAt));
 
+export const formatOrderSender = (fromEmail: string) =>
+  fromEmail.includes("<") ? fromEmail : `T AND T COMPANY <${fromEmail}>`;
+
 const escapeHtml = (value: unknown) =>
   String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -102,6 +105,7 @@ export async function sendOrderConfirmation(
 
   const apiKey = cleanSecret(env.RESEND_API_KEY).replace(/^Bearer\s+/i, "");
   const fromEmail = cleanSecret(env.RESEND_FROM_EMAIL);
+  const from = formatOrderSender(fromEmail);
 
   const resend = new Resend(apiKey);
   // Yoco can deliver more than one success event for the same payment, and
@@ -117,7 +121,7 @@ export async function sendOrderConfirmation(
 
     const result = await resend.emails.send(
       {
-        from: fromEmail,
+        from,
         to: [order.customer.email],
         replyTo: "tandtcompany525@gmail.com",
         subject: `Order Confirmed — ${order.reference}`,
@@ -175,7 +179,7 @@ export async function sendOrderConfirmation(
 
   const result = await resend.emails.send(
     {
-      from: fromEmail,
+      from,
       to: [order.customer.email],
       replyTo: "tandtcompany525@gmail.com",
       subject: `Order Confirmed — ${order.reference}`,
