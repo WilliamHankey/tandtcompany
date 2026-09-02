@@ -42,6 +42,14 @@ const cleanSecret = (value: string) =>
 const zar = (amount: number) =>
   `R ${amount.toLocaleString("en-ZA", { minimumFractionDigits: 2 })}`;
 
+export const formatOrderDate = (createdAt: string) =>
+  new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "Africa/Johannesburg",
+  }).format(new Date(createdAt));
+
 const escapeHtml = (value: unknown) =>
   String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -78,7 +86,7 @@ const buildTemplateVariables = (order: OrderConfirmation) => {
         : zar(order.shipping.shippingCost),
     tax: zar(order.tax || 0),
     dispatch_date: formatDispatchDate(),
-    order_date: order.createdAt,
+    order_date: formatOrderDate(order.createdAt),
     payment_method: order.paymentMethod || "—",
     ...itemVariables,
   };
