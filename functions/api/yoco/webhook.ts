@@ -221,14 +221,15 @@ export async function onRequestPost({ request, env }: FunctionContext) {
     }
 
     // Yoco retries failed deliveries. Do not send a second confirmation email
-    // or repeat mutations when the same event is delivered again.
-    if (
-      order.yoco?.webhookEventId === event.id &&
-      order.yoco?.confirmationEmailSentAt &&
-      order.yoco?.orderNotificationSentAt
-    ) {
-      return json({ received: true, duplicate: true });
-    }
+        // or repeat mutations when the same event is delivered again.
+        // Track email and notification separately so partial failures don't cause double-sends.
+        const isDuplicateEvent = order.yoco?.webhookEventId === event.id;
+        const emailAlreadySent = isDuplicateEvent && Boolean(order.yoco?.confirmationEmailSentAt);
+        const notificationAlreadySent = isDuplicateEvent && Boolean(order.yoco?.orderNotificationSentAt);
+
+        if (isDuplicateEvent && emailAlreadySent && notificationAlreadySent) {
+          return json({ received: true, duplicate: true });
+        }
 
     const expectedAmount = Math.round(order.total * 100);
     if (
@@ -293,10 +294,10 @@ export async function onRequestPost({ request, env }: FunctionContext) {
           }
         }
 
-        let emailSent = Boolean(order.yoco?.confirmationEmailSentAt);
-            let emailError: string | undefined;
+        let emailSent = emailAlreadySent;
+                    let emailError: string | undefined;
 
-            if (fullOrder?.customer?.email && !emailSent) {
+                    if (fullOrder?.customer?.email && !emailSent) {
               try {
                 console.log("[Webhook] Sending confirmation email via Resend...");
                 console.log("[Webhook] Template ID:", env.RESEND_TEMPLATE_ID);
@@ -325,10 +326,10 @@ export async function onRequestPost({ request, env }: FunctionContext) {
               console.log("[Webhook] Skipping email - emailSent:", emailSent, "customerEmail:", fullOrder?.customer?.email);
             }
 
-    let notificationSent = Boolean(order.yoco?.orderNotificationSentAt);
-    let notificationError: string | undefined;
+    let notificationSent = notificationAlreadySent;
+        let notificationError: string | undefined;
 
-    if (fullOrder && !notificationSent) {
+        if (fullOrder && !notificationSent) {
       try {
         await sendOrderNotification(env, fullOrder);
         notificationSent = true;
