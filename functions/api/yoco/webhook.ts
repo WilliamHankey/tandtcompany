@@ -221,17 +221,25 @@ export async function onRequestPost({ request, env }: FunctionContext) {
     }
 
     // Yoco retries failed deliveries. Do not send a second confirmation email
-        // or repeat mutations when the same event is delivered again.
-        // Track email and notification separately so partial failures don't cause double-sends.
-        const isDuplicateEvent = order.yoco?.webhookEventId === event.id;
-        const emailAlreadySent = isDuplicateEvent && Boolean(order.yoco?.confirmationEmailSentAt);
-        const notificationAlreadySent = isDuplicateEvent && Boolean(order.yoco?.orderNotificationSentAt);
+            // or repeat mutations when the same event is delivered again.
+            // Track email and notification separately so partial failures don't cause double-sends.
+            const isDuplicateEvent = order.yoco?.webhookEventId === event.id;
+            const emailAlreadySent = isDuplicateEvent && Boolean(order.yoco?.confirmationEmailSentAt);
+            const notificationAlreadySent = isDuplicateEvent && Boolean(order.yoco?.orderNotificationSentAt);
 
-        if (isDuplicateEvent && emailAlreadySent && notificationAlreadySent) {
-          return json({ received: true, duplicate: true });
-        }
+            if (isDuplicateEvent && emailAlreadySent && notificationAlreadySent) {
+              return json({ received: true, duplicate: true });
+            }
 
-    const expectedAmount = Math.round(order.total * 100);
+            // For duplicate events, skip each independently
+            if (isDuplicateEvent && emailAlreadySent) {
+              console.log("[Webhook] Skipping email - already sent for this event");
+            }
+            if (isDuplicateEvent && notificationAlreadySent) {
+              console.log("[Webhook] Skipping notification - already sent for this event");
+            }
+
+            const expectedAmount = Math.round(order.total * 100);
     if (
       event.payload.amount !== expectedAmount ||
       event.payload.currency !== order.currency

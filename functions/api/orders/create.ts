@@ -233,8 +233,13 @@ export async function onRequestPost({ request, env }: FunctionContext) {
 
     const subtotal = orderItems.reduce((sum, item) => sum + item.lineTotal, 0);
 
-    const shippingCost =
-      shipping.delivery === "pickup" ? 0 : shipping.delivery === "pudo" ? 80 : 100;
+    // Fetch shipping options from Sanity
+        const shippingOptions = await sanityFetch<{ id: string; price: number }[]>(
+          env,
+          `*[_type == "shippingOption"]{ _id, id, price }`
+        );
+        const shippingOption = shippingOptions.find((s) => s.id === shipping.delivery);
+        const shippingCost = shippingOption?.price ?? 0;
 
     const total = subtotal + shippingCost;
 
