@@ -15,8 +15,8 @@ export async function sendOrderNotification(
     .map((i) => `  - ${i.name}${i.size ? ` (${i.size})` : ""} x${i.qty}`)
     .join("\n");
 
-  const shipping = order.shipping || {};
-  const customer = order.customer || {};
+  const shipping = order.shipping;
+  const customer = order.customer;
 
   const message = [
     `New T AND T order — ${order.reference}`,

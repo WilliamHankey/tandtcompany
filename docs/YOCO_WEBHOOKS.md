@@ -52,8 +52,9 @@ curl --request GET \
 The confirmation email is sent with inline HTML by default. To use a template
 you design in the Resend dashboard instead:
 
-1. Create a template in Resend with variables `customer_name`, `order_ref`,
-   `order_total`, and `order_items` (see `scripts/create-resend-template.mjs`).
+1. Paste `docs/resend-order-confirmation-v2.html` into a Resend template. The
+   ten `order_item_N_html` variables are individual strings because Resend's
+   send-email template API does not accept arrays as variable values.
 2. Publish it and copy its template id (`tmpl_...`).
 3. Set that id as `RESEND_TEMPLATE_ID` in the production environment.
 

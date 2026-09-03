@@ -255,13 +255,14 @@ export async function onRequestPost({ request, env }: FunctionContext) {
           tax: number;
           subtotal: number;
           currency: string;
+          createdAt: string;
           customer: { fullName: string; email: string; phone?: string };
           shipping: { delivery: string; shippingCost: number; address?: string; city?: string; postcode?: string; country?: string };
-          items: { productId: string; name: string; price: number; qty: number; size?: string; lineTotal: number }[];
+          items: { productId: string; sanityProductId?: string; name: string; price: number; qty: number; size?: string; lineTotal: number }[];
         }>(
           env,
           `*[_type == "order" && _id == $orderId][0]{
-              _id, reference, total, tax, subtotal, currency, customer, shipping, items
+              _id, reference, total, tax, subtotal, currency, createdAt, customer, shipping, items
             }`,
           { orderId: order._id }
         );
@@ -269,27 +270,37 @@ export async function onRequestPost({ request, env }: FunctionContext) {
         // Fetch product images for order items
         let itemsWithImages = fullOrder?.items || [];
         if (itemsWithImages.length > 0) {
-          const productIds = itemsWithImages.map((i) => i.productId).filter(Boolean);
+          const productIds = itemsWithImages
+            .flatMap((item) => [item.sanityProductId, item.productId])
+            .filter((id): id is string => Boolean(id));
           if (productIds.length > 0) {
             const products = await sanityFetch<Array<{
               _id: string;
-              image: { asset: { _ref: string } } | null;
+              sku?: string;
+              imageUrl?: string | null;
             }>>(
               env,
-              `*[_type == "product" && _id in $ids]{_id, image}`,
+              `*[_type == "product" && (_id in $ids || sku in $ids)]{
+                _id,
+                sku,
+                "imageUrl": image.asset->url
+              }`,
               { ids: productIds }
             );
-            const productImages = new Map(
-              products.map((p) => [
-                p._id,
-                p.image?.asset?._ref
-                  ? `https://cdn.sanity.io/images/${env.VITE_SANITY_PROJECT_ID}/${env.VITE_SANITY_DATASET}/${p.image.asset._ref.replace("image-", "").replace("-jpg", ".jpg").replace("-png", ".png").replace("-webp", ".webp")}`
-                  : null,
-              ])
-            );
+            const productImages = new Map<string, string>();
+            products.forEach((product) => {
+              if (!product.imageUrl) return;
+              productImages.set(product._id, product.imageUrl);
+              if (product.sku) productImages.set(product.sku, product.imageUrl);
+            });
             itemsWithImages = itemsWithImages.map((item) => ({
               ...item,
-              imageUrl: productImages.get(item.productId) || null,
+              imageUrl:
+                (item.sanityProductId
+                  ? productImages.get(item.sanityProductId)
+                  : undefined) ||
+                productImages.get(item.productId) ||
+                null,
             }));
           }
         }
