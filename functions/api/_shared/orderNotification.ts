@@ -2,9 +2,19 @@ import type { OrderConfirmation } from "./orderConfirmation";
 import { formatDispatchDate } from "./dispatch";
 
 const NTFY_TOPIC_URL = "https://ntfy.meiflume.com/TandT_Orders";
+const NTFY_ICON_URL = "https://meiflume.com/TandTCompany/TandTBrandmarkSymbol.svg";
 
 export type OrderNotificationEnv = {
   NTFY_ACCESS_TOKEN?: string;
+  SANITY_STUDIO_HOSTNAME?: string;
+};
+
+const studioOrderUrl = (env: OrderNotificationEnv, order: OrderConfirmation) => {
+  const hostname = env.SANITY_STUDIO_HOSTNAME?.trim()
+    .replace(/^["']|["']$/g, "")
+    .replace(/^https?:\/\//i, "");
+  if (!hostname) return undefined;
+  return `https://${hostname}.sanity.studio/desk/order;${order._id}`;
 };
 
 export async function sendOrderNotification(
@@ -17,6 +27,7 @@ export async function sendOrderNotification(
 
   const shipping = order.shipping;
   const customer = order.customer;
+  const orderUrl = studioOrderUrl(env, order);
 
   const message = [
     `New T AND T order — ${order.reference}`,
@@ -37,7 +48,7 @@ export async function sendOrderNotification(
     "Items:",
     itemLines || "  —",
     "",
-    "Open Sanity Studio to view and fulfil the order.",
+    orderUrl ? `Open this order in Sanity Studio: ${orderUrl}` : "Open Sanity Studio to view and fulfil the order.",
     "Dispatch runs Tuesdays & Thursdays.",
     `Estimated dispatch: ${formatDispatchDate()}`,
   ].join("\n");
@@ -47,7 +58,12 @@ export async function sendOrderNotification(
     .replace(/^Bearer\s+/i, "");
   const headers: Record<string, string> = {
     "Content-Type": "text/plain; charset=utf-8",
+    "X-Icon": NTFY_ICON_URL,
   };
+
+  if (orderUrl) {
+    headers["X-Click"] = orderUrl;
+  }
 
   if (token) {
     headers.Authorization = `Bearer ${token}`;
