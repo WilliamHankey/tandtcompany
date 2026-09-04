@@ -11,7 +11,9 @@ type Env = {
   RESEND_FROM_EMAIL: string;
   RESEND_TEMPLATE_ID?: string;
   NTFY_ACCESS_TOKEN?: string;
-  SANITY_STUDIO_HOSTNAME?: string;
+  SANITY_STUDIO_HANDLE?: string;
+  SANITY_STUDIO_PROJECT_ID?: string;
+  SANITY_STUDIO_DATASET?: string;
 };
 
 type FunctionContext = {

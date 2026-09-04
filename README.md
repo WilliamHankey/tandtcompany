@@ -63,9 +63,10 @@ Copy `.env.example` to `.env` and replace the placeholder values.
 | `VITE_SANITY_PROJECT_ID` | Storefront | Sanity project ID |
 | `VITE_SANITY_DATASET` | Storefront | Sanity dataset; defaults to `production` |
 | `VITE_SANITY_API_VERSION` | Storefront | Sanity API version |
-| `SANITY_STUDIO_PROJECT_ID` | Sanity Studio | Project used by the Studio |
-| `SANITY_STUDIO_DATASET` | Sanity Studio | Dataset used by the Studio |
-| `SANITY_STUDIO_HOSTNAME` | Sanity Studio, Yoco webhook | Hosted Studio subdomain; also used by the ntfy order notification to link directly to the order document |
+| `SANITY_STUDIO_PROJECT_ID` | Sanity Studio, Yoco webhook | Project used by the Studio; also used by the ntfy order notification to link directly to the order document |
+| `SANITY_STUDIO_DATASET` | Sanity Studio, Yoco webhook | Dataset used by the Studio; also used by the ntfy order notification link |
+| `SANITY_STUDIO_HOSTNAME` | Sanity Studio | Hosted Studio subdomain |
+| `SANITY_STUDIO_HANDLE` | Yoco webhook | `@`-less Sanity user/org handle used to build the ntfy order link (`https://www.sanity.io/{handle}/studio/...`) |
 | `SANITY_API_TOKEN` | Setup scripts | Write token used to seed content and configure CORS |
 | `VITE_YOCO_PUBLIC_KEY` | Browser | Yoco public key |
 | `YOCO_SECRET_KEY` | Server only | Yoco secret key used by payment API handlers |

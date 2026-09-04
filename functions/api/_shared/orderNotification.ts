@@ -6,15 +6,27 @@ const NTFY_ICON_URL = "https://meiflume.com/TandTCompany/TandTBrandmarkSymbol.sv
 
 export type OrderNotificationEnv = {
   NTFY_ACCESS_TOKEN?: string;
-  SANITY_STUDIO_HOSTNAME?: string;
+  SANITY_STUDIO_HANDLE?: string;
+  SANITY_STUDIO_PROJECT_ID?: string;
+  SANITY_STUDIO_DATASET?: string;
+};
+
+const cleanEnv = (value?: string) =>
+  value?.trim().replace(/^["']|["']$/g, "").replace(/^https?:\/\//i, "") || "";
+
+const waLink = (phone?: string) => {
+  const digits = (phone || "").replace(/\D/g, "");
+  if (!digits) return "—";
+  const normalized = digits.replace(/^0/, "27");
+  return `https://wa.me/${normalized}`;
 };
 
 const studioOrderUrl = (env: OrderNotificationEnv, order: OrderConfirmation) => {
-  const hostname = env.SANITY_STUDIO_HOSTNAME?.trim()
-    .replace(/^["']|["']$/g, "")
-    .replace(/^https?:\/\//i, "");
-  if (!hostname) return undefined;
-  return `https://${hostname}.sanity.studio/desk/order;${order._id}`;
+  const handle = cleanEnv(env.SANITY_STUDIO_HANDLE);
+  const projectId = cleanEnv(env.SANITY_STUDIO_PROJECT_ID);
+  const dataset = cleanEnv(env.SANITY_STUDIO_DATASET);
+  if (!handle || !projectId || !dataset) return undefined;
+  return `https://www.sanity.io/${handle}/studio/${projectId}/${dataset}/structure/order;${order._id}`;
 };
 
 export async function sendOrderNotification(
@@ -37,7 +49,7 @@ export async function sendOrderNotification(
     "",
     "Customer:",
     `  Name: ${customer.fullName || "—"}`,
-    `  Phone: ${customer.phone || "—"}`,
+    `  Phone: ${customer.phone || "—"} ${customer.phone ? `(${waLink(customer.phone)})` : ""}`,
     `  Email: ${customer.email || "—"}`,
     "",
     "Ship to:",
