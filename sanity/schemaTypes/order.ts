@@ -125,6 +125,7 @@ export const order = defineType({
         { name: "confirmationEmailError", title: "Confirmation Email Error", type: "text" },
         { name: "orderNotificationSentAt", title: "Order Notification Sent At", type: "datetime" },
         { name: "orderNotificationError", title: "Order Notification Error", type: "text" },
+        { name: "orderNotificationClaimedEventId", title: "Order Notification Claimed Event ID", type: "string" },
         { name: "rawVerifyResponse", title: "Raw Webhook Response", type: "text" },
       ],
     }),

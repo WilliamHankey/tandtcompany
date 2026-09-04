@@ -124,6 +124,33 @@ async function sanityPatch(env: Env, id: string, set: Record<string, unknown>) {
   if (!res.ok) throw new Error(data?.error?.description || "Sanity patch failed");
 }
 
+// Occlusive patch guarded by `ifRevisionID`. The patch only applies if the
+// document is still at `rev`; otherwise it fails so the caller can detect a
+// lost race. Returns true when the patch applied, false when another writer
+// changed the document first.
+async function sanityPatchIfRevision(
+  env: Env,
+  id: string,
+  rev: string,
+  set: Record<string, unknown>
+): Promise<boolean> {
+  const url = `https://${env.VITE_SANITY_PROJECT_ID}.api.sanity.io/v${env.VITE_SANITY_API_VERSION}/data/mutate/${env.VITE_SANITY_DATASET}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.SANITY_API_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      mutations: [{ patch: { id, ifRevisionID: rev, set } }],
+    }),
+  });
+  // A successful mutation returns 2xx; a revision conflict returns a non-2xx
+  // error (the patch was not applied). Read the body so it is consumed.
+  await res.text().catch(() => "");
+  return res.ok;
+}
+
 export async function onRequestPost({ request, env }: FunctionContext) {
   try {
     const id = request.headers.get("webhook-id");
@@ -199,6 +226,7 @@ export async function onRequestPost({ request, env }: FunctionContext) {
 
     const order = await sanityFetch<{
       _id: string;
+      _rev: string;
       reference: string;
       status: string;
       total: number;
@@ -208,11 +236,12 @@ export async function onRequestPost({ request, env }: FunctionContext) {
         webhookEventId?: string;
         confirmationEmailSentAt?: string;
         orderNotificationSentAt?: string;
+        orderNotificationClaimedEventId?: string;
       };
     }>(
       env,
       `*[_type == "order" && (yoco.checkoutId == $checkoutId || _id == $orderId)][0]{
-        _id, reference, status, total, currency, yoco
+        _id, _rev, reference, status, total, currency, yoco
       }`,
       { checkoutId: checkoutId ?? "", orderId: orderId ?? "" }
     );
@@ -254,14 +283,28 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       return json({ error: "Payment amount or currency does not match order" }, 400);
     }
 
-    await sanityPatch(env, order._id, {
+    // Atomically claim this payment for this delivery. The `ifRevisionID`
+    // guard means only ONE webhook delivery can win the claim: the first to
+    // write succeeds, and any concurrent/second delivery fails because the
+    // revision changed. The lone winner goes on to send the confirmation email
+    // and the ntfy notification; every other delivery is a duplicate and skips.
+    const claimed = await sanityPatchIfRevision(env, order._id, order._rev, {
       status: "paid",
       "yoco.paymentId": event.payload.id,
       "yoco.webhookEventId": event.id,
       "yoco.mode": event.payload.mode,
       "yoco.paidAt": event.payload.createdDate || event.createdDate,
       "yoco.rawVerifyResponse": rawBody,
+      "yoco.orderNotificationClaimedEventId": event.id,
     });
+
+    if (!claimed) {
+      console.log(
+        "[Webhook] Lost payment claim (another delivery processed this order first) - skipping",
+        { orderId: order._id, eventId: event.id }
+      );
+      return json({ received: true, duplicate: true });
+    }
 
     const fullOrder = await sanityFetch<{
           _id: string;
