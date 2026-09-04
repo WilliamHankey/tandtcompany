@@ -204,6 +204,7 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       total: number;
       currency: string;
       yoco?: {
+        paymentId?: string;
         webhookEventId?: string;
         confirmationEmailSentAt?: string;
         orderNotificationSentAt?: string;
@@ -220,26 +221,32 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       return json({ error: "Order not found for checkout" }, 404);
     }
 
-    // Yoco retries failed deliveries. Do not send a second confirmation email
-            // or repeat mutations when the same event is delivered again.
-            // Track email and notification separately so partial failures don't cause double-sends.
-            const isDuplicateEvent = order.yoco?.webhookEventId === event.id;
-            const emailAlreadySent = isDuplicateEvent && Boolean(order.yoco?.confirmationEmailSentAt);
-            const notificationAlreadySent = isDuplicateEvent && Boolean(order.yoco?.orderNotificationSentAt);
+    // Yoco retries failed deliveries and can send the same payment under more
+    // than one event id (e.g. `payment.succeeded` then `payment.completed`, or
+    // a redelivery with a fresh event id). Deduplicate on the stable payment id
+    // as well as the event id so a second delivery never re-sends the ntfy
+    // notification. Each channel (email + ntfy) is tracked independently so a
+    // partial failure on one delivery can be healed on the next without
+    // double-sending the other.
+    const isDuplicatePayment = order.yoco?.paymentId === event.payload.id;
+    const isDuplicateEvent = order.yoco?.webhookEventId === event.id;
+    const isDuplicate = isDuplicateEvent || isDuplicatePayment;
+    const emailAlreadySent = Boolean(order.yoco?.confirmationEmailSentAt);
+    const notificationAlreadySent = Boolean(order.yoco?.orderNotificationSentAt);
 
-            if (isDuplicateEvent && emailAlreadySent && notificationAlreadySent) {
-              return json({ received: true, duplicate: true });
-            }
+    if (isDuplicate && emailAlreadySent && notificationAlreadySent) {
+      return json({ received: true, duplicate: true });
+    }
 
-            // For duplicate events, skip each independently
-            if (isDuplicateEvent && emailAlreadySent) {
-              console.log("[Webhook] Skipping email - already sent for this event");
-            }
-            if (isDuplicateEvent && notificationAlreadySent) {
-              console.log("[Webhook] Skipping notification - already sent for this event");
-            }
+    // For duplicate deliveries, skip each already-sent channel independently.
+    if (isDuplicate && emailAlreadySent) {
+      console.log("[Webhook] Skipping email - already sent for this payment");
+    }
+    if (isDuplicate && notificationAlreadySent) {
+      console.log("[Webhook] Skipping notification - already sent for this payment");
+    }
 
-            const expectedAmount = Math.round(order.total * 100);
+    const expectedAmount = Math.round(order.total * 100);
     if (
       event.payload.amount !== expectedAmount ||
       event.payload.currency !== order.currency
