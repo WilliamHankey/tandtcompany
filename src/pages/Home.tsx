@@ -40,6 +40,7 @@ type Testimonial = {
   rating?: number;
   testimonialType?: "text" | "tiktok" | "instagram";
   embedUrl?: string;
+  videoUrl?: string;
 };
 
 const defaultTestimonials: Testimonial[] = [
@@ -434,7 +435,20 @@ const Home = () => {
                 </div>
               </div>
 
-              {t.embedUrl ? (
+              {t.videoUrl ? (
+                <div className="aspect-[9/16] w-full overflow-hidden bg-navy-deep">
+                  <video
+                    src={t.videoUrl}
+                    poster={t.avatar ? imageUrl(t.avatar, 600) : undefined}
+                    className="h-full w-full object-cover"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    controls
+                  />
+                </div>
+              ) : t.embedUrl ? (
                 <div className="aspect-[9/16] w-full overflow-hidden bg-navy-deep">
                   <iframe
                     src={t.embedUrl}

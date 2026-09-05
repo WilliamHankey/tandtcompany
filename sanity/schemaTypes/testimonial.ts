@@ -54,7 +54,15 @@ export const testimonial = defineType({
       title: "TikTok / Instagram Embed URL",
       type: "url",
       description:
-        "Paste the embed URL for TikTok or Instagram here. Example: https://www.tiktok.com/embed/VIDEO_ID",
+        "Paste the embed URL for TikTok or Instagram here. Example: https://www.tiktok.com/embed/VIDEO_ID. Used as fallback when no direct video URL is provided.",
+      hidden: ({ parent }) => parent?.testimonialType === "text",
+    }),
+    defineField({
+      name: "videoUrl",
+      title: "Direct Video URL (mp4)",
+      type: "url",
+      description:
+        "Paste the direct .mp4 link from TikTok or Instagram (right-click the playing video in the browser and copy the video address). Played natively with loop.",
       hidden: ({ parent }) => parent?.testimonialType === "text",
     }),
     defineField({
