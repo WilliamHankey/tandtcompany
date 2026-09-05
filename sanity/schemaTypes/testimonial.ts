@@ -58,11 +58,12 @@ export const testimonial = defineType({
       hidden: ({ parent }) => parent?.testimonialType === "text",
     }),
     defineField({
-      name: "videoUrl",
-      title: "Direct Video URL (mp4)",
-      type: "url",
+      name: "video",
+      title: "Video File (mp4)",
+      type: "file",
       description:
-        "Paste the direct .mp4 link from TikTok or Instagram (right-click the playing video in the browser and copy the video address). Played natively with loop.",
+        "Upload the video file (mp4) exported from TikTok or Instagram. Played natively with loop.",
+      options: { accept: "video/*" },
       hidden: ({ parent }) => parent?.testimonialType === "text",
     }),
     defineField({

@@ -132,5 +132,5 @@ export const testimonialsQuery = `*[_type == "testimonial"] | order(order asc) {
   "avatar": avatar.asset->url,
   testimonialType,
   embedUrl,
-  videoUrl
+  "videoUrl": video.asset->url
 }`;
