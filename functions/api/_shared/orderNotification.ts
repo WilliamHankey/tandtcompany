@@ -22,11 +22,11 @@ const waLink = (phone?: string) => {
 };
 
 const studioOrderUrl = (env: OrderNotificationEnv, order: OrderConfirmation) => {
-  const handle = cleanEnv(env.SANITY_STUDIO_HANDLE);
+  const handle = cleanEnv(env.SANITY_STUDIO_HANDLE).replace(/^@+/, "");
   const projectId = cleanEnv(env.SANITY_STUDIO_PROJECT_ID);
   const dataset = cleanEnv(env.SANITY_STUDIO_DATASET);
   if (!handle || !projectId || !dataset) return undefined;
-  return `https://www.sanity.io/${handle}/studio/${projectId}/${dataset}/structure/order;${order._id}`;
+  return `https://www.sanity.io/@${handle}/studio/${projectId}/${dataset}/structure/order;${order._id}`;
 };
 
 export async function sendOrderNotification(
