@@ -21,18 +21,18 @@ const Cart = () => {
             <Button asChild variant="navy" size="lg" className="mt-8"><Link to="/shop">Visit the shop</Link></Button>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-3 gap-12">
+          <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
             <div className="lg:col-span-2">
               <div className="border-l-2 border-gold pl-6 mb-10">
                 <h1 className="font-serif text-4xl md:text-5xl text-navy">Review Your Selection</h1>
               </div>
               <ul className="divide-y divide-border border-y border-border">
                 {items.map(({ product, qty, size }) => (
-                  <li key={`${product.id}:${size || "default"}`} className="py-8 flex items-center gap-6">
-                    <Link to={`/shop/${product.slug}`} className="block w-24 h-24 bg-muted overflow-hidden flex-shrink-0">
+                  <li key={`${product.id}:${size || "default"}`} className="py-8 grid grid-cols-[auto_1fr] gap-x-4 gap-y-5 items-start sm:flex sm:items-center sm:gap-6">
+                    <Link to={`/shop/${product.slug}`} className="block w-24 h-24 bg-muted overflow-hidden flex-shrink-0 row-span-2">
                       <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                     </Link>
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 pt-1 sm:pt-0">
                       <h3 className="font-serif text-xl text-navy leading-tight">{product.name}</h3>
                       <p className="mt-1 text-[0.65rem] uppercase tracking-[0.22em] text-muted-foreground">
                         {product.tagline}
@@ -43,31 +43,33 @@ const Cart = () => {
                         </p>
                       )}
                     </div>
-                    <div className="flex items-center border border-border">
-                      <button onClick={() => setQty(product.id, qty - 1, size)} className="h-9 w-9 grid place-items-center hover:bg-secondary"><Minus className="h-3 w-3" /></button>
-                      <span className="w-8 text-center text-sm tabular-nums">{qty}</span>
-                      <button onClick={() => setQty(product.id, qty + 1, size)} className="h-9 w-9 grid place-items-center hover:bg-secondary"><Plus className="h-3 w-3" /></button>
+                    <div className="col-span-2 flex items-center justify-between gap-4 sm:col-span-1 sm:w-auto w-full sm:justify-end sm:gap-6">
+                      <div className="flex items-center border border-border">
+                        <button onClick={() => setQty(product.id, qty - 1, size)} className="h-9 w-9 grid place-items-center hover:bg-secondary"><Minus className="h-3 w-3" /></button>
+                        <span className="w-8 text-center text-sm tabular-nums">{qty}</span>
+                        <button onClick={() => setQty(product.id, qty + 1, size)} className="h-9 w-9 grid place-items-center hover:bg-secondary"><Plus className="h-3 w-3" /></button>
+                      </div>
+                      <p className="font-serif text-lg text-gold tabular-nums w-28 text-right">{formatZAR(product.price * qty)}</p>
+                      <button onClick={() => remove(product.id, size)} aria-label="Remove" className="text-muted-foreground hover:text-foreground p-2 -m-2">
+                        <X className="h-4 w-4" />
+                      </button>
                     </div>
-                    <p className="font-serif text-lg text-gold tabular-nums w-28 text-right">{formatZAR(product.price * qty)}</p>
-                    <button onClick={() => remove(product.id, size)} aria-label="Remove" className="text-muted-foreground hover:text-foreground">
-                      <X className="h-4 w-4" />
-                    </button>
                   </li>
                 ))}
               </ul>
             </div>
 
-            <aside className="space-y-8">
-              <div className="bg-cream border border-border p-8 shadow-elegant">
+            <aside className="space-y-8 w-full max-w-full min-w-0">
+              <div className="bg-cream border border-border p-6 sm:p-8 shadow-elegant w-full min-w-0">
                 <p className="eyebrow !text-gold">Order Summary</p>
                 <div className="mt-6 space-y-4 text-sm">
-                  <div className="flex justify-between"><span>Subtotal</span><span className="tabular-nums">{formatZAR(subtotal)}</span></div>
-                  <div className="flex justify-between text-muted-foreground"><span>Shipping</span><span className="text-xs">Calculated at checkout</span></div>
+                  <div className="flex justify-between gap-4"><span className="min-w-0 break-words">Subtotal</span><span className="tabular-nums shrink-0">{formatZAR(subtotal)}</span></div>
+                  <div className="flex justify-between gap-4 text-muted-foreground"><span className="min-w-0 break-words">Shipping</span><span className="text-xs shrink-0 text-right">Calculated at checkout</span></div>
                 </div>
                 <div className="border-t border-border my-6" />
-                <div className="flex justify-between items-baseline">
-                  <span className="font-serif text-2xl text-navy">Total</span>
-                  <span className="font-serif text-2xl text-gold tabular-nums">{formatZAR(total)}</span>
+                <div className="flex justify-between items-baseline gap-4">
+                  <span className="font-serif text-2xl text-navy shrink-0">Total</span>
+                  <span className="font-serif text-xl sm:text-2xl text-gold tabular-nums text-right break-words min-w-0">{formatZAR(total)}</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2 text-center">
                   Shipping calculated at checkout

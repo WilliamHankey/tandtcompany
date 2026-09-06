@@ -238,7 +238,7 @@ const Checkout = () => {
 
         <form
           onSubmit={submit}
-          className="grid lg:grid-cols-3 gap-12"
+          className="grid lg:grid-cols-3 gap-8 lg:gap-12"
           noValidate
         >
           <div className="lg:col-span-2 space-y-14">
@@ -489,7 +489,7 @@ const Checkout = () => {
           </div>
 
           {/* Order Summary */}
-          <aside className="lg:sticky lg:top-28 h-fit border-t-2 border-gold bg-cream border border-border p-8 shadow-elegant">
+          <aside className="lg:sticky lg:top-28 h-fit border-t-2 border-gold bg-cream border border-border p-6 sm:p-8 shadow-elegant w-full max-w-full min-w-0">
             <h3 className="font-serif text-2xl text-navy">Order Summary</h3>
             <ul className="mt-6 space-y-5">
               {items.map(({ product, qty, size }) => (
@@ -501,8 +501,8 @@ const Checkout = () => {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <div className="flex-1 text-sm">
-                    <p className="font-serif text-navy leading-tight">
+                  <div className="flex-1 text-sm min-w-0">
+                    <p className="font-serif text-navy leading-tight break-words">
                       {product.name}
                     </p>
                     {size && (
@@ -522,27 +522,27 @@ const Checkout = () => {
             </ul>
             <div className="border-t border-border my-6" />
             <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span>Subtotal</span>
-                <span className="tabular-nums">{formatZAR(subtotal)}</span>
+              <div className="flex justify-between gap-4">
+                <span className="min-w-0 break-words">Subtotal</span>
+                <span className="tabular-nums shrink-0">{formatZAR(subtotal)}</span>
               </div>
-              <div className="flex justify-between">
-                <span>Shipping</span>
-                <span className="tabular-nums">
+              <div className="flex justify-between gap-4">
+                <span className="min-w-0 break-words">Shipping</span>
+                <span className="tabular-nums shrink-0">
                   {shippingCost === 0 ? "Free" : formatZAR(shippingCost)}
                 </span>
               </div>
               {tax > 0 && (
-                <div className="flex justify-between">
-                  <span>VAT ({Math.round(taxRate * 100)}%)</span>
-                  <span className="tabular-nums">{formatZAR(tax)}</span>
+                <div className="flex justify-between gap-4">
+                  <span className="min-w-0 break-words">VAT ({Math.round(taxRate * 100)}%)</span>
+                  <span className="tabular-nums shrink-0">{formatZAR(tax)}</span>
                 </div>
               )}
             </div>
             <div className="border-t border-border my-6" />
-            <div className="flex justify-between items-baseline">
-              <span className="font-serif text-2xl text-navy">Total</span>
-              <span className="font-serif text-2xl text-gold tabular-nums">
+            <div className="flex justify-between items-baseline gap-4">
+              <span className="font-serif text-2xl text-navy shrink-0">Total</span>
+              <span className="font-serif text-xl sm:text-2xl text-gold tabular-nums text-right break-words min-w-0">
                 {formatZAR(total)}
               </span>
             </div>

@@ -67,7 +67,7 @@ const Header = () => {
             </Link>
           </div>
 
-          <nav className="hidden md:flex items-center justify-center gap-10 text-[0.7rem] uppercase tracking-[0.28em]">
+          <nav className="hidden md:flex items-center justify-center gap-7 xl:gap-10 text-[0.7rem] uppercase tracking-[0.28em]">
             {links.map((l) => (
               <NavLink
                 key={l.label}

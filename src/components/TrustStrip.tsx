@@ -25,7 +25,7 @@ const TrustStrip = () => {
 
   return (
     <section className="border-y border-border bg-secondary/40">
-      <div className="container-prose grid grid-cols-2 md:grid-cols-4 gap-8 py-10">
+      <div className="container-prose grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 py-10">
         {items.map((item: { icon?: string; title: string; text: string }) => {
           const Icon = iconMap[item.icon || "truck"] || Truck;
           return (

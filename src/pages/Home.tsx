@@ -255,7 +255,7 @@ const Home = () => {
         <div className="max-w-[1440px] mx-auto px-6 md:px-10">
           <div className="grid lg:grid-cols-[1.65fr_0.8fr] gap-8 lg:gap-12 items-stretch">
             {/* Image Card */}
-            <div className="relative min-h-[520px] overflow-hidden shadow-elegant">
+            <div className="relative min-h-[380px] sm:min-h-[520px] overflow-hidden shadow-elegant">
               <img
                 src={foundersImg}
                 alt="Tersha and Tyrone, the founders of T AND T COMPANY"
