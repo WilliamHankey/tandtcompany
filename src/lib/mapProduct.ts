@@ -27,6 +27,11 @@ type SanityProductRaw = {
   category?: string | null;
   featured?: boolean;
   inStock?: boolean;
+  sizes?: {
+    stock?: number;
+    customSize?: string | null;
+    size?: { _id?: string; label?: string; sortOrder?: number } | null;
+  }[] | null;
 };
 
 const safeImageUrl = (image?: SanityImageSource | string | null) => {
@@ -77,7 +82,14 @@ export function mapSanityProduct(raw: SanityProductRaw): Product {
     materials: raw.materials || "",
     careInstructions: raw.careInstructions || "",
     sku: raw.id || "",
-    sizes: [],
+    sizes: (raw.sizes || [])
+      .filter((s) => s?.size?.label || s?.customSize)
+      .map((s) => {
+        const label = s.customSize || s.size?.label || "";
+        const stock = s.stock ?? 0;
+        return { label, stock, inStock: stock > 0 };
+      })
+      .filter((s) => s.label),
     badge: raw.badge || undefined,
     category: raw.category || "",
     featured: Boolean(raw.featured),

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Product, formatZAR } from "@/data/products";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
@@ -17,10 +17,20 @@ type Props = {
 
 const ProductCard = ({ product, full }: Props) => {
   const { add } = useCart();
+  const navigate = useNavigate();
 
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!full) return;
+    const hasSizes = full.sizes && full.sizes.length > 0;
+    if (hasSizes) {
+      navigate(`/shop/${full.slug}`);
+      return;
+    }
+    if (full.inStock === false) {
+      toast.error("This piece is currently out of stock");
+      return;
+    }
     add(full, 1);
     toast.success("Added to bag", { description: full.name });
   };

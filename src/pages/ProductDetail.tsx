@@ -68,6 +68,13 @@ const ProductDetail = () => {
   const hasSizes = product.sizes && product.sizes.length > 0;
   const productUrl = `${SITE_URL}/shop/${product.slug}`;
   const inStock = product.inStock !== false;
+  const selectedSizeStock = hasSizes
+    ? product.sizes!.find((s) => s.label === selectedSize)
+    : undefined;
+  const selectedSizeInStock = selectedSize
+    ? Boolean(selectedSizeStock?.inStock)
+    : !hasSizes;
+  const addable = inStock && selectedSizeInStock;
 
   return (
     <Layout>
@@ -234,13 +241,13 @@ const ProductDetail = () => {
               variant="navy"
               size="lg"
               className="w-full"
-              disabled={product.inStock === false}
+              disabled={!addable}
               onClick={() => {
                 add(product, qty, selectedSize || undefined);
                 toast.success("Added to bag", { description: product.name });
               }}
             >
-              {product.inStock === false ? "Out of Stock" : `Add to Bag · ${formatZAR(product.price * qty)}`}
+              {!inStock ? "Out of Stock" : selectedSize && !selectedSizeInStock ? "Size Unavailable" : `Add to Bag · ${formatZAR(product.price * qty)}`}
             </Button>
           </div>
 
@@ -248,7 +255,7 @@ const ProductDetail = () => {
             variant="gold"
             size="lg"
             className="mt-3 w-full"
-            disabled={product.inStock === false}
+            disabled={!addable}
             onClick={() => {
               add(product, qty, selectedSize || undefined);
               navigate("/checkout");
@@ -345,13 +352,13 @@ const ProductDetail = () => {
         <Button
           variant="navy"
           className="w-full"
-          disabled={product.inStock === false}
+          disabled={!addable}
           onClick={() => {
             add(product, qty, selectedSize || undefined);
             toast.success("Added to bag");
           }}
         >
-          {product.inStock === false ? "Out of Stock" : `Add To Bag · ${formatZAR(product.price * qty)}`}
+          {!inStock ? "Out of Stock" : selectedSize && !selectedSizeInStock ? "Size Unavailable" : `Add To Bag · ${formatZAR(product.price * qty)}`}
         </Button>
       </div>
     </Layout>

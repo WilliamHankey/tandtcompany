@@ -205,9 +205,9 @@ export async function onRequestPost({ request, env }: FunctionContext) {
                     </tr>
                   </thead>
                   <tbody>
-                    ${(fullOrder.items || []).map((item: { name: string; price: number; qty: number }) => `
+                    ${(fullOrder.items || []).map((item: { name: string; price: number; qty: number; size?: string }) => `
                       <tr>
-                        <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #333;">${item.name} &times; ${item.qty}</td>
+                        <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #333;">${item.name}${item.size ? ` (${item.size})` : ""} &times; ${item.qty}</td>
                         <td style="padding: 12px 0; border-bottom: 1px solid #eee; text-align: right; color: #333;">R ${(item.price * item.qty).toLocaleString("en-ZA", { minimumFractionDigits: 2 })}</td>
                       </tr>
                     `).join("")}
