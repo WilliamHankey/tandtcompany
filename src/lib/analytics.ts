@@ -19,14 +19,16 @@ function loadGtagScript(id: string) {
   window.gtag = function (...args: unknown[]) {
     window.dataLayer.push(args);
   };
-  window.gtag("js", new Date());
-  window.gtag("config", id, { send_page_view: false });
 }
 
 export function initGA(measurementId?: string) {
   const id = measurementId || GA_MEASUREMENT_ID;
   if (!id || typeof window === "undefined") return;
   loadGtagScript(id);
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = window.gtag || ((...args: unknown[]) => window.dataLayer!.push(args));
+  window.gtag("js", new Date());
+  window.gtag("config", id, { send_page_view: false });
 }
 
 export function pageView(url: string) {
