@@ -31,6 +31,7 @@ const productFragment = `{
     _key,
     name,
     hex,
+    stock,
     image
   }
 }`;
