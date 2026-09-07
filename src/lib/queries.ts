@@ -26,6 +26,12 @@ const productFragment = `{
       label,
       sortOrder
     }
+  },
+  colors[]{
+    _key,
+    name,
+    hex,
+    image
   }
 }`;
 

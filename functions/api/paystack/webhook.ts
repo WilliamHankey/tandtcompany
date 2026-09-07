@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { decrementStockForOrder } from "../_shared/decrementStock";
 
 type Env = {
   VITE_SANITY_PROJECT_ID: string;
@@ -147,6 +148,8 @@ export async function onRequestPost({ request, env }: FunctionContext) {
 
     const expectedAmount = Math.round(order.total * 100);
 
+    const alreadyPaid = order.status === "paid";
+
     if (
       tx.status === "success" &&
       tx.amount === expectedAmount &&
@@ -168,7 +171,7 @@ export async function onRequestPost({ request, env }: FunctionContext) {
         currency: string;
         customer: { fullName: string; email: string };
         shipping: { delivery: string; shippingCost: number };
-        items: { name: string; price: number; qty: number }[];
+        items: { name: string; price: number; qty: number; size?: string; color?: string; productId?: string }[];
       }>(
         env,
         `*[_type == "order" && reference == $reference][0]{
@@ -179,6 +182,26 @@ export async function onRequestPost({ request, env }: FunctionContext) {
         }`,
         { reference: tx.reference }
       );
+
+      if (!alreadyPaid) {
+        try {
+          const stockResult = await decrementStockForOrder(
+            env,
+            (fullOrder?.items || []).map((item) => ({
+              productId: item.productId,
+              qty: item.qty,
+              size: item.size,
+              color: item.color,
+            }))
+          );
+          console.log("[Paystack] Stock decremented", stockResult);
+        } catch (error) {
+          console.error(
+            "[Paystack] Stock decrement failed:",
+            error instanceof Error ? error.message : error
+          );
+        }
+      }
 
       if (fullOrder?.customer?.email && env.RESEND_API_KEY) {
         try {
@@ -205,9 +228,9 @@ export async function onRequestPost({ request, env }: FunctionContext) {
                     </tr>
                   </thead>
                   <tbody>
-                    ${(fullOrder.items || []).map((item: { name: string; price: number; qty: number; size?: string }) => `
+                    ${(fullOrder.items || []).map((item: { name: string; price: number; qty: number; size?: string; color?: string }) => `
                       <tr>
-                        <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #333;">${item.name}${item.size ? ` (${item.size})` : ""} &times; ${item.qty}</td>
+                        <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #333;">${item.name}${item.color ? ` (${item.color})` : ""}${item.size ? ` (${item.size})` : ""} &times; ${item.qty}</td>
                         <td style="padding: 12px 0; border-bottom: 1px solid #eee; text-align: right; color: #333;">R ${(item.price * item.qty).toLocaleString("en-ZA", { minimumFractionDigits: 2 })}</td>
                       </tr>
                     `).join("")}

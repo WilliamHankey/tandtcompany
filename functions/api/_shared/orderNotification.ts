@@ -34,7 +34,7 @@ export async function sendOrderNotification(
   order: OrderConfirmation
 ) {
   const itemLines = (order.items || [])
-    .map((i) => `  - ${i.name}${i.size ? ` (${i.size})` : ""} x${i.qty}`)
+    .map((i) => `  - ${i.name}${i.color ? ` (${i.color})` : ""}${i.size ? ` (${i.size})` : ""} x${i.qty}`)
     .join("\n");
 
   const shipping = order.shipping;

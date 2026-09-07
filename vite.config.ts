@@ -146,7 +146,7 @@ function ordersCreateApi(env: Record<string, string>): Plugin {
           const body = JSON.parse(await readBody(req)) as {
             customer: { email: string; fullName: string; phone: string };
             shipping: { delivery: string; country: string; address: string; city: string; postcode: string };
-            items: { id: string; qty: number; size?: string }[];
+            items: { id: string; qty: number; size?: string; color?: string }[];
           };
           const { customer, shipping, items } = body;
 
@@ -156,7 +156,7 @@ function ordersCreateApi(env: Record<string, string>): Plugin {
 
           const cleanItems = items
             .filter((i) => i.id && Number.isInteger(i.qty) && i.qty > 0)
-            .map((i) => ({ id: i.id, qty: Math.min(i.qty, 20), size: i.size }));
+            .map((i) => ({ id: i.id, qty: Math.min(i.qty, 20), size: i.size, color: i.color }));
           if (!cleanItems.length) {
             return sendJson(res, { error: "Invalid cart items" }, 400);
           }
@@ -182,6 +182,7 @@ function ordersCreateApi(env: Record<string, string>): Plugin {
               price: product.price,
               qty: cart.qty,
               size: cart.size || "",
+              color: cart.color || "",
               lineTotal: product.price * cart.qty,
             };
           });

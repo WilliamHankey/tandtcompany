@@ -1,5 +1,6 @@
 import { sendOrderConfirmation } from "../_shared/orderConfirmation";
 import { sendOrderNotification } from "../_shared/orderNotification";
+import { decrementStockForOrder } from "../_shared/decrementStock";
 
 type Env = {
   VITE_SANITY_PROJECT_ID: string;
@@ -319,7 +320,7 @@ export async function onRequestPost({ request, env }: FunctionContext) {
           createdAt: string;
           customer: { fullName: string; email: string; phone?: string };
           shipping: { delivery: string; shippingCost: number; address?: string; city?: string; postcode?: string; country?: string };
-          items: { productId: string; sanityProductId?: string; name: string; price: number; qty: number; size?: string; lineTotal: number }[];
+          items: { productId: string; sanityProductId?: string; name: string; price: number; qty: number; size?: string; color?: string; lineTotal: number }[];
         }>(
           env,
           `*[_type == "order" && _id == $orderId][0]{
@@ -327,6 +328,24 @@ export async function onRequestPost({ request, env }: FunctionContext) {
             }`,
           { orderId: order._id }
         );
+
+        try {
+          const stockResult = await decrementStockForOrder(
+            env,
+            (fullOrder?.items || []).map((item) => ({
+              productId: item.productId,
+              qty: item.qty,
+              size: item.size,
+              color: item.color,
+            }))
+          );
+          console.log("[Yoco] Stock decremented", stockResult);
+        } catch (error) {
+          console.error(
+            "[Yoco] Stock decrement failed:",
+            error instanceof Error ? error.message : error
+          );
+        }
 
         // Fetch product images for order items
         let itemsWithImages = fullOrder?.items || [];

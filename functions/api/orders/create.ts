@@ -10,6 +10,7 @@ type CartItem = {
   qty: number;
   price?: number;
   size?: string;
+  color?: string;
 };
 
 type OrderRequestBody = {
@@ -38,6 +39,11 @@ type SanityProduct = {
     stock?: number;
     customSize?: boolean;
     size?: { _id: string; label: string };
+  }[];
+  colors?: {
+    _key: string;
+    name: string;
+    stock?: number;
   }[];
 };
 
@@ -116,6 +122,7 @@ export async function onRequestPost({ request, env }: FunctionContext) {
         qty: Math.min(item.qty, 20),
         price: item.price,
         size: item.size,
+        color: item.color,
       }));
 
     if (!cleanItems.length) {
@@ -136,6 +143,11 @@ export async function onRequestPost({ request, env }: FunctionContext) {
           stock,
           customSize,
           size->{ _id, label }
+        },
+        colors[]{
+          _key,
+          name,
+          stock
         }
       }`,
       { skus }
@@ -189,6 +201,7 @@ export async function onRequestPost({ request, env }: FunctionContext) {
 
       let availableStock = Infinity;
       const sizeLabel = cart.size || "";
+      const colorLabel = cart.color || "";
 
       if (product.sizes && product.sizes.length > 0) {
         if (cart.size) {
@@ -203,20 +216,40 @@ export async function onRequestPost({ request, env }: FunctionContext) {
           }
 
           if (matched.stock !== undefined) {
-            availableStock = matched.stock;
+            availableStock = Math.min(availableStock, matched.stock);
           }
         } else {
           const totalStock = product.sizes.reduce(
             (sum, s) => sum + (s.stock ?? 0),
             0
           );
-          availableStock = totalStock;
+          availableStock = Math.min(availableStock, totalStock);
+        }
+      }
+
+      if (product.colors && product.colors.length > 0) {
+        if (cart.color) {
+          const matchedColor = product.colors.find(
+            (c) => c.name === cart.color
+          );
+
+          if (!matchedColor) {
+            throw new Error(
+              `Colour "${cart.color}" not found for ${product.title}`
+            );
+          }
+
+          if (matchedColor.stock !== undefined) {
+            availableStock = Math.min(availableStock, matchedColor.stock);
+          }
+        } else {
+          throw new Error(`${product.title}: please select a colour`);
         }
       }
 
       if (cart.qty > availableStock) {
         throw new Error(
-          `Insufficient stock for ${product.title}${cart.size ? ` (size: ${cart.size})` : ""}: requested ${cart.qty}, available ${availableStock}`
+          `Insufficient stock for ${product.title}${cart.size ? ` (size: ${cart.size})` : ""}${cart.color ? ` (colour: ${cart.color})` : ""}: requested ${cart.qty}, available ${availableStock}`
         );
       }
 
@@ -227,6 +260,7 @@ export async function onRequestPost({ request, env }: FunctionContext) {
         price: product.price,
         qty: cart.qty,
         size: sizeLabel,
+        color: colorLabel,
         lineTotal: product.price * cart.qty,
       };
     });

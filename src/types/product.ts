@@ -23,6 +23,7 @@ export type Product = {
   careInstructions?: string;
   sku?: string;
   sizes?: { label: string; inStock: boolean; stock?: number }[];
+  colors?: { _key?: string; name: string; hex?: string; image?: string; stock?: number; inStock?: boolean }[];
   badge?: string;
   category?: string;
   featured?: boolean;

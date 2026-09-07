@@ -69,6 +69,7 @@ export const order = defineType({
             { name: "price", title: "Unit Price", type: "number" },
             { name: "qty", title: "Quantity", type: "number" },
             { name: "size", title: "Size", type: "string" },
+            { name: "color", title: "Colour", type: "string" },
             { name: "lineTotal", title: "Line Total", type: "number" },
           ],
         },

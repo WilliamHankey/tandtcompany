@@ -21,6 +21,7 @@ const ProductDetail = () => {
   const [qty, setQty] = useState(1);
   const [selectedImage, setSelectedImage] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
+  const [selectedColor, setSelectedColor] = useState("");
 
   const { add } = useCart();
   const navigate = useNavigate();
@@ -29,6 +30,7 @@ const ProductDetail = () => {
     if (product?.image) {
       setSelectedImage(product.image);
     }
+    setSelectedColor("");
   }, [product?.image]);
 
   useEffect(() => {
@@ -37,6 +39,13 @@ const ProductDetail = () => {
       if (inStock) setSelectedSize(inStock.label);
     }
   }, [product?.sizes, selectedSize]);
+
+  useEffect(() => {
+    if (product?.colors?.length && !selectedColor) {
+      const inStock = product.colors.find((c) => c.inStock);
+      if (inStock) setSelectedColor(inStock.name);
+    }
+  }, [product?.colors, selectedColor]);
 
   const galleryImages = useMemo(() => {
     if (!product?.gallery) return [];
@@ -66,6 +75,7 @@ const ProductDetail = () => {
 
   const mainImage = selectedImage || product.image;
   const hasSizes = product.sizes && product.sizes.length > 0;
+  const hasColors = product.colors && product.colors.length > 0;
   const productUrl = `${SITE_URL}/shop/${product.slug}`;
   const inStock = product.inStock !== false;
   const selectedSizeStock = hasSizes
@@ -74,7 +84,25 @@ const ProductDetail = () => {
   const selectedSizeInStock = selectedSize
     ? Boolean(selectedSizeStock?.inStock)
     : !hasSizes;
-  const addable = inStock && selectedSizeInStock;
+  const selectedColorData =
+    hasColors && selectedColor
+      ? product.colors!.find((c) => c.name === selectedColor)
+      : undefined;
+  const selectedColorInStock = selectedColor
+    ? Boolean(selectedColorData?.inStock)
+    : !hasColors;
+  const addable =
+    inStock && selectedSizeInStock && selectedColorInStock;
+
+  const addText = !inStock
+    ? "Out of Stock"
+    : hasColors && !selectedColor
+      ? "Select a Colour"
+      : hasColors && !selectedColorInStock
+        ? "Colour Unavailable"
+        : selectedSize && !selectedSizeInStock
+          ? "Size Unavailable"
+          : `Add to Bag · ${formatZAR(product.price * qty)}`;
 
   return (
     <Layout>
@@ -131,7 +159,10 @@ const ProductDetail = () => {
                 <button
                   key={index}
                   type="button"
-                  onClick={() => setSelectedImage(image)}
+                  onClick={() => {
+                    setSelectedColor("");
+                    setSelectedImage(image);
+                  }}
                   className={`aspect-square overflow-hidden border transition ${
                     mainImage === image ? "border-gold" : "border-transparent"
                   }`}
@@ -192,6 +223,40 @@ const ProductDetail = () => {
             <p className="italic font-serif text-lg">{product.meaning}</p>
           </div>
 
+          {/* Colours */}
+          {hasColors && (
+            <div className="mt-10">
+              <p className="eyebrow mb-3">Colour</p>
+              <div className="flex flex-wrap gap-2">
+                {product.colors!.map((color) => (
+                  <button
+                    key={color.name}
+                    type="button"
+                    disabled={color.inStock === false}
+                    onClick={() => {
+                      setSelectedColor(color.name);
+                      setSelectedImage(color.image || product.image);
+                    }}
+                    className={`flex items-center gap-2 px-3 py-2 text-sm font-medium border transition ${
+                      selectedColor === color.name
+                        ? "border-gold bg-gold/10"
+                        : color.inStock === false
+                          ? "border-border opacity-40 cursor-not-allowed"
+                          : "border-border hover:border-navy"
+                    }`}
+                  >
+                    <span
+                      aria-hidden
+                      className="h-4 w-4 rounded-full border border-black/10"
+                      style={{ backgroundColor: color.hex || "#e5e5e2" }}
+                    />
+                    {color.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Sizes */}
           {hasSizes && (
             <div className="mt-10">
@@ -243,11 +308,11 @@ const ProductDetail = () => {
               className="w-full"
               disabled={!addable}
               onClick={() => {
-                add(product, qty, selectedSize || undefined);
+                add(product, qty, selectedSize || undefined, selectedColor || undefined);
                 toast.success("Added to bag", { description: product.name });
               }}
             >
-              {!inStock ? "Out of Stock" : selectedSize && !selectedSizeInStock ? "Size Unavailable" : `Add to Bag · ${formatZAR(product.price * qty)}`}
+              {addText}
             </Button>
           </div>
 
@@ -257,7 +322,7 @@ const ProductDetail = () => {
             className="mt-3 w-full"
             disabled={!addable}
             onClick={() => {
-              add(product, qty, selectedSize || undefined);
+              add(product, qty, selectedSize || undefined, selectedColor || undefined);
               navigate("/checkout");
             }}
           >
@@ -354,11 +419,11 @@ const ProductDetail = () => {
           className="w-full"
           disabled={!addable}
           onClick={() => {
-            add(product, qty, selectedSize || undefined);
+            add(product, qty, selectedSize || undefined, selectedColor || undefined);
             toast.success("Added to bag");
           }}
         >
-          {!inStock ? "Out of Stock" : selectedSize && !selectedSizeInStock ? "Size Unavailable" : `Add To Bag · ${formatZAR(product.price * qty)}`}
+          {addText}
         </Button>
       </div>
     </Layout>

@@ -23,7 +23,8 @@ const ProductCard = ({ product, full }: Props) => {
     e.preventDefault();
     if (!full) return;
     const hasSizes = full.sizes && full.sizes.length > 0;
-    if (hasSizes) {
+    const hasColors = full.colors && full.colors.length > 0;
+    if (hasSizes || hasColors) {
       navigate(`/shop/${full.slug}`);
       return;
     }

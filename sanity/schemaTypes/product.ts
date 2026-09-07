@@ -116,6 +116,57 @@ export const product = defineType({
         },
       ],
     }),
+    defineField({
+      name: "colors",
+      title: "Colors / Variants",
+      type: "array",
+      description:
+        "Optional. Add colour options for this product. Each colour can carry its own image, which displays on the website when that colour is selected.",
+      of: [
+        {
+          type: "object",
+          fields: [
+            defineField({
+              name: "name",
+              title: "Colour Name",
+              type: "string",
+              validation: (r) => r.required(),
+            }),
+            defineField({
+              name: "hex",
+              title: "Colour Swatch (Hex)",
+              type: "string",
+              description: "Optional, e.g. #C5A55A. Used for the swatch dot on the website.",
+            }),
+            defineField({
+              name: "image",
+              title: "Colour Image",
+              type: "image",
+              options: { hotspot: true },
+              description:
+                "Optional. Displayed on the website when this colour is selected. Leave empty to fall back to the primary image.",
+            }),
+            defineField({
+              name: "stock",
+              title: "Stock Quantity",
+              type: "number",
+              initialValue: 0,
+              validation: (r) => r.required().integer().min(0),
+            }),
+          ],
+          preview: {
+            select: { name: "name", hex: "hex", image: "image", stock: "stock" },
+            prepare({ name, hex, image, stock }) {
+              return {
+                title: name || "Colour",
+                subtitle: `${stock ?? 0} in stock${hex ? ` · ${hex}` : ""}`,
+                media: image,
+              };
+            },
+          },
+        },
+      ],
+    }),
     defineField({ name: "tagline", title: "Tagline", type: "string" }),
     defineField({ name: "description", title: "Description", type: "text", rows: 4 }),
     defineField({ name: "meaning", title: "Meaning / Story", type: "text", rows: 3 }),

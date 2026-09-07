@@ -178,6 +178,7 @@ const Checkout = () => {
           id: i.product.id,
           qty: i.qty,
           size: i.size,
+          color: i.color,
         })),
       });
 
