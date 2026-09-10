@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
+import { trackEvent } from "@/lib/analytics";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
@@ -89,6 +90,22 @@ const Checkout = () => {
   const [sameAsDelivery, setSameAsDelivery] = useState(true);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
+  useEffect(() => {
+    if (items.length === 0) return;
+    trackEvent("begin_checkout", {
+      currency: "ZAR",
+      value: subtotal,
+      items: items.map((i) => ({
+        item_id: i.product.id,
+        item_name: i.product.name,
+        quantity: i.qty,
+        item_variant:
+          [i.color, i.size].filter(Boolean).join(" / ") || undefined,
+      })),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const deliveryOptions = settings?.shippingOptions?.length
     ? settings.shippingOptions.map(
         (d: {
@@ -131,6 +148,8 @@ const Checkout = () => {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    trackEvent("purchase_clicked");
+
     const r = schema.safeParse(form);
     if (!r.success) {
       const errs: Record<string, string> = {};
@@ -138,11 +157,15 @@ const Checkout = () => {
         errs[i.path[0] as string] = i.message;
       });
       setErrors(errs);
+      trackEvent("checkout_validation_error", {
+        fields: Object.keys(errs).join(","),
+      });
       return;
     }
 
     if (!acceptedTerms) {
       setErrors({ terms: "You must accept the Terms & Conditions to proceed." });
+      trackEvent("checkout_validation_error", { fields: "terms" });
       return;
     }
 
@@ -194,6 +217,13 @@ const Checkout = () => {
         throw new Error(order.error || "Could not create order");
       }
 
+      trackEvent("add_payment_info", {
+        value: order.total,
+        currency: "ZAR",
+        order_reference: order.reference,
+        payment_method: "Yoco",
+      });
+
       await payWithYoco({
               email: form.email,
               amountZar: order.total,
@@ -219,6 +249,9 @@ const Checkout = () => {
               },
             });
     } catch (err) {
+      trackEvent("order_create_failed", {
+        error: err instanceof Error ? err.message : "Unknown error",
+      });
       setSubmitting(false);
       toast.error("Payment failed", {
         description: err instanceof Error ? err.message : "Please try again",

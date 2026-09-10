@@ -6,11 +6,12 @@ import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import { useCart } from "@/context/CartContext";
 import { verifyCheckout } from "@/lib/yoco";
+import { trackEvent } from "@/lib/analytics";
 
 const PaymentResult = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { clear } = useCart();
+  const { items, clear } = useCart();
   const handledRef = useRef(false);
 
   const urlCheckoutId =
@@ -64,6 +65,17 @@ const PaymentResult = () => {
 
         const orderRef = sessionReference || checkoutId;
         const email = sessionStorage.getItem("yoco_customer_email") || "";
+        const value = items.reduce(
+          (sum, i) => sum + i.qty * i.product.price,
+          0
+        );
+
+        trackEvent("purchase", {
+          currency: "ZAR",
+          value,
+          order_reference: orderRef,
+          payment_method: "Yoco",
+        });
 
         clear();
         toast.success("Payment successful!", {
@@ -83,10 +95,16 @@ const PaymentResult = () => {
         console.error("Yoco verification error:", error);
 
         if (status === "cancelled") {
+          trackEvent("payment_cancelled", { checkout_id: checkoutId });
           toast.info("Payment was cancelled");
         } else if (status === "failed") {
+          trackEvent("payment_failed", { status: "failed", checkout_id: checkoutId });
           toast.error("Payment failed");
         } else {
+          trackEvent("payment_failed", {
+            status: status || "unknown",
+            checkout_id: checkoutId,
+          });
           toast.error(
             "Could not verify payment status. Please contact support with your order reference.",
           );
@@ -97,6 +115,7 @@ const PaymentResult = () => {
     };
 
     void handleResult();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [checkoutId, clear, navigate, sessionReference, status]);
 
   return (
