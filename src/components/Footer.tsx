@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import {
   Instagram,
   Facebook,
+  TikTok,
   Mail,
   MessageCircle,
   Phone,
@@ -22,6 +23,7 @@ type SiteSettings = {
   companyRegNumber?: string;
   instagramUrl?: string;
   facebookUrl?: string;
+  tiktokUrl?: string;
   footerShopLinks?: { label?: string; href?: string }[];
   footerBrandLinks?: { label?: string; href?: string }[];
   paymentMethodsText?: string;
@@ -164,7 +166,7 @@ const Footer = () => {
                 </li>
               )}
             </ul>
-            {(s?.instagramUrl || s?.facebookUrl) && (
+            {(s?.instagramUrl || s?.facebookUrl || s?.tiktokUrl) && (
               <div className="mt-6 flex items-center gap-4">
                 {s?.instagramUrl && (
                   <a
@@ -186,6 +188,16 @@ const Footer = () => {
                     rel="noopener noreferrer"
                   >
                     <Facebook className="h-4 w-4" />
+                  </a>
+                )}
+                { s?.tiktokUrl && (
+                    href={s.tiktokUrl}
+                    aria-label="TikTok"
+                    className="opacity-80 hover:opacity-100 hover:text-gold transition"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <TikTok className="h-4 w-4" />
                   </a>
                 )}
               </div>

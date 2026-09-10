@@ -18,6 +18,7 @@ export const siteSettings = defineType({
     defineField({ name: "address", title: "Address", type: "text", rows: 2 }),
     defineField({ name: "instagramUrl", title: "Instagram URL", type: "url" }),
     defineField({ name: "facebookUrl", title: "Facebook URL", type: "url" }),
+    defineField({ name: "tiktokUrl", title: "TikTok URL", type: "url" }),
     defineField({
       name: "announcements",
       title: "Announcement Bar Messages",
