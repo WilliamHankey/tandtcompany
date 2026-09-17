@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import {
   Instagram,
   Facebook,
-  TikTok,
   Mail,
   MessageCircle,
   Phone,
@@ -10,6 +9,7 @@ import {
 } from "lucide-react";
 
 import { useSiteSettings } from "@/hooks/useSanityContent";
+import tiktokLogo from "@/assets/tiktok-logo.png";
 
 type SiteSettings = {
   siteName?: string;
@@ -190,14 +190,19 @@ const Footer = () => {
                     <Facebook className="h-4 w-4" />
                   </a>
                 )}
-                { s?.tiktokUrl && (
+                {s?.tiktokUrl && (
+                  <a
                     href={s.tiktokUrl}
                     aria-label="TikTok"
-                    className="opacity-80 hover:opacity-100 hover:text-gold transition"
+                    className="opacity-80 hover:opacity-100 transition"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <TikTok className="h-4 w-4" />
+                    <img
+                      src={tiktokLogo}
+                      alt="TikTok"
+                      className="h-4 w-4 invert"
+                    />
                   </a>
                 )}
               </div>

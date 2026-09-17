@@ -33,13 +33,25 @@ const productFragment = `{
     hex,
     stock,
     image
+  },
+  "sizeChart": sizeChart->{
+    name,
+    productType,
+    sizes[]{
+      label,
+      measurements[]{
+        type,
+        value
+      }
+    },
+    isActive
   }
 }`;
 
 export const siteSettingsQuery = `*[_type == "siteSettings"][0]{
   siteName, tagline, email, stewardshipEmail, phone, whatsappUrl, address,
   companyName, companyRegNumber, physicalAddress,
-  instagramUrl, facebookUrl, announcements, trustItems,
+  instagramUrl, facebookUrl, tiktokUrl, announcements, trustItems,
   footerShopLinks, footerBrandLinks, footerNewsletterTitle, footerNewsletterSubtext,
   paymentMethodsText, taxRate, enableAnalytics, businessHours,
   "shippingOptions": shippingOptions[]-> | order(sortOrder asc) {

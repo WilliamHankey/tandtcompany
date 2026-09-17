@@ -11,6 +11,7 @@ import { termsPage } from "./termsPage";
 import { blockContent } from "./blockContent";
 import { order } from "./order";
 import { productSize } from "./productSize";
+import { sizeChart } from "./sizeChart";
 
 export const schemaTypes = [
   blockContent,
@@ -25,5 +26,6 @@ export const schemaTypes = [
   contactPage,
   termsPage,
   order,
-  productSize
+  productSize,
+  sizeChart
 ];

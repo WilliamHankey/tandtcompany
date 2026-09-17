@@ -69,6 +69,7 @@ async function seed() {
       featured: true,
       inStock: true,
       sortOrder: 1,
+      sizeChart: { _type: "reference", _ref: "sizeChart-tops" },
     },
     {
       _id: "product-cap",
@@ -101,6 +102,7 @@ async function seed() {
       featured: true,
       inStock: true,
       sortOrder: 3,
+      sizeChart: { _type: "reference", _ref: "sizeChart-tops" },
     },
     {
       _id: "product-journal",
@@ -133,9 +135,129 @@ async function seed() {
     { _id: "test-3", _type: "testimonial", name: "Lerato D.", quote: "Feels like a brand that respects its customers.", piece: "Gilded Journal", order: 3 },
   ];
 
+  const sizeCharts = [
+    {
+      _id: "sizeChart-tops",
+      _type: "sizeChart",
+      name: "Tops Size Chart",
+      productType: "tops",
+      sizes: [
+        {
+          label: "XS",
+          measurements: [
+            { type: "Shoulder", value: "56" },
+            { type: "Bust", value: "116" },
+            { type: "Waist", value: "124" },
+          ],
+        },
+        {
+          label: "S",
+          measurements: [
+            { type: "Shoulder", value: "59" },
+            { type: "Bust", value: "120" },
+            { type: "Waist", value: "128" },
+          ],
+        },
+        {
+          label: "M",
+          measurements: [
+            { type: "Shoulder", value: "62" },
+            { type: "Bust", value: "124" },
+            { type: "Waist", value: "132" },
+          ],
+        },
+        {
+          label: "L",
+          measurements: [
+            { type: "Shoulder", value: "65" },
+            { type: "Bust", value: "128" },
+            { type: "Waist", value: "136" },
+          ],
+        },
+        {
+          label: "XL",
+          measurements: [
+            { type: "Shoulder", value: "68" },
+            { type: "Bust", value: "132" },
+            { type: "Waist", value: "140" },
+          ],
+        },
+        {
+          label: "XXL",
+          measurements: [
+            { type: "Shoulder", value: "71" },
+            { type: "Bust", value: "136" },
+            { type: "Waist", value: "144" },
+          ],
+        },
+      ],
+      isActive: true,
+      sortOrder: 1,
+    },
+    {
+      _id: "sizeChart-pants",
+      _type: "sizeChart",
+      name: "Pants Size Chart",
+      productType: "pants",
+      sizes: [
+        {
+          label: "XS",
+          measurements: [
+            { type: "Waist", value: "72-74" },
+            { type: "Waist Extended", value: "92" },
+            { type: "Length", value: "102" },
+          ],
+        },
+        {
+          label: "S",
+          measurements: [
+            { type: "Waist", value: "77-79" },
+            { type: "Waist Extended", value: "100" },
+            { type: "Length", value: "102" },
+          ],
+        },
+        {
+          label: "M",
+          measurements: [
+            { type: "Waist", value: "82-84" },
+            { type: "Waist Extended", value: "108" },
+            { type: "Length", value: "105" },
+          ],
+        },
+        {
+          label: "L",
+          measurements: [
+            { type: "Waist", value: "87-89" },
+            { type: "Waist Extended", value: "116" },
+            { type: "Length", value: "105" },
+          ],
+        },
+        {
+          label: "XL",
+          measurements: [
+            { type: "Waist", value: "92-94" },
+            { type: "Waist Extended", value: "124" },
+            { type: "Length", value: "108" },
+          ],
+        },
+        {
+          label: "XXL",
+          measurements: [
+            { type: "Waist", value: "97-99" },
+            { type: "Waist Extended", value: "132" },
+            { type: "Length", value: "108" },
+          ],
+        },
+      ],
+      isActive: true,
+      sortOrder: 2,
+    },
+  ];
+
   const docs = [
     ...categories,
     ...products,
+    ...sizeCharts,
     ...shipping,
     ...testimonials,
     {

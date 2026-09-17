@@ -208,6 +208,15 @@ export const product = defineType({
     defineField({ name: "featured", title: "Featured on Home", type: "boolean", initialValue: false }),
     defineField({ name: "inStock", title: "In Stock", type: "boolean", initialValue: true }),
     defineField({ name: "sortOrder", title: "Sort Order", type: "number", initialValue: 0 }),
+    defineField({
+      name: "sizeChart",
+      title: "Size Chart",
+      type: "reference",
+      to: [{ type: "sizeChart" }],
+      description: "Optional size chart for this product (from CMS)",
+      hidden: true,
+      readOnly: true,
+    }),
   ],
   orderings: [{ title: "Sort Order", name: "sortOrderAsc", by: [{ field: "sortOrder", direction: "asc" }] }],
   preview: {

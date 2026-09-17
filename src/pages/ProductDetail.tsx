@@ -12,6 +12,7 @@ import { useProduct, useResolvedProducts } from "@/hooks/useSanityContent";
 import { toast } from "sonner";
 import { Minus, Plus, Truck, RotateCcw, ShieldCheck, Package, Shirt } from "lucide-react";
 import { SITE_URL } from "@/lib/seo";
+import SizeChart from "@/components/size-chart/SizeChart";
 
 const ProductDetail = () => {
   const { slug } = useParams();
@@ -282,6 +283,8 @@ const ProductDetail = () => {
               </div>
             </div>
           )}
+
+          <SizeChart product={product} />
 
           <div className="mt-10 flex flex-col sm:flex-row gap-4">
             <div className="flex border border-border h-14">
