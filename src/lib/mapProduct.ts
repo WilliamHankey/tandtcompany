@@ -25,12 +25,12 @@ type SanityProductRaw = {
   gallery?: SanityImageSource[] | null;
   badge?: string | null;
   category?: string | null;
-  sizeChart?: {
+  sizeCharts?: {
     name?: string;
     productType?: string;
     sizes?: { label: string; measurements: { type: string; value: string }[] }[];
     isActive?: boolean;
-  } | null;
+  }[] | null;
   featured?: boolean;
   inStock?: boolean;
   sizes?: {
@@ -118,7 +118,7 @@ export function mapSanityProduct(raw: SanityProductRaw): Product {
       }),
     badge: raw.badge || undefined,
     category: raw.category || "",
-    sizeChart: raw.sizeChart || undefined,
+    sizeCharts: raw.sizeCharts || undefined,
     featured: Boolean(raw.featured),
     inStock: raw.inStock !== false,
     currency: "ZAR",

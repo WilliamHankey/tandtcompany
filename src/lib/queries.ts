@@ -34,7 +34,7 @@ const productFragment = `{
     stock,
     image
   },
-  "sizeChart": sizeChart->{
+  "sizeCharts": sizeCharts[]->{
     name,
     productType,
     sizes[]{

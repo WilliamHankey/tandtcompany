@@ -69,7 +69,7 @@ async function seed() {
       featured: true,
       inStock: true,
       sortOrder: 1,
-      sizeChart: { _type: "reference", _ref: "sizeChart-tops" },
+      sizeCharts: [{ _type: "reference", _ref: "sizeChart-tops" }],
     },
     {
       _id: "product-cap",
@@ -102,7 +102,7 @@ async function seed() {
       featured: true,
       inStock: true,
       sortOrder: 3,
-      sizeChart: { _type: "reference", _ref: "sizeChart-tops" },
+      sizeCharts: [{ _type: "reference", _ref: "sizeChart-tops" }],
     },
     {
       _id: "product-journal",
