@@ -74,6 +74,20 @@ export const productCategoriesQuery = `*[_type == "productCategory"] | order(sor
 
 export const productBySlugQuery = `*[_type == "product" && slug.current == $slug][0] ${productFragment}`;
 
+export const sizeChartsQuery = `*[_type == "sizeChart" && isActive != false] | order(sortOrder asc) {
+  _id,
+  name,
+  productType,
+  sizes[]{
+    label,
+    measurements[]{
+      type,
+      value
+    }
+  },
+  isActive
+}`;
+
 export const homePageQuery = `*[_type == "homePage"][0]{
   heroEyebrow,
   heroHeadline,

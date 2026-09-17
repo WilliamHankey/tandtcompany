@@ -12,7 +12,6 @@ import { useProduct, useResolvedProducts } from "@/hooks/useSanityContent";
 import { toast } from "sonner";
 import { Minus, Plus, Truck, RotateCcw, ShieldCheck, Package, Shirt } from "lucide-react";
 import { SITE_URL } from "@/lib/seo";
-import SizeChart from "@/components/size-chart/SizeChart";
 
 const ProductDetail = () => {
   const { slug } = useParams();
@@ -277,7 +276,15 @@ const ProductDetail = () => {
           {/* Sizes */}
           {hasSizes && (
             <div className="mt-10">
-              <p className="eyebrow mb-3">Size</p>
+              <div className="flex items-baseline justify-between mb-3">
+                <p className="eyebrow">Size</p>
+                <Link
+                  to="/size-guide"
+                  className="text-xs uppercase tracking-[0.2em] text-gold link-underline"
+                >
+                  Size Guide
+                </Link>
+              </div>
               <div className="flex flex-wrap gap-2">
                 {product.sizes!.map((size) => (
                   <button
@@ -299,8 +306,6 @@ const ProductDetail = () => {
               </div>
             </div>
           )}
-
-          <SizeChart product={product} />
 
           <div className="mt-10 flex flex-col sm:flex-row gap-4">
             <div className="flex border border-border h-12 w-full sm:w-auto">

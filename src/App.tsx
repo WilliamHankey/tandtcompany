@@ -26,6 +26,7 @@ import ReturnsPolicy from "./pages/ReturnsPolicy";
 import RefundPolicy from "./pages/RefundPolicy";
 import CookiePolicy from "./pages/CookiePolicy";
 import FAQ from "./pages/FAQ";
+import SizeGuide from "./pages/SizeGuide";
 import NotFound from "./pages/NotFound.tsx";
 import PaymentResult from "./pages/PaymentResult";
 
@@ -82,6 +83,7 @@ const App = () => (
             <Route path="/refund-policy" element={<RefundPolicy />} />
             <Route path="/cookie-policy" element={<CookiePolicy />} />
             <Route path="/faq" element={<FAQ />} />
+            <Route path="/size-guide" element={<SizeGuide />} />
             <Route path="/_placeholder" element={<Index />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

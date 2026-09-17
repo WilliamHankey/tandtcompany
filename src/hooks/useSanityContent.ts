@@ -10,9 +10,10 @@ import {
   contactPageQuery,
   termsPageQuery,
   testimonialsQuery,
+  sizeChartsQuery,
 } from "@/lib/queries";
 import { mapSanityProduct } from "@/lib/mapProduct";
-import type { Product } from "@/types/product";
+import type { Product, SizeChart } from "@/types/product";
 import { productCategoriesQuery } from "@/lib/queries";
 
 async function fetch<T>(
@@ -116,6 +117,14 @@ export function useTestimonials() {
   return useQuery({
     queryKey: ["testimonials"],
     queryFn: () => fetch(testimonialsQuery),
+    staleTime: 60_000,
+  });
+}
+
+export function useSizeCharts() {
+  return useQuery({
+    queryKey: ["sizeCharts"],
+    queryFn: () => fetch<SizeChart[]>(sizeChartsQuery),
     staleTime: 60_000,
   });
 }

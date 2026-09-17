@@ -1,3 +1,11 @@
+export type SizeChart = {
+  _id?: string;
+  name?: string;
+  productType?: string;
+  sizes?: { label: string; measurements: { type: string; value: string }[] }[];
+  isActive?: boolean;
+};
+
 export type Product = {
   _id: string;
   id: string;
@@ -24,12 +32,7 @@ export type Product = {
   sku?: string;
   sizes?: { label: string; inStock: boolean; stock?: number }[];
   colors?: { _key?: string; name: string; hex?: string; image?: string; stock?: number; inStock?: boolean }[];
-  sizeCharts?: {
-    name?: string;
-    productType?: string;
-    sizes?: { label: string; measurements: { type: string; value: string }[] }[];
-    isActive?: boolean;
-  }[];
+  sizeCharts?: SizeChart[];
   badge?: string;
   category?: string;
   featured?: boolean;

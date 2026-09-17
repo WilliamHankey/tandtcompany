@@ -40,6 +40,10 @@ export const pageMeta: Record<string, { title: string; description: string }> = 
     title: "FAQ — T AND T COMPANY",
     description: "Frequently asked questions about ordering, shipping, returns, and care for your T AND T COMPANY apparel.",
   },
+  "/size-guide": {
+    title: "Size Guide — T AND T COMPANY",
+    description: "Find your perfect fit with the T AND T COMPANY size charts for tops and pants. Measurements in centimetres.",
+  },
   "/terms": {
     title: "Terms & Conditions — T AND T COMPANY",
     description: "Terms and conditions for purchasing from T AND T COMPANY.",

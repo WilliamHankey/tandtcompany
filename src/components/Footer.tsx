@@ -54,20 +54,23 @@ const Footer = () => {
         </div>
 
         {/* Shop Links */}
-        {shopLinks.length > 0 && (
-          <div className="md:col-span-3 lg:col-span-2 min-w-0">
-            <h4 className="eyebrow !text-cream/60 mb-4">Shop</h4>
-            <ul className="space-y-2 text-cream/80 text-sm">
-              {shopLinks.map((link) => (
-                <li key={link.href}>
-                  <Link to={link.href!} className="link-underline">
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        <div className="md:col-span-3 lg:col-span-2 min-w-0">
+          <h4 className="eyebrow !text-cream/60 mb-4">Shop</h4>
+          <ul className="space-y-2 text-cream/80 text-sm">
+            {shopLinks.map((link) => (
+              <li key={link.href}>
+                <Link to={link.href!} className="link-underline">
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+            <li>
+              <Link to="/size-guide" className="link-underline">
+                Size Guide
+              </Link>
+            </li>
+          </ul>
+        </div>
 
         {/* Brand Links */}
         {brandLinks.length > 0 && (
