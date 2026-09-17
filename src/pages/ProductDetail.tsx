@@ -287,19 +287,19 @@ const ProductDetail = () => {
           <SizeChart product={product} />
 
           <div className="mt-10 flex flex-col sm:flex-row gap-4">
-            <div className="flex border border-border h-14">
+            <div className="flex border border-border h-12 w-full sm:w-auto">
               <button
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
-                className="w-14 grid place-items-center"
+                className="flex-1 sm:flex-none sm:w-12 grid place-items-center"
               >
                 <Minus size={16} />
               </button>
 
-              <div className="w-14 grid place-items-center">{qty}</div>
+              <div className="flex-1 sm:flex-none sm:w-12 grid place-items-center">{qty}</div>
 
               <button
                 onClick={() => setQty((q) => q + 1)}
-                className="w-14 grid place-items-center"
+                className="flex-1 sm:flex-none sm:w-12 grid place-items-center"
               >
                 <Plus size={16} />
               </button>
