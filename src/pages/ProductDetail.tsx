@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
@@ -55,8 +55,6 @@ const ProductDetail = () => {
     }
   }, [product?.colors, selectedColor]);
 
-  const mainImage = images[0] || product.image;
-
   if (isLoading) {
     return (
       <Layout>
@@ -78,6 +76,7 @@ const ProductDetail = () => {
     );
   }
 
+  const mainImage = images[0] || product.image;
   const hasSizes = product.sizes && product.sizes.length > 0;
   const hasColors = product.colors && product.colors.length > 0;
   const productUrl = `${SITE_URL}/shop/${product.slug}`;
