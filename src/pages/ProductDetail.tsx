@@ -20,7 +20,7 @@ const ProductDetail = () => {
   const { products: allProducts } = useResolvedProducts();
 
   const [qty, setQty] = useState(1);
-  const [selectedImage, setSelectedImage] = useState("");
+  const [images, setImages] = useState<string[]>([]);
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
 
@@ -28,11 +28,18 @@ const ProductDetail = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (product?.image) {
-      setSelectedImage(product.image);
-    }
+    if (!product) return;
+    const seen = new Set<string>();
+    const urls = [product.image, ...(product.gallery || [])].filter(Boolean);
+    setImages(
+      urls.filter((url) => {
+        if (seen.has(url)) return false;
+        seen.add(url);
+        return true;
+      }),
+    );
     setSelectedColor("");
-  }, [product?.image]);
+  }, [product?.image, product?.gallery]);
 
   useEffect(() => {
     if (product?.sizes?.length && !selectedSize) {
@@ -48,16 +55,7 @@ const ProductDetail = () => {
     }
   }, [product?.colors, selectedColor]);
 
-  const galleryImages = useMemo(() => {
-    if (!product) return [];
-    const seen = new Set<string>();
-    const urls = [product.image, ...(product.gallery || [])].filter(Boolean);
-    return urls.filter((url) => {
-      if (seen.has(url)) return false;
-      seen.add(url);
-      return true;
-    });
-  }, [product]);
+  const mainImage = images[0] || product.image;
 
   if (isLoading) {
     return (
@@ -80,7 +78,6 @@ const ProductDetail = () => {
     );
   }
 
-  const mainImage = selectedImage || product.image;
   const hasSizes = product.sizes && product.sizes.length > 0;
   const hasColors = product.colors && product.colors.length > 0;
   const productUrl = `${SITE_URL}/shop/${product.slug}`;
@@ -152,23 +149,29 @@ const ProductDetail = () => {
             />
           </div>
 
-          {galleryImages.length > 0 && (
+          {images.length > 0 && (
             <div
               className={
-                galleryImages.length === 1
+                images.length === 1
                   ? "grid grid-cols-1 gap-3"
-                  : galleryImages.length === 2
+                  : images.length === 2
                     ? "grid grid-cols-2 gap-3"
                     : "grid grid-cols-3 gap-3"
               }
             >
-              {galleryImages.slice(0, 3).map((image: string, index: number) => (
+              {images.slice(0, 3).map((image: string, index: number) => (
                 <button
-                  key={index}
+                  key={image}
                   type="button"
                   onClick={() => {
                     setSelectedColor("");
-                    setSelectedImage(image);
+                    setImages((prev) => {
+                      if (index >= prev.length) return prev;
+                      const next = [...prev];
+                      next[0] = prev[index];
+                      next[index] = prev[0];
+                      return next;
+                    });
                   }}
                   className={`aspect-square overflow-hidden border transition ${
                     mainImage === image ? "border-gold" : "border-transparent"
@@ -242,7 +245,15 @@ const ProductDetail = () => {
                     disabled={color.inStock === false}
                     onClick={() => {
                       setSelectedColor(color.name);
-                      setSelectedImage(color.image || product.image);
+                      setImages((prev) => {
+                        const target = color.image || product.image;
+                        const idx = prev.indexOf(target);
+                        if (idx <= 0) return prev;
+                        const next = [...prev];
+                        next[0] = prev[idx];
+                        next[idx] = prev[0];
+                        return next;
+                      });
                     }}
                     className={`flex items-center gap-2 px-3 py-2 text-sm font-medium border transition ${
                       selectedColor === color.name
