@@ -49,9 +49,15 @@ const ProductDetail = () => {
   }, [product?.colors, selectedColor]);
 
   const galleryImages = useMemo(() => {
-    if (!product?.gallery) return [];
-    return product.gallery.filter(Boolean);
-  }, [product?.gallery]);
+    if (!product) return [];
+    const seen = new Set<string>();
+    const urls = [product.image, ...(product.gallery || [])].filter(Boolean);
+    return urls.filter((url) => {
+      if (seen.has(url)) return false;
+      seen.add(url);
+      return true;
+    });
+  }, [product]);
 
   if (isLoading) {
     return (
